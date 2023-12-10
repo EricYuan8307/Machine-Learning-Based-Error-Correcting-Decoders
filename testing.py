@@ -46,7 +46,7 @@ H = torch.tensor([ [1, 1, 1, 0, 0, 0, 0],
                    [0, 1, 0, 0, 1, 1, 0],
                    [1, 0, 0, 1, 0, 0, 1],])
 
-llr_demodulator_output = torch.randn((7,))
+llr_demodulator_output = torch.tensor([-0.0558,  0.0314,  0.0457,  0.0374, -0.0477, -0.0378,  0.0647])
 
 ldpc_bp = LDPCBeliefPropagation(H)
 estimated_bits = ldpc_bp(llr_demodulator_output)
