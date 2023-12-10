@@ -35,7 +35,7 @@ class LDPCBeliefPropagation(torch.nn.Module):
 
         # Calculate the final estimated bits
         estimated_bits = torch.sign(llr) * torch.prod(torch.tanh(0.5 * self.messages_c_to_v), dim=0)
-        estimated_bits = torch.where(estimated_bits>0, torch.tensor(1), torch.tensor(0))
+        estimated_bits = torch.where(estimated_bits>0, torch.tensor(0), torch.tensor(1))
 
         return estimated_bits
 
@@ -51,5 +51,5 @@ llr_demodulator_output = torch.tensor([-0.0558,  0.0314,  0.0457,  0.0374, -0.04
 ldpc_bp = LDPCBeliefPropagation(H)
 estimated_bits = ldpc_bp(llr_demodulator_output)
 
-print("LLR Demodulator Output:", llr_demodulator_output)
+print("LLR Demodulator:", llr_demodulator_output)
 print("Estimated Bits:", estimated_bits)
