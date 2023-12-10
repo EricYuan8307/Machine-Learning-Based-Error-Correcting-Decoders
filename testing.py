@@ -1,54 +1,55 @@
 import torch
-import torch.nn as nn
 
-class LDPCDecoder(nn.Module):
-    def __init__(self, H, max_iterations=10):
-        super(LDPCDecoder, self).__init__()
+class LDPCBeliefPropagation(torch.nn.Module):
+    def __init__(self, H, max_iter=50):
+        super(LDPCBeliefPropagation, self).__init__()
         self.H = H
-        self.max_iterations = max_iterations
+        self.max_iter = max_iter
+        self.num_check_nodes, self.num_variable_nodes = H.shape
 
-    def forward(self, received_codeword):
-        batch_size, _ = received_codeword.size()
-        _, n = self.H.size()
+        # Initialize messages
+        self.messages_v_to_c = torch.ones((self.num_variable_nodes, self.num_check_nodes),dtype=torch.float)
+        self.messages_c_to_v = torch.zeros((self.num_check_nodes, self.num_variable_nodes),dtype=torch.float)
 
-        # Convert received_codeword to log likelihood ratios (LLRs)
-        llrs = 2 * received_codeword / (1 - received_codeword)
+    def forward(self, llr):
+        for iteration in range(self.max_iter):
+            # Variable to check node messages
+            for i in range(self.num_variable_nodes):
+                for j in range(self.num_check_nodes):
+                    # Compute messages from variable to check nodes
+                    connected_checks = self.H[j, :] == 1
+                    product0 = 0.5 * self.messages_v_to_c[connected_checks, j]
+                    product = torch.prod(torch.tanh(product0))
+                    # product = torch.prod(torch.tanh(0.5 * self.messages_v_to_c[connected_checks, i]))
+                    self.messages_v_to_c[i, j] = torch.sign(llr[i]) * product
 
-        for iteration in range(self.max_iterations):
-            # Compute check node values
-            check_node_values = torch.matmul(self.H, llrs.t()).t()
+            # Check to variable node messages
+            for i in range(self.num_check_nodes):
+                for j in range(self.num_variable_nodes):
+                    # Compute messages from check to variable nodes
+                    connected_vars = self.H[:, j] == 1
+                    sum_msg0 = self.messages_c_to_v[connected_vars, i]
+                    sum_msgs = torch.sum(sum_msg0) - self.messages_v_to_c[j, i]
+                    # sum_msgs = torch.sum(self.messages_v_to_c[connected_vars, i]) - self.messages_v_to_c[j, i]
+                    self.messages_c_to_v[i, j] = 2 * torch.atan(torch.exp(0.5 * sum_msgs))
 
-            # Compute updated variable node values
-            updated_llrs = llrs + check_node_values
+        # Calculate the final estimated bits
+        estimated_bits = torch.sign(llr) * torch.prod(torch.tanh(0.5 * self.messages_c_to_v), dim=0)
+        estimated_bits = torch.where(estimated_bits>0, torch.tensor(1), torch.tensor(0))
 
-            # Hard decision: LLR to binary
-            decoded_codeword = torch.sign(updated_llrs).long()
+        return estimated_bits
 
-            # Check if the decoded codeword satisfies parity checks
-            syndromes = torch.matmul(decoded_codeword, self.H.t()) % 2
+# Example usage:
+# Define LDPC parameters (You need to replace this with your actual LDPC parameters)
+H = torch.tensor([ [1, 1, 1, 0, 0, 0, 0],
+                   [0, 0, 1, 1, 1, 0, 0],
+                   [0, 1, 0, 0, 1, 1, 0],
+                   [1, 0, 0, 1, 0, 0, 1],])
 
-            # Check if all syndromes are zero (no errors)
-            if torch.sum(syndromes) == 0:
-                break
+llr_demodulator_output = torch.randn((7,))
 
-            # Compute variable node values for the next iteration
-            llrs = updated_llrs
+ldpc_bp = LDPCBeliefPropagation(H)
+estimated_bits = ldpc_bp(llr_demodulator_output)
 
-        return decoded_codeword
-
-# Example usage
-# Define LDPC code matrix (H matrix) and received codeword
-H = torch.tensor([[1, 0, 1, 1, 0, 0],
-                  [0, 1, 1, 0, 1, 0],
-                  [1, 1, 0, 0, 0, 1]])
-
-received_codeword = torch.tensor([[1, 0, 1, 0, 1, 1]])
-
-# Create LDPC decoder
-ldpc_decoder = LDPCDecoder(H, max_iterations=10)
-
-# Decode the received codeword
-decoded_codeword = ldpc_decoder(received_codeword)
-
-print("Received Codeword:", received_codeword)
-print("Decoded Codeword:", decoded_codeword)
+print("LLR Demodulator Output:", llr_demodulator_output)
+print("Estimated Bits:", estimated_bits)
