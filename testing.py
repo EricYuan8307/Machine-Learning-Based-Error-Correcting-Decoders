@@ -40,7 +40,7 @@ class LDPCBeliefPropagation(torch.nn.Module):
         return estimated_bits
 
 # Example usage:
-# Define LDPC parameters (You need to replace this with your actual LDPC parameters)
+# Define LDPC parameters 
 H = torch.tensor([ [1, 1, 1, 0, 0, 0, 0],
                    [0, 0, 1, 1, 1, 0, 0],
                    [0, 1, 0, 0, 1, 1, 0],
