@@ -1,3 +1,6 @@
+import torch
+mps_device = torch.device("mps")
+
 # class LDPCBeliefPropagation(torch.nn.Module):
 #     def __init__(self, H):
 #         """
