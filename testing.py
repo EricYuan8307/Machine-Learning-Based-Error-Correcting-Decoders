@@ -1,16 +1,29 @@
 import torch
+mps_device = torch.device("mps")
+
 
 class LDPCBeliefPropagation(torch.nn.Module):
     def __init__(self, H):
+        """
+        LDPC Belief Propagation.
+
+        Args:
+            H: Low density parity code for building tanner graph.
+            llr: Log Likelihood Ratio (LLR) values. Only for 7-bit codeword.
+
+        Returns:
+            estimated_bits: the output result from belief propagation.
+        """
+
         super(LDPCBeliefPropagation, self).__init__()
         self.H = H
         self.num_check_nodes, self.num_variable_nodes = H.shape
 
         # Initialize messages
-        self.messages_v_to_c = torch.ones((self.num_variable_nodes, self.num_check_nodes),dtype=torch.float)
-        self.messages_c_to_v = torch.zeros((self.num_check_nodes, self.num_variable_nodes),dtype=torch.float)
+        self.messages_v_to_c = torch.ones((self.num_variable_nodes, self.num_check_nodes), dtype=torch.float).to(mps_device)
+        self.messages_c_to_v = torch.zeros((self.num_check_nodes, self.num_variable_nodes), dtype=torch.float).to(mps_device)
 
-    def forward(self, llr, max_iter=50):
+    def forward(self, llr, max_iter):
         for iteration in range(max_iter):
             # Variable to check node messages
             for i in range(self.num_variable_nodes):
@@ -28,25 +41,36 @@ class LDPCBeliefPropagation(torch.nn.Module):
                     sum_msgs = torch.sum(self.messages_c_to_v[connected_vars, i]) - self.messages_v_to_c[j, i]
                     self.messages_c_to_v[i, j] = 2 * torch.atan(torch.exp(0.5 * sum_msgs))
 
-        # Calculate the final estimated bits
-        estimated_bits = torch.sign(llr) * torch.prod(torch.tanh(0.5 * self.messages_c_to_v), dim=0)
-        estimated_bits = torch.where(estimated_bits>0, torch.tensor(1), torch.tensor(0))
+        # Calculate the final estimated bits and only take first four bits
+        estimated_bits = torch.sign(llr) * torch.prod(torch.tanh(0.5 * self.messages_c_to_v), dim=0).to(mps_device)
+        tensor_1 = torch.tensor(1, device=mps_device)
+        tensor_0 = torch.tensor(0, device=mps_device)
+        estimated_bits = torch.where(estimated_bits > 0, tensor_1, tensor_0)
         estimated_bits = estimated_bits[0:4]
 
         return estimated_bits
 
-# Example usage:
-# Define LDPC parameters 
+
+# %%
+# Define LDPC parameters
 H = torch.tensor([ [1, 1, 1, 0, 0, 0, 0],
                    [0, 0, 1, 1, 1, 0, 0],
                    [0, 1, 0, 0, 1, 1, 0],
                    [1, 0, 0, 1, 0, 0, 1],])
 iter = 10
-llr_demodulator_output = torch.tensor([-10.7472,  10.0925, -12.2140, -11.3412,  10.6539,  -8.9250,  10.3458])
-
 ldpc_bp = LDPCBeliefPropagation(H)
-estimated_bits = ldpc_bp(llr_demodulator_output, iter)
 
-print("LLR Demodulator:", llr_demodulator_output)
-print("Estimated Bits:", estimated_bits)
-print("[0, 1, 0, 0, 1, 0, 1]")
+llr_output = torch.tensor([-10.7472,  10.0925, -12.2140, -11.3412,  10.6539,  -8.9250,  10.3458]).to(mps_device)
+# print(llr_output.shape)
+
+# Store the final result from LDPC
+tensor_size = torch.Size([1, 4])
+final_result = torch.zeros(tensor_size).to(mps_device)
+
+#loop all the llr and get result.
+# for i in range(llr_output.shape[0]):
+#     bp_data = llr_output[i]
+estimated_result = ldpc_bp(llr_output, iter)
+final_result = estimated_result
+
+print(final_result)
