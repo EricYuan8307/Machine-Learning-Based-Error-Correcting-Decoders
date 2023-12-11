@@ -42,7 +42,7 @@ class LDPCBeliefPropagation(torch.nn.Module):
                     self.messages_c_to_v[i, j] = 2 * torch.atan(torch.exp(0.5 * sum_msgs))
 
         # Calculate the final estimated bits and only take first four bits
-        estimated_bits = torch.sign(llr) * torch.prod(torch.tanh(0.5 * self.messages_c_to_v), dim=0).to(mps_device)
+        estimated_bits = torch.sign(llr) * torch.prod(torch.tanh(0.5 * self.messages_c_to_v), dim=0)
         tensor_1 = torch.tensor(1, device=mps_device)
         tensor_0 = torch.tensor(0, device=mps_device)
         estimated_bits = torch.where(estimated_bits > 0, tensor_1, tensor_0)
@@ -56,12 +56,11 @@ class LDPCBeliefPropagation(torch.nn.Module):
 H = torch.tensor([ [1, 1, 1, 0, 0, 0, 0],
                    [0, 0, 1, 1, 1, 0, 0],
                    [0, 1, 0, 0, 1, 1, 0],
-                   [1, 0, 0, 1, 0, 0, 1],])
+                   [1, 0, 0, 1, 0, 0, 1],], device=mps_device)
 iter = 10
 ldpc_bp = LDPCBeliefPropagation(H)
 
 llr_output = torch.tensor([-10.7472,  10.0925, -12.2140, -11.3412,  10.6539,  -8.9250,  10.3458]).to(mps_device)
-# print(llr_output.shape)
 
 # Store the final result from LDPC
 tensor_size = torch.Size([1, 4])
