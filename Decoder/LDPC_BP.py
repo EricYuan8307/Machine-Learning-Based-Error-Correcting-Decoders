@@ -59,9 +59,5 @@ class LDPCBeliefPropagation(torch.nn.Module):
 
         # Calculate the final estimated bits and only take first four bits
         estimated_bits = torch.sign(self.llr) * torch.prod(torch.tanh(0.5 * self.messages_c_to_v))
-        tensor_1 = torch.tensor(1, device=mps_device)
-        tensor_0 = torch.tensor(0, device=mps_device)
-        estimated_bits = torch.where(estimated_bits > 0, tensor_1, tensor_0)
-        estimated_bits = estimated_bits[:, :, 0:4]
 
         return estimated_bits
