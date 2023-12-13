@@ -1,82 +1,78 @@
-import torch
-mps_device = torch.device("mps")
 
-class LDPCBeliefPropagation(torch.nn.Module):
-    def __init__(self, H):
-        """
-        LDPC Belief Propagation.
+# Calculate the Error number and BER
+def main():
 
-        Args:
-            H: Low density parity code for building tanner graph.
-            llr: Log Likelihood Ratio (LLR) values. Only for 7-bit codeword.
+    SNR_opt = [0,1,2,3,4,5,10,15]
+    N = 1000000
 
-        Returns:
-            estimated_bits: the output result from belief propagation.
-        """
+    for i in range(len(SNR_opt)):
+        snr_dB =SNR_opt[i]
+        for j in range(10):
+            num = 1000000
 
-        super(LDPCBeliefPropagation, self).__init__()
-        self.H = H
-        self.num_check_nodes, self.num_variable_nodes = H.shape
-
-        # Initialize messages
-        self.messages_v_to_c = torch.ones((self.num_variable_nodes, self.num_check_nodes), dtype=torch.float).to(
-            mps_device)
-        self.messages_c_to_v = torch.zeros((self.num_check_nodes, self.num_variable_nodes), dtype=torch.float).to(
-            mps_device)
-
-    def forward(self, llr, max_iter):
-        for iteration in range(max_iter):
-            # Variable to check node messages
-            for i in range(self.num_variable_nodes):
-                for j in range(self.num_check_nodes):
-                    # Compute messages from variable to check nodes
-                    connected_checks = self.H[j, :] == 1
-                    product = torch.prod(torch.tanh(0.5 * self.messages_v_to_c[connected_checks, j]))
-                    self.messages_v_to_c[i, j] = torch.sign(llr[i]) * product
-
-            # Check to variable node messages
-            for i in range(self.num_check_nodes):
-                for j in range(self.num_variable_nodes):
-                    # Compute messages from check to variable nodes
-                    connected_vars = self.H[:, j] == 1
-                    sum_msgs = torch.sum(self.messages_c_to_v[connected_vars, i]) - self.messages_v_to_c[j, i]
-                    self.messages_c_to_v[i, j] = 2 * torch.atan(torch.exp(0.5 * sum_msgs))
-
-        # Calculate the final estimated bits and only take first four bits
-        estimated_bits = torch.sign(llr) * torch.prod(torch.tanh(0.5 * self.messages_c_to_v), dim=0)
-        tensor_1 = torch.tensor(1, device=mps_device)
-        tensor_0 = torch.tensor(0, device=mps_device)
-        estimated_bits = torch.where(estimated_bits > 0, tensor_1, tensor_0)
-        estimated_bits = estimated_bits[0:4]
-
-        return estimated_bits
+            # Count Error Number and BER:
+            encoder = hamming_encoder()  # Generate Encoded Data with 3 parity bits
+            modulator = bpsk_modulator() # Modulate the signal
 
 
-# Define LDPC parameters
-H = torch.tensor([[1, 1, 1, 0, 0, 0, 0],
-                  [0, 0, 1, 1, 1, 0, 0],
-                  [0, 1, 0, 0, 1, 1, 0],
-                  [1, 0, 0, 1, 0, 0, 1], ], device=mps_device)
-iter = 1
-ldpc_bp = LDPCBeliefPropagation(H)
+            # Full LDPC
+            bits_info = generator(num)
+            encoded_codeword = encoder(bits_info)
+            modulated_noise_signal = modulator(encoded_codeword.to(mps_device), snr_dB)
+            llr_output = llr(modulated_noise_signal, snr_dB)# Log-Likelihood Calculation
+            ldpc_bp = LDPCBeliefPropagation(llr_output.to(mps_device))  # LDPC Belief Propagation
+            LDPC_result = ldpc_bp(iter) # BP iteration time
+            LDPC_final = hard_decision_cutter(LDPC_result)
 
-# Store the final result from LDPC
-tensor_size = torch.Size([llr_output.shape[0], 4])
-final_result = torch.zeros(tensor_size).to(mps_device)
+            bits_info = bits_info.to(mps_device)
+            error_num_LDPC, BER_LDPC = calculate_ber(LDPC_final, bits_info)
 
-llr_output = llr_output.to(mps_device)
+            # if error_num_LDPC < 1000:
+            #     num += 5000
 
-#loop all the llr and get result.
-for i in range(llr_output.shape[0]):
-    bp_data = llr_output[i]
-    estimated_bits = ldpc_bp(bp_data, iter)
-    final_result[i] = estimated_bits
+            if error_num_LDPC >= 1000:
+            # elif error_num_LDPC >= 1000:
+                print(f"LDPC: When SNR is {snr_dB} and signal number is {num}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
+                break
 
-print(final_result)
 
-# llr_demodulator_output = llr_output
-#
-# estimated_bits = ldpc_bp(llr_demodulator_output, iter)
-#
-# print("LLR Demodulator Output:", llr_demodulator_output)
-# print("Estimated Bits:", estimated_bits)
+
+        # for k in range(10):
+        #     num = N + 5000 * k
+        #
+        #     # De-Encoder, BPSK only
+        #     bits_info = generator(num)
+        #     modulated_noise_signal = modulator(bits_info.to(mps_device), snr_dB)
+        #
+        #     bits_info = bits_info.to(mps_device)  # bits_info: original signal
+        #     error_num_BPSK, BER_BPSK = calculate_ber(modulated_noise_signal, bits_info)
+        #     print(f"LDPC: Error number is {error_num_BPSK} and BER is {BER_BPSK}")
+        #
+        #
+        # for m in range(10):
+        #     num = N + 5000 * m
+        #     # Maximum Likelihood
+        #     bits_info = generator(num)
+        #     encoded_codeword = encoder(bits_info)
+        #     modulated_noise_signal = modulator(encoded_codeword.to(mps_device), snr_dB)
+        #     llr_output = llr(modulated_noise_signal, snr_dB)  # Log-Likelihood Calculation
+        #     ML_final = hard_decision_cutter(llr_output)
+        #
+        #     bits_info = bits_info.to(mps_device)  # bits_info: original signal
+        #     error_num_ML, BER_ML = calculate_ber(ML_final, bits_info)
+        #     print(f"LDPC: Error number is {error_num_ML} and BER is {BER_ML}")
+
+
+
+            # if error_num > 1000:
+            #     print("snr_dB:", snr_dB)
+            #     print(error_num)
+            #     print(BER)
+            #
+            #     break
+            # elif error_num <1000:
+            #     continue
+
+
+if __name__ == "__main__":
+    main()

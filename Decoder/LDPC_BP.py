@@ -1,6 +1,12 @@
+import matplotlib.pyplot as plt
 import torch
+import torch.nn as nn
+import torch.optim as optim
+import time
 
-
+mps_device = (torch.device("mps") if torch.backends.mps.is_available()
+              else (torch.device("cuda") if torch.backends.cuda.is_available()
+                    else torch.device("cpu")))
 
 class LDPCBeliefPropagation(torch.nn.Module):
     def __init__(self, llr):
@@ -20,22 +26,27 @@ class LDPCBeliefPropagation(torch.nn.Module):
         self.H = torch.tensor([[1, 1, 1, 0, 0, 0, 0],
                                [0, 0, 1, 1, 1, 0, 0],
                                [0, 1, 0, 0, 1, 1, 0],
-                               [1, 0, 0, 1, 0, 0, 1], ])
+                               [1, 0, 0, 1, 0, 0, 1], ], device=mps_device)
         self.num_check_nodes, self.num_variable_nodes = self.H.shape
         self.channel = llr.shape[2]
 
         # Initialize messages
-        self.messages_v_to_c = torch.ones((self.num_variable_nodes, self.num_check_nodes, self.channel), dtype=torch.float)
-        self.messages_c_to_v = torch.zeros((self.num_check_nodes, self.num_variable_nodes, self.channel), dtype=torch.float)
+        self.messages_v_to_c = torch.ones((self.num_variable_nodes, self.num_check_nodes, self.channel),
+                                          dtype=torch.float).to(mps_device)
+        self.messages_c_to_v = torch.zeros((self.num_check_nodes, self.num_variable_nodes, self.channel),
+                                           dtype=torch.float).to(mps_device)
 
     def forward(self, max_iter):
+        # start_time = time.time()
         for iteration in range(max_iter):
+
             # Variable to check node messages
             for i in range(self.num_variable_nodes):
                 for j in range(self.num_check_nodes):
                     # Compute messages from variable to check nodes
                     connected_checks = self.H[j, :] == 1
-                    product = torch.prod(torch.tanh(0.5 * self.messages_v_to_c[connected_checks, j]),dim=0, keepdim=True)
+                    product = torch.prod(torch.tanh(0.5 * self.messages_v_to_c[connected_checks, j]), dim=0,
+                                         keepdim=True)
                     self.messages_v_to_c[i, j] = torch.sign(self.llr[j]) * product
 
             # Check to variable node messages
@@ -48,29 +59,5 @@ class LDPCBeliefPropagation(torch.nn.Module):
 
         # Calculate the final estimated bits and only take first four bits
         estimated_bits = torch.sign(self.llr) * torch.prod(torch.tanh(0.5 * self.messages_c_to_v))
-        estimated_bits = torch.where(estimated_bits > 0, torch.tensor(1), torch.tensor(0))
-        estimated_bits = estimated_bits[:, :, 0:4]
 
         return estimated_bits
-
-
-# %%
-# input data LLR with 7-bit message
-nr_codewords = 1000000
-llr_output = torch.randint(-14, 14, size=(nr_codewords, 1, 7), dtype=torch.float) # torch.Size([10, 1, 7])
-
-# # Define LDPC parameters
-# H = torch.tensor([ [1, 1, 1, 0, 0, 0, 0],
-#                    [0, 0, 1, 1, 1, 0, 0],
-#                    [0, 1, 0, 0, 1, 1, 0],
-#                    [1, 0, 0, 1, 0, 0, 1],])
-iter = 10
-ldpc_bp = LDPCBeliefPropagation(llr_output)
-
-#loop all the llr and get result.
-# for i in range(llr_output.shape[0]):
-#     bp_data = llr_output[i]
-estimated_result = ldpc_bp(iter)
-final_result = estimated_result
-
-print(final_result)
