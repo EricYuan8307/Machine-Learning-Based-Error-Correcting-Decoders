@@ -80,8 +80,3 @@ print(final_result)
 #
 # print("LLR Demodulator Output:", llr_demodulator_output)
 # print("Estimated Bits:", estimated_bits)
-
-# Why is the belief propagation on GPU slower than CPU?
-# Reason: The input word is too small. 7-bit codeword is not enough to use the full power of GPU. CPU is more focusing
-# on this single number calculation. If the input becomes much larger like tensor[7,1,1000000], the HPC will performance
-# much better.
