@@ -182,92 +182,108 @@ def calculate_ber(compare_bits, origin_bits):
     return errors, ber
 
 
-# Code Generator
+# # Code Generator
+# num = 1000000
+# bits_info = generator(num)
+#
+# # Generation Encoded Data with 3 parity bits
+# encoder = hamming_encode()
+# encoded_codeword = encoder(bits_info)
+#
+# # Signal-to-noise ratio in dB
+# snr_dB = 15
+#
+# # Modulate the signal
+# modulator = bpsk_modulator()
+# modulated_noise_signal = modulator(encoded_codeword.to(mps_device), snr_dB)
+#
+# # Log-Likelihood Calculation
+# llr_output = llr(modulated_noise_signal, snr_dB)
+#
+# # LDPC Belief Propagation
+# ldpc_bp = LDPCBeliefPropagation(llr_output.to(mps_device))
+# LDPC_result = ldpc_bp(iter==20)
+# final_result = hard_decision_cutter(LDPC_result)
+#
+# # Count error number and BER:
+# bits_info = bits_info.to(mps_device) # bits_info: original signal
+#
+# error_num, BER = calculate_ber(final_result, bits_info)
+# print(BER)
+
+ # Count Error Number and BER:
 num = 1000000
-bits_info = generator(num)
-
-# Generation Encoded Data with 3 parity bits
-encoder = hamming_encode()
-encoded_codeword = encoder(bits_info)
-
-# Signal-to-noise ratio in dB
 snr_dB = 15
+encoder = hamming_encode()  # Generate Encoded Data with 3 parity bits
+modulator = bpsk_modulator() # Modulate the signal
 
-# Modulate the signal
-modulator = bpsk_modulator()
-modulated_noise_signal = modulator(encoded_codeword.to(mps_device), snr_dB)
 
-# Log-Likelihood Calculation
-llr_output = llr(modulated_noise_signal, snr_dB)
 
-# LDPC Belief Propagation
-iter = 20
-ldpc_bp = LDPCBeliefPropagation(llr_output.to(mps_device))
-LDPC_result = ldpc_bp(iter)
-final_result = hard_decision_cutter(LDPC_result)
+# calcualte the Error number and BER
+def main():
 
-# Count error number and BER:
-bits_info = bits_info.to(mps_device) # bits_info: original signal
+    SNR_opt = [0,1,2,3,4,5,10,15]
+    iter = 20
+    N = 1000000
 
-error_num, BER = calculate_ber(final_result, bits_info)
-print(BER)
+    for snr_dB in SNR_opt:
+        for i in range(10):
+            num = N + 5000*i
+            iter = 20
 
-# def main():
-#
-#     SNR_opt = [0,1,2,3,4,5,10,15]
-#     iter = 20
-#     N = 1000000
-#
-#     for snr_dB in SNR_opt:
-#         for i in range(10):
-#             num = N + 5000*i
-#             iter = 20
-#
-#             # Count Error Number and BER:
-#             encoder = hamming_encode()  # Generate Encoded Data with 3 parity bits
-#             modulator = bpsk_modulator() # Modulate the signal
-#             ldpc_bp = LDPCBeliefPropagation(llr_output.to(mps_device)) # LDPC Belief Propagation
-#
-#             # Full LDPC
-#             bits_info = generator(num)
-#             encoded_codeword = encoder(bits_info)
-#             modulated_noise_signal = modulator(encoded_codeword.to(mps_device), snr_dB)
-#             llr_output = llr(modulated_noise_signal, snr_dB)# Log-Likelihood Calculation
-#             final_result = ldpc_bp(iter)
-#
-#             bits_info = bits_info.to(mps_device)
-#             error_num_LDPC, BER_LDPC = calculate_ber(final_result, bits_info)
-#
-#             # De-Encoder, BPSK only
-#             bits_info = generator(num)
-#             modulated_noise_signal = modulator(bits_info.to(mps_device), snr_dB)
-#
-#             bits_info = bits_info.to(mps_device)  # bits_info: original signal
-#             error_num_BPSK, BER_BPSK = calculate_ber(modulated_noise_signal, bits_info)
-#
-#             # Maximum Likelihood
-#             bits_info = generator(num)
-#             encoded_codeword = encoder(bits_info)
-#             modulated_noise_signal = modulator(encoded_codeword.to(mps_device), snr_dB)
-#             llr_output = llr(modulated_noise_signal, snr_dB)  # Log-Likelihood Calculation
-#
-#             bits_info = bits_info.to(mps_device)  # bits_info: original signal
-#             error_num_ML, BER_ML = calculate_ber(final_result, bits_info)
-#
-#
-#
-#             # if error_num > 1000:
-#             #     print("snr_dB:", snr_dB)
-#             #     print(error_num)
-#             #     print(BER)
-#             #
-#             #     break
-#             # elif error_num <1000:
-#             #     continue
-#
-#
-# if __name__ == "__main__":
-#     main()
+            # Count Error Number and BER:
+            encoder = hamming_encode()  # Generate Encoded Data with 3 parity bits
+            modulator = bpsk_modulator() # Modulate the signal
+
+
+            # Full LDPC
+            bits_info = generator(num)
+            encoded_codeword = encoder(bits_info)
+            modulated_noise_signal = modulator(encoded_codeword.to(mps_device), snr_dB)
+            llr_output = llr(modulated_noise_signal, snr_dB)# Log-Likelihood Calculation
+            ldpc_bp = LDPCBeliefPropagation(llr_output.to(mps_device))  # LDPC Belief Propagation
+            LDPC_result = ldpc_bp(iter==20) # BP iteration time
+            LDPC_final = hard_decision_cutter(LDPC_result)
+
+            bits_info = bits_info.to(mps_device)
+            error_num_LDPC, BER_LDPC = calculate_ber(LDPC_final, bits_info)
+            print(f"LDPC: Error number is {error_num_LDPC} and BER is {BER_LDPC}")
+
+
+            # De-Encoder, BPSK only
+            bits_info = generator(num)
+            modulated_noise_signal = modulator(bits_info.to(mps_device), snr_dB)
+
+            bits_info = bits_info.to(mps_device)  # bits_info: original signal
+            error_num_BPSK, BER_BPSK = calculate_ber(modulated_noise_signal, bits_info)
+            print(f"LDPC: Error number is {error_num_BPSK} and BER is {BER_BPSK}")
+
+
+            # Maximum Likelihood
+            bits_info = generator(num)
+            encoded_codeword = encoder(bits_info)
+            modulated_noise_signal = modulator(encoded_codeword.to(mps_device), snr_dB)
+            llr_output = llr(modulated_noise_signal, snr_dB)  # Log-Likelihood Calculation
+            ML_final = hard_decision_cutter(llr_output)
+
+            bits_info = bits_info.to(mps_device)  # bits_info: original signal
+            error_num_ML, BER_ML = calculate_ber(ML_final, bits_info)
+            print(f"LDPC: Error number is {error_num_ML} and BER is {BER_ML}")
+
+
+
+            # if error_num > 1000:
+            #     print("snr_dB:", snr_dB)
+            #     print(error_num)
+            #     print(BER)
+            #
+            #     break
+            # elif error_num <1000:
+            #     continue
+
+
+if __name__ == "__main__":
+    main()
 
 
 
