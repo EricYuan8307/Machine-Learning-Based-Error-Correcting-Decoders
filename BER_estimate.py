@@ -182,6 +182,7 @@ def calculate_ber(compare_bits, origin_bits):
     return errors, ber
 
 
+# # LDPC Full Procedure
 # # Code Generator
 # num = 1000000
 # bits_info = generator(num)
@@ -202,33 +203,27 @@ def calculate_ber(compare_bits, origin_bits):
 #
 # # LDPC Belief Propagation
 # ldpc_bp = LDPCBeliefPropagation(llr_output.to(mps_device))
-# LDPC_result = ldpc_bp(iter==20)
-# final_result = hard_decision_cutter(LDPC_result)
+# LDPC_result = ldpc_bp(iter==20) # BP iteration time
+#
+# # Hard Decision:
+# LDPC_final = hard_decision_cutter(LDPC_result)
 #
 # # Count error number and BER:
-# bits_info = bits_info.to(mps_device) # bits_info: original signal
-#
-# error_num, BER = calculate_ber(final_result, bits_info)
-# print(BER)
-
- # Count Error Number and BER:
-num = 1000000
-snr_dB = 15
-encoder = hamming_encode()  # Generate Encoded Data with 3 parity bits
-modulator = bpsk_modulator() # Modulate the signal
+# bits_info = bits_info.to(mps_device)
+# error_num_LDPC, BER_LDPC = calculate_ber(LDPC_final, bits_info)
+# print(f"LDPC: Error number is {error_num_LDPC} and BER is {BER_LDPC}")
 
 
-
-# calcualte the Error number and BER
+# Calculate the Error number and BER
 def main():
 
     SNR_opt = [0,1,2,3,4,5,10,15]
-    iter = 20
     N = 1000000
 
-    for snr_dB in SNR_opt:
-        for i in range(10):
-            num = N + 5000*i
+    for i in range(SNR_opt):
+        snr_dB =SNR_opt[i]
+        for j in range(10):
+            num = N + 5000*j
             iter = 20
 
             # Count Error Number and BER:
