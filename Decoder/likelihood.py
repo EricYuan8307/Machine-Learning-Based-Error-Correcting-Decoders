@@ -18,24 +18,17 @@ def llr(signal, snr):
         llr: Log Likelihood Ratio (LLR) values.
     """
 
-    # Assuming Binary Phase Shift Keying (BPSK) modulation
+    # BPSK modulation
 
-    # p0 = snr / 10
-    # p1 = 10 ** p0
-    # p2 = 1/p1
-    # p3 = np.sqrt(p2)
-    # noise_std = p3
-
-    noise_std = torch.sqrt(torch.tensor((1.0)/(10 ** (snr / 10)))).to(mps_device)
+    noise_std = torch.sqrt(torch.tensor((1.0)/(10 ** (snr / 10)/2))).to(mps_device)
 
     # Calculate the LLR
     llr = 2 * signal / (noise_std**2)
 
-    # return llr_values, llr
     return llr
 
 # received_signal = torch.tensor(1)
-# snr_value = 10.0
+# snr_value = 20.0
 #
 # llr_values = llr(received_signal, snr_value)
 # print(f"LLR Values: {llr_values.item()}")
