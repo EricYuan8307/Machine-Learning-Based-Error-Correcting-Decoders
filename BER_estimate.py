@@ -107,7 +107,7 @@ def llr(signal, snr):
 
 
 class LDPCBeliefPropagation(torch.nn.Module):
-    def __init__(self, H, llr):
+    def __init__(self, llr):
         """
         LDPC Belief Propagation.
 
@@ -121,8 +121,11 @@ class LDPCBeliefPropagation(torch.nn.Module):
 
         super(LDPCBeliefPropagation, self).__init__()
         self.llr = llr
-        self.H = H
-        self.num_check_nodes, self.num_variable_nodes = H.shape
+        self.H = torch.tensor([ [1, 1, 1, 0, 0, 0, 0],
+                                [0, 0, 1, 1, 1, 0, 0],
+                                [0, 1, 0, 0, 1, 1, 0],
+                                [1, 0, 0, 1, 0, 0, 1],], device=mps_device)
+        self.num_check_nodes, self.num_variable_nodes = self.H.shape
         self.channel = llr.shape[2]
 
         # Initialize messages
@@ -197,16 +200,12 @@ modulated_noise_signal = modulator(encoded_codeword.to(mps_device), snr_dB)
 llr_output = llr(modulated_noise_signal, snr_dB)
 
 # LDPC Belief Propagation
-H = torch.tensor([ [1, 1, 1, 0, 0, 0, 0],
-                   [0, 0, 1, 1, 1, 0, 0],
-                   [0, 1, 0, 0, 1, 1, 0],
-                   [1, 0, 0, 1, 0, 0, 1],], device=mps_device)
 iter = 20
-ldpc_bp = LDPCBeliefPropagation(H, llr_output.to(mps_device))
+ldpc_bp = LDPCBeliefPropagation(llr_output.to(mps_device))
 
 final_result, time = ldpc_bp(iter)
 
-# print(final_result)
+print(final_result)
 # print(f"The Entire LDPC Belief propagation runs {time} seconds")
 
 # Count error number and BER:
@@ -215,3 +214,13 @@ decoded_bits = final_result #output from Maximum Likelihood
 
 error_num, BER = calculate_ber(decoded_bits, bits_info)
 print(BER)
+
+# def main():
+#
+#     BER = 0
+#     iter = 20
+#     num = 1000000
+
+
+
+
