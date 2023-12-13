@@ -20,17 +20,12 @@ class bpsk_modulator(torch.nn.Module):
 
     def forward(self, codeword, snr_dB):
         # data = torch.tensor(data, dtype=float)
-        data = codeword.to(dtype=torch.float).to(mps_device)
-
-        # for i in range(data.shape[0]):
-        bits = data
+        bits = codeword.to(dtype=torch.float).to(mps_device)
         bits = 2 * bits - 1
 
         # Add Gaussian noise to the signal
         noise_power = torch.tensor(10 ** (snr_dB / 10)).to(mps_device)
         noise = torch.sqrt(1 / (2 * noise_power)) * torch.randn(bits.shape).to(mps_device)
         noised_signal = bits + noise
-        # noised_signal = bits
-        data = noised_signal
 
-        return data
+        return noised_signal
