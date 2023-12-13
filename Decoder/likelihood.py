@@ -39,7 +39,7 @@ def llr(signal, snr):
 #
 # llr_values = llr(received_signal, snr_value)
 # print(f"LLR Values: {llr_values.item()}")
-#
+
 #
 # # received_signal = 1
 # # snr_value = 10

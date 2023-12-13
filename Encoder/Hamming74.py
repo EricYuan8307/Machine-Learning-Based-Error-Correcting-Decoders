@@ -23,8 +23,7 @@ class hamming_encoder(torch.nn.Module):
             [0, 0, 0, 1],
             [1, 1, 0, 1],
             [1, 0, 1, 1],
-            [0, 1, 1, 1],
-        ], dtype=torch.int)
+            [0, 1, 1, 1],], dtype=torch.int)
 
     def forward(self, input_data):
         # Ensure input_data has shape (batch_size)

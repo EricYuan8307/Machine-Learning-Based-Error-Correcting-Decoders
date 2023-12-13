@@ -6,7 +6,7 @@ from Encoder.BPSK import bpsk_modulator
 from Encoder.Hamming74 import hamming_encoder
 from Decoder.likelihood import llr
 from Decoder.LDPC_BP import LDPCBeliefPropagation
-from Decoder.HardDecision import hard_decision_cutter
+from Decoder.HardDecision import hard_decision_cutter, hard_decision_BPSK
 from Estimation.BitErrorRate import calculate_ber
 
 
@@ -31,9 +31,7 @@ def main():
 
             bits_info = generator(N)
             modulated_noise_signal = modulator(bits_info.to(mps_device), snr_dB)
-            # print("modulated_noise_signal", modulated_noise_signal)
-            BPSK_final = hard_decision_cutter(modulated_noise_signal)
-            # print("BPSK",BPSK_final)
+            BPSK_final = hard_decision_BPSK(modulated_noise_signal)
 
             BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info.to(mps_device))
 
