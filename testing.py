@@ -3,7 +3,7 @@ import torch
 
 
 class LDPCBeliefPropagation(torch.nn.Module):
-    def __init__(self, H, llr):
+    def __init__(self, llr):
         """
         LDPC Belief Propagation.
 
@@ -17,8 +17,11 @@ class LDPCBeliefPropagation(torch.nn.Module):
 
         super(LDPCBeliefPropagation, self).__init__()
         self.llr = llr
-        self.H = H
-        self.num_check_nodes, self.num_variable_nodes = H.shape
+        self.H = torch.tensor([[1, 1, 1, 0, 0, 0, 0],
+                               [0, 0, 1, 1, 1, 0, 0],
+                               [0, 1, 0, 0, 1, 1, 0],
+                               [1, 0, 0, 1, 0, 0, 1], ])
+        self.num_check_nodes, self.num_variable_nodes = self.H.shape
         self.channel = llr.shape[2]
 
         # Initialize messages
@@ -32,9 +35,6 @@ class LDPCBeliefPropagation(torch.nn.Module):
                 for j in range(self.num_check_nodes):
                     # Compute messages from variable to check nodes
                     connected_checks = self.H[j, :] == 1
-                    # product0 = 0.5 * self.messages_v_to_c[connected_checks, j] # torch.Size([3, 10])
-                    # product1 = torch.tanh(product0) # torch.Size([3, 10])
-                    # product = torch.prod(product1,dim=0, keepdim=True) # torch.Size([]) a number
                     product = torch.prod(torch.tanh(0.5 * self.messages_v_to_c[connected_checks, j]),dim=0, keepdim=True)
                     self.messages_v_to_c[i, j] = torch.sign(self.llr[j]) * product
 
@@ -58,20 +58,14 @@ class LDPCBeliefPropagation(torch.nn.Module):
 # input data LLR with 7-bit message
 nr_codewords = 1000000
 llr_output = torch.randint(-14, 14, size=(nr_codewords, 1, 7), dtype=torch.float) # torch.Size([10, 1, 7])
-print(llr_output.shape)
 
-# Define LDPC parameters
-H = torch.tensor([ [1, 1, 1, 0, 0, 0, 0],
-                   [0, 0, 1, 1, 1, 0, 0],
-                   [0, 1, 0, 0, 1, 1, 0],
-                   [1, 0, 0, 1, 0, 0, 1],])
+# # Define LDPC parameters
+# H = torch.tensor([ [1, 1, 1, 0, 0, 0, 0],
+#                    [0, 0, 1, 1, 1, 0, 0],
+#                    [0, 1, 0, 0, 1, 1, 0],
+#                    [1, 0, 0, 1, 0, 0, 1],])
 iter = 10
-ldpc_bp = LDPCBeliefPropagation(H, llr_output)
-
-
-# Store the final result from LDPC
-tensor_size = torch.Size([1, 4])
-final_result = torch.zeros(tensor_size)
+ldpc_bp = LDPCBeliefPropagation(llr_output)
 
 #loop all the llr and get result.
 # for i in range(llr_output.shape[0]):
@@ -79,4 +73,4 @@ final_result = torch.zeros(tensor_size)
 estimated_result = ldpc_bp(iter)
 final_result = estimated_result
 
-print(final_result.shape)
+print(final_result)
