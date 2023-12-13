@@ -135,7 +135,7 @@ class LDPCBeliefPropagation(torch.nn.Module):
                                            dtype=torch.float).to(mps_device)
 
     def forward(self, max_iter):
-        start_time = time.time()
+        # start_time = time.time()
         for iteration in range(max_iter):
 
             # Variable to check node messages
@@ -157,15 +157,16 @@ class LDPCBeliefPropagation(torch.nn.Module):
 
         # Calculate the final estimated bits and only take first four bits
         estimated_bits = torch.sign(self.llr) * torch.prod(torch.tanh(0.5 * self.messages_c_to_v))
-        tensor_1 = torch.tensor(1, device=mps_device)
-        tensor_0 = torch.tensor(0, device=mps_device)
-        estimated_bits = torch.where(estimated_bits > 0, tensor_1, tensor_0)
-        estimated_bits = estimated_bits[:, :, 0:4]
 
-        end_time = time.time()
-        elapsed_time = end_time - start_time
+        return estimated_bits
 
-        return estimated_bits, elapsed_time
+def hard_decision_cutter(likelihood):
+    tensor_1 = torch.tensor(1, device=mps_device)
+    tensor_0 = torch.tensor(0, device=mps_device)
+    estimated_bits = torch.where(likelihood > 0, tensor_1, tensor_0)
+    estimated_bits = estimated_bits[:, :, 0:4]
+
+    return estimated_bits
 
 # Calculate the BER compared to output of original
 def calculate_ber(compare_bits, origin_bits):
@@ -202,25 +203,71 @@ llr_output = llr(modulated_noise_signal, snr_dB)
 # LDPC Belief Propagation
 iter = 20
 ldpc_bp = LDPCBeliefPropagation(llr_output.to(mps_device))
-
-final_result, time = ldpc_bp(iter)
-
-print(final_result)
-# print(f"The Entire LDPC Belief propagation runs {time} seconds")
+LDPC_result = ldpc_bp(iter)
+final_result = hard_decision_cutter(LDPC_result)
 
 # Count error number and BER:
 bits_info = bits_info.to(mps_device) # bits_info: original signal
-decoded_bits = final_result #output from Maximum Likelihood
 
-error_num, BER = calculate_ber(decoded_bits, bits_info)
+error_num, BER = calculate_ber(final_result, bits_info)
 print(BER)
 
 # def main():
 #
-#     BER = 0
+#     SNR_opt = [0,1,2,3,4,5,10,15]
 #     iter = 20
-#     num = 1000000
-
+#     N = 1000000
+#
+#     for snr_dB in SNR_opt:
+#         for i in range(10):
+#             num = N + 5000*i
+#             iter = 20
+#
+#             # Count Error Number and BER:
+#             encoder = hamming_encode()  # Generate Encoded Data with 3 parity bits
+#             modulator = bpsk_modulator() # Modulate the signal
+#             ldpc_bp = LDPCBeliefPropagation(llr_output.to(mps_device)) # LDPC Belief Propagation
+#
+#             # Full LDPC
+#             bits_info = generator(num)
+#             encoded_codeword = encoder(bits_info)
+#             modulated_noise_signal = modulator(encoded_codeword.to(mps_device), snr_dB)
+#             llr_output = llr(modulated_noise_signal, snr_dB)# Log-Likelihood Calculation
+#             final_result = ldpc_bp(iter)
+#
+#             bits_info = bits_info.to(mps_device)
+#             error_num_LDPC, BER_LDPC = calculate_ber(final_result, bits_info)
+#
+#             # De-Encoder, BPSK only
+#             bits_info = generator(num)
+#             modulated_noise_signal = modulator(bits_info.to(mps_device), snr_dB)
+#
+#             bits_info = bits_info.to(mps_device)  # bits_info: original signal
+#             error_num_BPSK, BER_BPSK = calculate_ber(modulated_noise_signal, bits_info)
+#
+#             # Maximum Likelihood
+#             bits_info = generator(num)
+#             encoded_codeword = encoder(bits_info)
+#             modulated_noise_signal = modulator(encoded_codeword.to(mps_device), snr_dB)
+#             llr_output = llr(modulated_noise_signal, snr_dB)  # Log-Likelihood Calculation
+#
+#             bits_info = bits_info.to(mps_device)  # bits_info: original signal
+#             error_num_ML, BER_ML = calculate_ber(final_result, bits_info)
+#
+#
+#
+#             # if error_num > 1000:
+#             #     print("snr_dB:", snr_dB)
+#             #     print(error_num)
+#             #     print(BER)
+#             #
+#             #     break
+#             # elif error_num <1000:
+#             #     continue
+#
+#
+# if __name__ == "__main__":
+#     main()
 
 
 
