@@ -8,4 +8,4 @@ def calculate_ber(transmitted_bits, origin_bits):
     # Calculate the Bit Error Rate (BER)
     ber = errors / transmitted_bits.numel()
 
-    return ber
+    return ber, errors
