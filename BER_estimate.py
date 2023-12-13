@@ -51,9 +51,12 @@ def main():
 
             bits_info = generator(N)
             encoded_codeword = encoder(bits_info)
-            modulated_noise_signal = modulator(encoded_codeword.to(mps_device), snr_dB)
+            modulated_noise_signal = modulator(encoded_codeword.to(mps_device), snr_dB=15)
             llr_output = llr(modulated_noise_signal, snr_dB)  # Log-Likelihood Calculation
-            # LLR does not work. The output is equal to input.
+
+            # # Output of LLR is totally same as Input
+            # print("modulated_noise_signal:", modulated_noise_signal)
+            # print("llr_output:", llr_output)
 
             ML_final = hard_decision_cutter(llr_output)
 
