@@ -1,3 +1,5 @@
+from unittest import result
+
 import matplotlib.pyplot as plt
 import torch
 import numpy as np
@@ -24,14 +26,16 @@ def generator(nr_codewords):
 # Calculate the Error number and BER
 def main():
     result = np.zeros((3,10))
-    SNR_opt = [0,1,2,3,4,5,6,7,8,9]
+    SNR_opt_BPSK = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    SNR_opt_ML = [0, 1, 2, 3, 4, 5, 6]
+    SNR_opt_BP = [0, 1, 2, 3, 4, 5, 6, 7]
     N = num
 
-    for i in range(len(SNR_opt)):
-        snr_dB =SNR_opt[i]
+    # De-Encoder, BPSK only
+    for i in range(len(SNR_opt_BPSK)):
+        snr_dB =SNR_opt_BPSK[i]
 
-        # De-Encoder, BPSK only
-        for k in range(10):
+        for j in range(10):
             modulator = bpsk_modulator()
 
             bits_info = generator(N)
@@ -50,8 +54,11 @@ def main():
                 result[0, i] = BER_BPSK
                 break
 
-        # Maximum Likelihood
-        for m in range(10):
+    # Maximum Likelihood
+    for i in range(len(SNR_opt_ML)):
+        snr_dB = SNR_opt_ML[i]
+
+        for j in range(10):
             encoder = hamming_encoder()
             modulator = bpsk_modulator()
             decoder = HammingDecoder()
@@ -103,6 +110,9 @@ def main():
                 break
 
         # BP
+    for i in range(len(SNR_opt_BP)):
+        snr_dB = SNR_opt_BP[i]
+
         for j in range(30):
 
             encoder = hamming_encoder()
@@ -117,13 +127,12 @@ def main():
 
             ldpc_bp = LDPCBeliefPropagation(llr_output.to(mps_device))
             LDPC_result = ldpc_bp(iter) # LDPC
-            print(LDPC_result)
             LDPC_HD = hard_decision(LDPC_result) #Hard Decision
             LDPC_final = decoder(LDPC_HD)
 
             BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info.to(mps_device)) # BER calculation
 
-            if error_num_LDPC < 1000:
+            if error_num_LDPC < 1000 & N <= 40000000:
                 N += 10000000
                 print(f"the code number is {N}")
 
@@ -149,10 +158,9 @@ if __name__ == "__main__":
     result_all = np.zeros((3, 10))
 
     result_all = main()
-    print(result_all)
 
     # Create the Plot
-    plt.semilogy(result_all.T,marker='x')
+    plt.semilogy(result_all.T,marker='.')
 
     plt.xlabel('SNR')
     plt.ylabel('BER')
