@@ -21,6 +21,7 @@ class bpsk_modulator(torch.nn.Module):
     def forward(self, codeword):
         # data = torch.tensor(data, dtype=float)
         bits = codeword.to(dtype=torch.float).to(mps_device)
+        bits = bits.to(dtype=torch.int)
         bits = 2 * bits - 1
 
         return bits
