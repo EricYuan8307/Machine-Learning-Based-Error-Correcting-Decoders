@@ -1,8 +1,4 @@
-import matplotlib.pyplot as plt
 import torch
-import torch.nn as nn
-import torch.optim as optim
-import time
 
 mps_device = (torch.device("mps") if torch.backends.mps.is_available()
               else (torch.device("cuda") if torch.backends.cuda.is_available()
