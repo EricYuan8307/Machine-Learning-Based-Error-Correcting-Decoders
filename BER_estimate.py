@@ -25,8 +25,8 @@ def generator(nr_codewords):
 def main():
     result = np.zeros((3,10))
     SNR_opt = [0,1,2,3,4,5,6,7,8,9]
-    # SNR_opt = [10, 15]
     N = num
+
     for i in range(len(SNR_opt)):
         snr_dB =SNR_opt[i]
 
@@ -117,6 +117,7 @@ def main():
 
             ldpc_bp = LDPCBeliefPropagation(llr_output.to(mps_device))
             LDPC_result = ldpc_bp(iter) # LDPC
+            print(LDPC_result)
             LDPC_HD = hard_decision(LDPC_result) #Hard Decision
             LDPC_final = decoder(LDPC_HD)
 
@@ -144,7 +145,7 @@ if __name__ == "__main__":
     #Hpyer parameters
     num = 10000000 #how many original need to generate
     snr_dB = 10  # Signal-to-noise ratio in dB
-    iter = 20 # LDPC Belief Propagation iteration time
+    iter = 5 # LDPC Belief Propagation iteration time
     result_all = np.zeros((3, 10))
 
     result_all = main()
