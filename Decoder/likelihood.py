@@ -19,11 +19,18 @@ def llr(signal, snr):
     """
 
     # BPSK modulation
+    # Calculate channel noise standard deviation
+    # ch_noise_sigma = torch.sqrt(torch.tensor(1 / (10 ** (snr / 10.0)) / 2.0))
+    ch_noise_sigma = torch.tensor(10 ** (snr / 10.0))
 
-    noise_std = torch.sqrt(torch.tensor((1.0)/(10 ** (snr / 10)/2))).to(mps_device)
+
+    # Calculate LLR
+    llr = signal * 2.0 * (ch_noise_sigma).to(mps_device)
+
+    # noise_std = torch.sqrt(torch.tensor((1.0)/(10 ** (snr / 10)/2)))
 
     # Calculate the LLR
-    llr = 2 * signal / (noise_std**2)
+    # llr = 2 * signal / (noise_std**2)
 
     return llr
 
