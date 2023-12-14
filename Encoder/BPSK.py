@@ -14,12 +14,11 @@ class bpsk_modulator(torch.nn.Module):
             codeword: data received from the Hamming(7,4) encoder(Tensor)
 
         Returns:
-            data: Tensor contain all data modulated and add noise
+            bits: Tensor contain all data modulated and add noise
         """
         super(bpsk_modulator, self).__init__()
 
     def forward(self, codeword):
-        # data = torch.tensor(data, dtype=float)
         bits = codeword.to(dtype=torch.float).to(mps_device)
         bits = bits.to(dtype=torch.int)
         bits = 2 * bits - 1
