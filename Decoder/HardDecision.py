@@ -10,13 +10,3 @@ def hard_decision(bitcodeword):
     estimated_bits = torch.where(bitcodeword > 0, tensor_1, tensor_0)
 
     return estimated_bits
-
-# # input0 = torch.randn([10000000, 1, 7]).to(mps_device)
-# input0 = torch.randint(0, 2, size = [1, 1, 7],dtype=int).to(mps_device)
-#
-# input1 = hard_decision_cutter(input0)
-# #
-# #
-# #
-# print("input0",input0)
-# print(input1)
