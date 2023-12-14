@@ -66,38 +66,17 @@ def main():
             # ML:
             bits_info = generator(N)
             encoded_codeword = encoder(bits_info)
-            # print("encoded_codeword",encoded_codeword)
 
             modulated_signal = modulator(encoded_codeword.to(mps_device))
-            # print("modulated_signal",modulated_signal)
 
             modulated_noise_signal = AWGN(modulated_signal, snr_dB)
-            # print("modulated_noise_signal",modulated_noise_signal)
 
             llr_output = llr(modulated_noise_signal, snr_dB)  # Log-Likelihood Calculation
-            # print("llr_output",llr_output)
 
             HD_final = hard_decision(llr_output)
-            # print("HD_final",HD_final)
             ML_final = decoder(HD_final)
-            # print("ML_final",ML_final)
-
-            # print(ML_final)
-
-            # # Noise Measurment
-            # ch_noise = modulated_noise_signal - modulated_signal
-            # # Calculate noise power
-            # noise_power = torch.mean(ch_noise ** 2)
-            #
-            # # Calculate practical SNR
-            # practical_snr = 10 * torch.log10(1 / (noise_power * 2.0))
-            # print('Practical snr: %.2f' % practical_snr.item())
 
             BER_ML, error_num_ML = calculate_ber(ML_final, bits_info.to(mps_device))
-
-            # print(
-            #     f"ML: When SNR is {snr_dB} and total bit number is {N*4}, error number is {error_num_ML} and BER is {BER_ML}")
-            # result[1, i] = BER_ML
 
             if error_num_ML < 1000:
                 N += 10000000
