@@ -37,14 +37,13 @@ def main():
     #     for j in range(10):
     #         modulator = bpsk_modulator()
     #
-    #         bits_info = generator(N)
-    #         modulated_signal = modulator(bits_info.to(device), device)
+    #         bits_info = generator(N).to(device)
+    #         modulated_signal = modulator(bits_info, device)
     #         modulated_noise_signal = AWGN(modulated_signal, snr_dB, device)
     #
     #         BPSK_final = hard_decision(modulated_noise_signal, device)
     #
-    #         BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info.to(device))
-    #
+    #         BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info)
     #         if error_num_BPSK < 100:
     #             N += 10000000
     #             print(f"the code number is {N}")
@@ -66,8 +65,8 @@ def main():
     #
     #         # ML:
     #         bits_info = generator(N)
-    #         encoded_codeword = encoder(bits_info)
-    #         modulated_signal = modulator(encoded_codeword.to(device), device)
+    #         encoded_codeword = encoder(bits_info).to(device)
+    #         modulated_signal = modulator(encoded_codeword, device)
     #         modulated_noise_signal = AWGN(modulated_signal, snr_dB, device)
     #
     #         llr_output = llr(modulated_noise_signal, snr_dB)  # Log-Likelihood Calculation
@@ -75,7 +74,6 @@ def main():
     #         ML_final = decoder(HD_final)
     #
     #         BER_ML, error_num_ML = calculate_ber(ML_final, bits_info.to(device))
-    #
     #         if error_num_ML < 100 & N <= 40000000:
     #             N += 10000000
     #             print(f"the code number is {N}")
@@ -98,19 +96,19 @@ def main():
             decoder = HammingDecoder(device)
 
             bits_info = generator(N)  # Code Generator
-            encoded_codeword = encoder(bits_info) # Hamming(7,4) Encoder
-            modulated_signal = modulator(encoded_codeword.to(device), device) # Modulate signal
+            encoded_codeword = encoder(bits_info).to(device) # Hamming(7,4) Encoder
+            modulated_signal = modulator(encoded_codeword, device) # Modulate signal
             modulated_noise_signal = AWGN(modulated_signal, snr_dB, device) # Add Noise
-            llr_output = llr(modulated_noise_signal, snr_dB) #LLR
 
-            ldpc_bp = LDPCBeliefPropagation(llr_output.to(device), device)
+            llr_output = llr(modulated_noise_signal, snr_dB).to(device) #LLR
+            ldpc_bp = LDPCBeliefPropagation(llr_output, device)
             LDPC_result = ldpc_bp(iter) # LDPC
             LDPC_HD = hard_decision(LDPC_result, device) #Hard Decision
             LDPC_final = decoder(LDPC_HD)
 
             BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info.to(device)) # BER calculation
 
-            if error_num_LDPC < 100:
+            if error_num_LDPC < 100 & N <= 40000000:
                 N += 10000000
                 print(f"the code number is {N}")
 
