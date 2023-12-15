@@ -6,10 +6,11 @@ class HammingDecoder(torch.nn.Module):
         LDPC Belief Propagation.
 
         Args:
-            H: Low density parity code for building tanner graph.
+            C: Use this matrix to calculate the closest hamming distance.
+            mps_device: Move Data on Specific device for computing(GPU).
 
         Returns:
-            estimated_bits: the output result from belief propagation.
+            result: The final estimate result.
         """
 
         super(HammingDecoder, self).__init__()

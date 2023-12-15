@@ -1,6 +1,5 @@
 import torch
 
-
 class LDPCBeliefPropagation(torch.nn.Module):
     def __init__(self, llr, mps_device):
         """
@@ -9,6 +8,7 @@ class LDPCBeliefPropagation(torch.nn.Module):
         Args:
             H: Low density parity code for building tanner graph.
             llr: Log Likelihood Ratio (LLR) values. Only for 7-bit codeword.
+            mps_device: Move Data on Specific device for computing(GPU).
 
         Returns:
             estimated_bits: the output result from belief propagation.
