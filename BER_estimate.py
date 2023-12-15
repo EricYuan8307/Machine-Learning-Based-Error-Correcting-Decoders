@@ -1,5 +1,3 @@
-from unittest import result
-
 import matplotlib.pyplot as plt
 import torch
 import numpy as np
@@ -40,11 +38,12 @@ def main():
     #         modulator = bpsk_modulator()
     #
     #         bits_info = generator(N)
-    #         modulated_signal = modulator(bits_info.to(mps_device))
-    #         modulated_noise_signal = AWGN(modulated_signal, snr_dB)
-    #         BPSK_final = hard_decision(modulated_noise_signal)
+    #         modulated_signal = modulator(bits_info.to(device), device)
+    #         modulated_noise_signal = AWGN(modulated_signal, snr_dB, device)
     #
-    #         BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info.to(mps_device))
+    #         BPSK_final = hard_decision(modulated_noise_signal, device)
+    #
+    #         BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info.to(device))
     #
     #         if error_num_BPSK < 100:
     #             N += 10000000
@@ -55,6 +54,7 @@ def main():
     #             result[0, i] = BER_BPSK
     #             break
 
+
     # # Maximum Likelihood
     # for i in range(len(SNR_opt_ML)):
     #     snr_dB = SNR_opt_ML[i]
@@ -62,22 +62,19 @@ def main():
     #     for j in range(10):
     #         encoder = hamming_encoder()
     #         modulator = bpsk_modulator()
-    #         decoder = HammingDecoder()
+    #         decoder = HammingDecoder(device)
     #
     #         # ML:
     #         bits_info = generator(N)
     #         encoded_codeword = encoder(bits_info)
-    #
-    #         modulated_signal = modulator(encoded_codeword.to(mps_device))
-    #
-    #         modulated_noise_signal = AWGN(modulated_signal, snr_dB)
+    #         modulated_signal = modulator(encoded_codeword.to(device), device)
+    #         modulated_noise_signal = AWGN(modulated_signal, snr_dB, device)
     #
     #         llr_output = llr(modulated_noise_signal, snr_dB)  # Log-Likelihood Calculation
-    #
-    #         HD_final = hard_decision(llr_output)
+    #         HD_final = hard_decision(llr_output, device)
     #         ML_final = decoder(HD_final)
     #
-    #         BER_ML, error_num_ML = calculate_ber(ML_final, bits_info.to(mps_device))
+    #         BER_ML, error_num_ML = calculate_ber(ML_final, bits_info.to(device))
     #
     #         if error_num_ML < 100 & N <= 40000000:
     #             N += 10000000
@@ -89,6 +86,7 @@ def main():
     #             result[1, i] = BER_ML
     #             break
 
+
     # Belief Propagation
     for i in range(len(SNR_opt_BP)):
         snr_dB = SNR_opt_BP[i]
@@ -97,20 +95,20 @@ def main():
 
             encoder = hamming_encoder()
             modulator = bpsk_modulator()
-            decoder = HammingDecoder()
+            decoder = HammingDecoder(device)
 
             bits_info = generator(N)  # Code Generator
             encoded_codeword = encoder(bits_info) # Hamming(7,4) Encoder
-            modulated_signal = modulator(encoded_codeword.to(mps_device)) # Modulate signal
-            modulated_noise_signal = AWGN(modulated_signal, snr_dB) # Add Noise
+            modulated_signal = modulator(encoded_codeword.to(device), device) # Modulate signal
+            modulated_noise_signal = AWGN(modulated_signal, snr_dB, device) # Add Noise
             llr_output = llr(modulated_noise_signal, snr_dB) #LLR
 
-            ldpc_bp = LDPCBeliefPropagation(llr_output.to(mps_device))
+            ldpc_bp = LDPCBeliefPropagation(llr_output.to(device), device)
             LDPC_result = ldpc_bp(iter) # LDPC
-            LDPC_HD = hard_decision(LDPC_result) #Hard Decision
+            LDPC_HD = hard_decision(LDPC_result, device) #Hard Decision
             LDPC_final = decoder(LDPC_HD)
 
-            BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info.to(mps_device)) # BER calculation
+            BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info.to(device)) # BER calculation
 
             if error_num_LDPC < 100:
                 N += 10000000
@@ -127,7 +125,7 @@ def main():
 
 
 if __name__ == "__main__":
-    mps_device = (torch.device("mps") if torch.backends.mps.is_available()
+    device = (torch.device("mps") if torch.backends.mps.is_available()
                                     else (torch.device("cuda") if torch.backends.cuda.is_available()
                                           else torch.device("cpu")))
 

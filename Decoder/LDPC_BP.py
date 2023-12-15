@@ -1,11 +1,11 @@
 import torch
 
-mps_device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
+# mps_device = (torch.device("mps") if torch.backends.mps.is_available()
+#               else (torch.device("cuda") if torch.backends.cuda.is_available()
+#                     else torch.device("cpu")))
 
 class LDPCBeliefPropagation(torch.nn.Module):
-    def __init__(self, llr):
+    def __init__(self, llr, mps_device):
         """
         LDPC Belief Propagation.
 
@@ -32,7 +32,7 @@ class LDPCBeliefPropagation(torch.nn.Module):
         self.messages_c_to_v = torch.zeros((self.num_check_nodes, self.num_variable_nodes, self.channel),
                                            dtype=torch.float).to(mps_device)
 
-    def forward(self, max_iter):
+    def forward(self, max_iter,):
         # start_time = time.time()
         for iteration in range(max_iter):
 

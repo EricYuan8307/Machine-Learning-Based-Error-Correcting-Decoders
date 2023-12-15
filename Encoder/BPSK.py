@@ -1,9 +1,5 @@
 import torch
 
-mps_device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
-
 # BPSK Modulator and Add Noise After Modulator
 class bpsk_modulator(torch.nn.Module):
     def __init__(self):
@@ -18,7 +14,7 @@ class bpsk_modulator(torch.nn.Module):
         """
         super(bpsk_modulator, self).__init__()
 
-    def forward(self, codeword):
+    def forward(self, codeword, mps_device):
         bits = codeword.to(dtype=torch.float).to(mps_device)
         bits = bits.to(dtype=torch.int)
         bits = 2 * bits - 1

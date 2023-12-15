@@ -1,12 +1,7 @@
 import torch
 
-mps_device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
-
-
 class HammingDecoder(torch.nn.Module):
-    def __init__(self,):
+    def __init__(self, mps_device):
         """
         LDPC Belief Propagation.
 
