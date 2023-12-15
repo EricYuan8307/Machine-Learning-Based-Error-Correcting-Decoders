@@ -17,13 +17,13 @@ class hamming_encoder(torch.nn.Module):
 
         # Define the generator matrix for Hamming(7,4)
         self.generator_matrix = torch.tensor([
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1],
             [1, 1, 0, 1],
             [1, 0, 1, 1],
-            [0, 1, 1, 1],], dtype=torch.int)
+            [1, 0, 0, 0],
+            [0, 1, 1, 1],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],], dtype=torch.int)
 
     def forward(self, input_data):
         # Ensure input_data has shape (batch_size)
@@ -33,3 +33,9 @@ class hamming_encoder(torch.nn.Module):
         result_tensor = torch.matmul(input_data, self.generator_matrix.t()) % 2
 
         return result_tensor
+
+# bits = torch.tensor([[[1, 1, 0, 1]],
+#                          [[0, 1, 0, 0,]]], dtype=torch.int32)
+#
+# encoder = hamming_encoder()
+# print(encoder(bits))
