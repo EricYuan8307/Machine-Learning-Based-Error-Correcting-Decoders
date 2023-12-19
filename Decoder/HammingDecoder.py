@@ -32,14 +32,14 @@ class Hamming74decoder(torch.nn.Module):
 #           else (torch.device("cuda") if torch.backends.cuda.is_available()
 #                 else torch.device("cpu")))
 #
-# llr = torch.tensor([[[1, -1, 0.5, -2, 5, 6, 1.2]],
-#                      [[-0.1, 1, -0.2, 0.5, -5, 6, -11]]], dtype=torch.float, device=device)
+# # llr = torch.tensor([[[1, -1, 0.5, -2, 5, 6, 1.2]],
+# #                      [[-0.1, 1, -0.2, 0.5, -5, 6, -11]]], dtype=torch.float, device=device)
 #
-# # llr = torch.randint(-2, 2, size=(2, 1, 7), dtype=torch.float, device=device)
+# llr = torch.randint(-2, 2, size=(2, 1, 7), dtype=torch.float, device=device)
 # print("llr:",llr)
 #
-# sddecoder = SoftDecisionDecoder(device)
-# sdcodebook = sddecoder(llr)
+# decoder = Hamming74decoder(device)
+# bitresult = decoder(llr)
 #
-# print("sdcodebook:",sdcodebook)
-# print("sddecoder:",sdcodebook.shape)
+# print("sdcodebook:",bitresult)
+# print("sddecoder:",bitresult.shape)
