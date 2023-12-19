@@ -23,7 +23,6 @@ class Hamming74decoder(torch.nn.Module):
     def forward(self, input):
 
         result = torch.matmul(input.to(torch.float), self.r.T).to(torch.int)
-        result = result.unsqueeze(1)
 
         return result
 
