@@ -9,7 +9,8 @@ from Decoder.LDPC_BP import LDPCBeliefPropagation
 from Decoder.HardDecision import hard_decision
 from Transmit.noise import AWGN
 from Estimation.BitErrorRate import calculate_ber
-from Decoder.HammingDecoder import HammingDecoder
+from Decoder.HammingDecoder import Hamming74decoder
+from Decoder.MaximumLikelihood import HardDecisionML, SoftDecisionML
 
 
 # Code Generation
@@ -54,68 +55,68 @@ def main():
                 break
 
 
-    # Maximum Likelihood
-    for i in range(len(SNR_opt_ML)):
-        snr_dB = SNR_opt_ML[i]
+    # # Maximum Likelihood
+    # for i in range(len(SNR_opt_ML)):
+    #     snr_dB = SNR_opt_ML[i]
+    #
+    #     for j in range(10):
+    #         encoder = hamming_encoder()
+    #         modulator = bpsk_modulator()
+    #         decoder = HammingDecoder(device)
+    #
+    #         # ML:
+    #         bits_info = generator(N)
+    #         encoded_codeword = encoder(bits_info).to(device)
+    #         modulated_signal = modulator(encoded_codeword, device)
+    #         modulated_noise_signal = AWGN(modulated_signal, snr_dB, device)
+    #
+    #         llr_output = llr(modulated_noise_signal, snr_dB)  # Log-Likelihood Calculation
+    #         HD_final = hard_decision(llr_output, device)
+    #         ML_final = decoder(HD_final)
+    #
+    #         BER_ML, error_num_ML = calculate_ber(ML_final, bits_info.to(device))
+    #         if error_num_ML < 100 & N <= 40000000:
+    #             N += 10000000
+    #             print(f"the code number is {N}")
+    #
+    #         else:
+    #             print(
+    #                 f"ML: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_ML} and BER is {BER_ML}")
+    #             result[1, i] = BER_ML
+    #             break
 
-        for j in range(10):
-            encoder = hamming_encoder()
-            modulator = bpsk_modulator()
-            decoder = HammingDecoder(device)
 
-            # ML:
-            bits_info = generator(N)
-            encoded_codeword = encoder(bits_info).to(device)
-            modulated_signal = modulator(encoded_codeword, device)
-            modulated_noise_signal = AWGN(modulated_signal, snr_dB, device)
-
-            llr_output = llr(modulated_noise_signal, snr_dB)  # Log-Likelihood Calculation
-            HD_final = hard_decision(llr_output, device)
-            ML_final = decoder(HD_final)
-
-            BER_ML, error_num_ML = calculate_ber(ML_final, bits_info.to(device))
-            if error_num_ML < 100 & N <= 40000000:
-                N += 10000000
-                print(f"the code number is {N}")
-
-            else:
-                print(
-                    f"ML: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_ML} and BER is {BER_ML}")
-                result[1, i] = BER_ML
-                break
-
-
-    # Belief Propagation
-    for i in range(len(SNR_opt_BP)):
-        snr_dB = SNR_opt_BP[i]
-
-        for j in range(30):
-
-            encoder = hamming_encoder()
-            modulator = bpsk_modulator()
-            decoder = HammingDecoder(device)
-            ldpc_bp = LDPCBeliefPropagation(device)
-
-            bits_info = generator(N)  # Code Generator
-            encoded_codeword = encoder(bits_info).to(device) # Hamming(7,4) Encoder
-            modulated_signal = modulator(encoded_codeword, device) # Modulate signal
-            modulated_noise_signal = AWGN(modulated_signal, snr_dB, device) # Add Noise
-
-            llr_output = llr(modulated_noise_signal, snr_dB).to(device) #LLR
-            LDPC_result = ldpc_bp(llr_output, iter) # LDPC
-            LDPC_HD = hard_decision(LDPC_result, device) #Hard Decision
-            LDPC_final = decoder(LDPC_HD)
-
-            BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info.to(device)) # BER calculation
-
-            if error_num_LDPC < 100 & N <= 40000000:
-                N += 10000000
-                print(f"the code number is {N}")
-
-            else:
-                print(f"LDPC: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
-                result[2, i] = BER_LDPC
-                break
+    # # Belief Propagation
+    # for i in range(len(SNR_opt_BP)):
+    #     snr_dB = SNR_opt_BP[i]
+    #
+    #     for j in range(30):
+    #
+    #         encoder = hamming_encoder()
+    #         modulator = bpsk_modulator()
+    #         decoder = HammingDecoder(device)
+    #         ldpc_bp = LDPCBeliefPropagation(device)
+    #
+    #         bits_info = generator(N)  # Code Generator
+    #         encoded_codeword = encoder(bits_info).to(device) # Hamming(7,4) Encoder
+    #         modulated_signal = modulator(encoded_codeword, device) # Modulate signal
+    #         modulated_noise_signal = AWGN(modulated_signal, snr_dB, device) # Add Noise
+    #
+    #         llr_output = llr(modulated_noise_signal, snr_dB).to(device) #LLR
+    #         LDPC_result = ldpc_bp(llr_output, iter) # LDPC
+    #         LDPC_HD = hard_decision(LDPC_result, device) #Hard Decision
+    #         LDPC_final = decoder(LDPC_HD)
+    #
+    #         BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info.to(device)) # BER calculation
+    #
+    #         if error_num_LDPC < 100 & N <= 40000000:
+    #             N += 10000000
+    #             print(f"the code number is {N}")
+    #
+    #         else:
+    #             print(f"LDPC: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
+    #             result[2, i] = BER_LDPC
+    #             break
 
 
 
