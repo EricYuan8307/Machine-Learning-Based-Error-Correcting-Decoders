@@ -7,11 +7,11 @@ class Hamming74decoder(torch.nn.Module):
         hard-decision Maximum Likelihood Estimation
 
         Args:
-            C: Use this matrix to calculate the closest hamming distance.
+            r: decoder matrix.
             mps_device: Move Data on Specific device for computing(GPU).
 
         Returns:
-            result: The final estimate result.
+            result: The final 4-bit codeword.
         """
 
         super(Hamming74decoder, self).__init__()
