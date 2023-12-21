@@ -15,8 +15,8 @@ from Decoder.MaximumLikelihood import HardDecisionML, SoftDecisionML
 
 # Code Generation
 def generator(nr_codewords, device):
-    # bits = torch.randint(0, 2, size=(nr_codewords, 1, 4), dtype=torch.int, device=device)
-    bits = torch.tensor([[[1, 1, 0, 1]], [[0, 1, 0, 0,]]], dtype=torch.int, device=device)
+    bits = torch.randint(0, 2, size=(nr_codewords, 1, 4), dtype=torch.int, device=device)
+    # bits = torch.tensor([[[1, 1, 0, 1]], [[0, 1, 0, 0,]]], dtype=torch.int, device=device)
 
     return bits
 
@@ -24,9 +24,9 @@ def generator(nr_codewords, device):
 # Calculate the Error number and BER
 def main():
     SNR_opt_BPSK = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    SNR_opt_ML = [0, 1, 2, 3, 4, 5, 6, 7]
+    SNR_opt_ML = [0, 1, 2, 3, 4, 5, 6]
     SNR_opt_BP = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    SNR_opt_BP = [1]
+    # SNR_opt_BP = [1]
 
     result = np.zeros((3, len(SNR_opt_BPSK)))
     N = num
@@ -45,7 +45,7 @@ def main():
 
             BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info)
             if error_num_BPSK < 100:
-                N += 10000000
+                N += 2000000
                 print(f"the code number is {N}")
 
             else:
@@ -57,6 +57,7 @@ def main():
     # Soft-Decision Maximum Likelihood
     for i in range(len(SNR_opt_ML)):
         snr_dB = SNR_opt_ML[i]
+        N = num
 
         for j in range(10):
             encoder = hamming_encoder(device)
@@ -75,7 +76,7 @@ def main():
 
             BER_ML, error_num_ML = calculate_ber(SDML_final, bits_info)
             if error_num_ML < 100 & N <= 40000000: # Have some problems especially after the SNR >= 6, the error number is 65 and Signal number do not update.
-                N += 10000000
+                N += 1000000
                 print(f"the code number is {N}")
 
             else:
@@ -88,6 +89,7 @@ def main():
     # Belief Propagation
     for i in range(len(SNR_opt_BP)):
         snr_dB = SNR_opt_BP[i]
+        N = num
 
         for j in range(10):
 
@@ -96,29 +98,15 @@ def main():
             decoder = Hamming74decoder(device)
 
             bits_info = generator(N, device)  # Code Generator
-            print("bits_info: ", bits_info)
-
             encoded_codeword = encoder(bits_info) # Hamming(7,4) Encoder
-            print("encoded_codeword: ", encoded_codeword)
-
             modulated_signal = bpsk_modulator(encoded_codeword) # Modulate signal
-            print("modulated_signal: ", modulated_signal)
-
             noised_signal = AWGN(modulated_signal, snr_dB, device) # Add Noise
-            print("noised_signal: ", noised_signal)
 
 
             llr_output = llr(noised_signal, snr_dB) #LLR
-            print("llr_output: ", llr_output)
-
             BP = ldpc_bp(llr_output, iter) # LDPC
-            print("BP: ", BP)
-
-            LDPC_HD = hard_decision(BP, device) #Hard Decision
-            print("LDPC_HD: ",LDPC_HD)
-
-            LDPC_final = decoder(LDPC_HD)
-            print("LDPC_final: ", LDPC_final)
+            LDPC_HD = hard_decision(BP, device) # Hard Decision
+            LDPC_final = decoder(LDPC_HD) # Decoder
 
             BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
 
@@ -142,7 +130,7 @@ if __name__ == "__main__":
                                           else torch.device("cpu")))
 
     #Hpyer parameters
-    num = int(1e7) #how many original need to generate
+    num = int(1e6) #how many original need to generate
     iter = 5 # LDPC Belief Propagation iteration time
 
     # Store result for plot
