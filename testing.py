@@ -1,76 +1,88 @@
 import torch
-
-
+from Decoder.HardDecision import hard_decision
+from Estimation.BitErrorRate import calculate_ber
 
 class LDPCBeliefPropagation(torch.nn.Module):
-    def __init__(self, llr):
+    def __init__(self, H, device):
         """
-        LDPC Belief Propagation.
+        Initialize the LDPC Belief Propagation Decoder.
 
         Args:
-            H: Low density parity code for building tanner graph.
-            llr: Log Likelihood Ratio (LLR) values. Only for 7-bit codeword.
+            H (Tensor): Parity-check matrix of the LDPC code.
+        """
+        super(LDPCBeliefPropagation, self).__init__()
+        self.H = H.to(device)
+        self.device = device
+
+    def phi(self, x):
+        """Stable computation of log(tanh(x/2)) for belief propagation."""
+        # Avoid division by zero
+        return 2.0 * torch.atanh(torch.tanh(x / 2.0))
+
+    def forward(self, llr, max_iters=10):
+        """
+        Perform belief propagation decoding.
+
+        Args:
+            llr (Tensor): Log-likelihood ratios of shape (batch_size, 1, num_variable_nodes).
+            max_iters (int): Maximum number of iterations.
 
         Returns:
-            estimated_bits: the output result from belief propagation.
+            Tensor: Estimated bit values for each sample in the batch.
         """
+        batch_size, _, num_variable_nodes = llr.shape
+        num_check_nodes, _ = self.H.shape
 
-        super(LDPCBeliefPropagation, self).__init__()
-        self.llr = llr
-        self.H = torch.tensor([[1, 1, 1, 0, 0, 0, 0],
-                               [0, 0, 1, 1, 1, 0, 0],
-                               [0, 1, 0, 0, 1, 1, 0],
-                               [1, 0, 0, 1, 0, 0, 1], ])
-        self.num_check_nodes, self.num_variable_nodes = self.H.shape
-        self.channel = llr.shape[2]
+        # Initialize messages for each sample in the batch
+        messages_c_to_v = torch.zeros(batch_size, num_check_nodes, num_variable_nodes, device=self.device)
 
-        # Initialize messages
-        self.messages_v_to_c = torch.ones((self.num_variable_nodes, self.num_check_nodes, self.channel), dtype=torch.float)
-        self.messages_c_to_v = torch.zeros((self.num_check_nodes, self.num_variable_nodes, self.channel), dtype=torch.float)
+        for _ in range(max_iters):
+            # Reshape LLR and messages for batch processing
+            llr_expanded = llr.expand_as(messages_c_to_v)
+            messages_c_to_v_expanded = messages_c_to_v.expand_as(llr_expanded)
 
-    def forward(self, max_iter):
-        for iteration in range(max_iter):
-            # Variable to check node messages
-            for i in range(self.num_variable_nodes):
-                for j in range(self.num_check_nodes):
-                    # Compute messages from variable to check nodes
-                    connected_checks = self.H[j, :] == 1
-                    product = torch.prod(torch.tanh(0.5 * self.messages_v_to_c[connected_checks, j]),dim=0, keepdim=True)
-                    self.messages_v_to_c[i, j] = torch.sign(self.llr[j]) * product
+            # Check nodes to variable nodes
+            tanh_llr = torch.tanh((llr_expanded + messages_c_to_v_expanded) / 2)
+            prod_tanh = torch.prod(tanh_llr ** self.H, dim=2, keepdim=True)
+            messages_c_to_v = self.phi((prod_tanh / (tanh_llr + 1e-10)) ** self.H)
 
-            # Check to variable node messages
-            for i in range(self.num_check_nodes):
-                for j in range(self.num_variable_nodes):
-                    # Compute messages from check to variable nodes
-                    connected_vars = self.H[:, j] == 1
-                    sum_msgs = torch.sum(self.messages_c_to_v[connected_vars, i]) - self.messages_v_to_c[j, i]
-                    self.messages_c_to_v[i, j] = 2 * torch.atan(torch.exp(0.5 * sum_msgs))
+            # Variable nodes to check nodes
+            total_llr = llr.squeeze(1) + torch.sum(messages_c_to_v, dim=1)
+            messages_v_to_c = total_llr.unsqueeze(1) - messages_c_to_v
 
-        # Calculate the final estimated bits and only take first four bits
-        estimated_bits = torch.sign(self.llr) * torch.prod(torch.tanh(0.5 * self.messages_c_to_v))
-        estimated_bits = torch.where(estimated_bits > 0, torch.tensor(1), torch.tensor(0))
-        estimated_bits = estimated_bits[:, :, 0:4]
+            # Update messages from check nodes to variable nodes
+            messages_c_to_v = messages_v_to_c
 
-        return estimated_bits
+        # Make final decision
+        total_llr = llr.squeeze(1) + torch.sum(messages_c_to_v, dim=1)
+        total_llr = total_llr.unsqueeze(1)
+        return total_llr
 
 
-# %%
-# input data LLR with 7-bit message
-nr_codewords = 1000000
-llr_output = torch.randint(-14, 14, size=(nr_codewords, 1, 7), dtype=torch.float) # torch.Size([10, 1, 7])
+# Example usage
+device = torch.device("cpu")
 
-# # Define LDPC parameters
-# H = torch.tensor([ [1, 1, 1, 0, 0, 0, 0],
-#                    [0, 0, 1, 1, 1, 0, 0],
-#                    [0, 1, 0, 0, 1, 1, 0],
-#                    [1, 0, 0, 1, 0, 0, 1],])
-iter = 10
-ldpc_bp = LDPCBeliefPropagation(llr_output)
+H = torch.tensor([[1, 0, 1, 0, 1, 0, 1],
+                  [0, 1, 1, 0, 0, 1, 1],
+                  [0, 0, 0, 1, 1, 1, 1]], dtype=torch.float, device=device)  # Example parity-check matrix
 
-#loop all the llr and get result.
-# for i in range(llr_output.shape[0]):
-#     bp_data = llr_output[i]
-estimated_result = ldpc_bp(iter)
-final_result = estimated_result
+ldpc_decoder = LDPCBeliefPropagation(H, device=device)
 
-print(final_result)
+# Example LLR input for a batch of 1000 samples
+llr_output = torch.tensor([[[20.4128,  -16.3902,  -19.1344,  -15.7405,  -26.6343,   23.9271,   21.8500]],
+                           # [[  92.018,  -20.977,  -13.301, -176.342, -154.045,  -58.012,  -11.695]],
+                           ], dtype=torch.float,device=device)  # torch.Size([2, 1, 7])
+# print(llr_input)
+
+# Decoding
+ldpc_decoder = LDPCBeliefPropagation(H, device)
+decoded_bits = ldpc_decoder(llr_output)
+# print("Decoded Bits:", decoded_bits)
+
+HD_result = hard_decision(decoded_bits, device)
+HD_input = hard_decision(llr_output, device)
+
+print("HD_input", HD_input.shape)
+print("HD_result", HD_result.shape)
+
+print("BER", calculate_ber(HD_result,HD_input))
