@@ -24,7 +24,7 @@ def generator(nr_codewords, device):
 # Calculate the Error number and BER
 def main():
     SNR_opt_BPSK = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    SNR_opt_ML = [0, 1, 2, 3, 4, 5, 6]
+    SNR_opt_ML = [0, 1, 2, 3, 4, 5, 6,]
     SNR_opt_BP = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     # SNR_opt_BP = [1]
 
@@ -102,10 +102,15 @@ def main():
             modulated_signal = bpsk_modulator(encoded_codeword) # Modulate signal
             noised_signal = AWGN(modulated_signal, snr_dB, device) # Add Noise
 
-
             llr_output = llr(noised_signal, snr_dB) #LLR
-            BP = ldpc_bp(llr_output, iter) # LDPC
-            LDPC_HD = hard_decision(BP, device) # Hard Decision
+            result = torch.zeros(llr_output.shape)
+            for k in range(llr_output.shape[0]):
+
+                BP = ldpc_bp(llr_output[k], iter) # LDPC
+                result[k] = BP
+
+            LDPC_HD = hard_decision(result, device) # Hard Decision
+
             LDPC_final = decoder(LDPC_HD) # Decoder
 
             BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
@@ -145,7 +150,7 @@ if __name__ == "__main__":
     plt.xlabel('SNR')
     plt.ylabel('BER')
     plt.title('Estimation')
-    plt.legend(['Uncoded-BPSK', 'Soft-Decision ML', 'Soft-Decision BP'])
+    plt.legend(['Uncoded-BPSK', 'Soft-Decision ML', 'Belief Propagation'])
 
     # Display the Plot
     plt.show()

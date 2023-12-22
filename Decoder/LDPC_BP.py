@@ -1,3 +1,5 @@
+import time
+
 import torch
 from Decoder.HardDecision import hard_decision
 from Estimation.BitErrorRate import calculate_ber
@@ -30,7 +32,6 @@ class LDPCBeliefPropagation(torch.nn.Module):
         # print("initial llr", llr)
 
         for iteration in range(max_iters):
-            print("iteration", iteration)
             # Check nodes to variable nodes
             llr_update = self.H * (llr + messages_v_to_c)
             log_llr_update = self.phi(llr_update)
@@ -57,7 +58,7 @@ class LDPCBeliefPropagation(torch.nn.Module):
             est = hard_decision(final_llr, self.device).to(torch.float) # torch.Size([1, 1, 7])
             mult = torch.matmul(est, self.H.transpose(1, 2))%2
 
-            if torch.all(mult == torch.tensor([[[0., 0., 0.]]])):
+            if torch.all(mult == torch.zeros(mult.shape, device=self.device)):
                 break
             else: messages_v_to_c = self.H * final_llr - messages_c_to_v
 
@@ -73,30 +74,36 @@ class LDPCBeliefPropagation(torch.nn.Module):
         return result
 
 
-device = torch.device("cpu")
-
-# llr_output = torch.tensor([[[20.4128,  -16.3902,  -19.1344,  -15.7405,  -26.6343,   23.9271,   21.8500]],
-#                            [[  92.018,  -20.977,  -13.301, -176.342, -154.045,  -58.012,  -11.695]],
-#                            ], dtype=torch.float,device=device)  # torch.Size([2, 1, 7])
-llr_output = torch.randn(3, 1, 7, dtype=torch.float, device=device)*10
-# print("llr_output", llr_output)
-
-iter = 5
-
-ldpc_bp = LDPCBeliefPropagation(device)
-LDPC_result = ldpc_bp(llr_output, iter)  # LDPC
-
-print("LDPC_result: ", LDPC_result)
-
-HD_result = hard_decision(LDPC_result, device)
-HD_input = hard_decision(llr_output, device)
-
-
-print("HD_input", HD_input.shape)
-print("HD_result", HD_result.shape)
-
-print("BER", calculate_ber(HD_result,HD_input))
-
-
-
-
+# device = torch.device("cpu")
+#
+# # llr_output = torch.tensor([[[20.4128,  -16.3902,  -19.1344,  -15.7405,  -26.6343,   23.9271,   21.8500]],
+# #                            [[  92.018,  -20.977,  -13.301, -176.342, -154.045,  -58.012,  -11.695]],
+# #                            ], dtype=torch.float,device=device)  # torch.Size([2, 1, 7])
+# nr_number = int(1e6)
+# llr_output = torch.randn(nr_number, 1, 7, dtype=torch.float, device=device)
+# # print("llr_output", llr_output)
+# result = torch.zeros(llr_output.shape)
+#
+# for i in range(nr_number):
+#     input = llr_output[i]
+#     iter = 5
+#     start = time.time()
+#     ldpc_bp = LDPCBeliefPropagation(device)
+#     LDPC_result = ldpc_bp(input, iter) # LDPC
+#     end = time.time()
+#     result[i] = LDPC_result
+#
+#     print("time_elapsed", end - start)
+#
+# print(result)
+#
+# # print("LDPC_result: ", LDPC_result)
+# #
+# # HD_result = hard_decision(LDPC_result, device)
+# # HD_input = hard_decision(llr_output, device)
+# #
+# #
+# # print("HD_input", HD_input.shape)
+# # print("HD_result", HD_result.shape)
+# #
+# # print("BER", calculate_ber(HD_result,HD_input))
