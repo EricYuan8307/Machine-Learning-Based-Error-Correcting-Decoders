@@ -1,3 +1,5 @@
+import time
+
 import matplotlib.pyplot as plt
 import torch
 import numpy as np
@@ -92,6 +94,8 @@ def main():
         N = num
 
         for j in range(10):
+            N = 1000000
+            iter_start_time = time.time()
 
             encoder = hamming_encoder(device)
             ldpc_bp = LDPCBeliefPropagation(device)
@@ -105,9 +109,19 @@ def main():
             llr_output = llr(noised_signal, snr_dB) #LLR
             result = torch.zeros(llr_output.shape)
             for k in range(llr_output.shape[0]):
+                start_time = time.time()
 
                 BP = ldpc_bp(llr_output[k], iter) # LDPC
                 result[k] = BP
+                end_time = time.time()
+
+                if k % 1000 ==0 and k >0:
+                    elapsed_time = time.time() - start_time
+                    print(f"Processed {k} iterations in {elapsed_time*1000} seconds")
+
+            iter_end_time = time.time()
+
+            print(f"For {snr_dB}SNR, the Belief Propagation spend {iter_end_time-iter_start_time} seconds.")
 
             LDPC_HD = hard_decision(result, device) # Hard Decision
 
