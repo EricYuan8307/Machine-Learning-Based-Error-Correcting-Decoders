@@ -45,6 +45,7 @@ class HardDecisionML(torch.nn.Module):
 
         return harddecision_output
 
+
 class SoftDecisionML(nn.Module):
     def __init__(self, mps_device):
         """
@@ -102,8 +103,11 @@ class SoftDecisionML(nn.Module):
 # # llr = torch.randint(-2, 2, size=(2, 1, 7), dtype=torch.float, device=device)
 # print("llr:",llr)
 #
+# hddecoder = HardDecisionML(device)
+# hdcodebook = hddecoder(llr)
+#
 # sddecoder = SoftDecisionML(device)
 # sdcodebook = sddecoder(llr)
 #
+# print("hdcodebook:",hdcodebook)
 # print("sdcodebook:",sdcodebook)
-# print("sddecoder:",sdcodebook.shape)
