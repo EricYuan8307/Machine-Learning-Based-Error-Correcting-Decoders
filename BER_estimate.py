@@ -90,24 +90,24 @@ def main():
                 break
 
 
-    # # Belief Propagation
-    # for i in range(len(SNR_opt_BP)):
-    #     snr_dB = SNR_opt_BP[i]
-    #     N = num
-    #
-    #     for j in range(10):
-    #         LDPC_final, bits_info = BeliefPropagation(N, snr_dB, device)
-    #
-    #         BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
-    #
-    #         if error_num_LDPC < 100:
-    #             N += 10000000
-    #             print(f"the code number is {N}")
-    #
-    #         else:
-    #             print(f"LDPC: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
-    #             result[3, i] = BER_LDPC
-    #             break
+    # Belief Propagation
+    for i in range(len(SNR_opt_BP)):
+        snr_dB = SNR_opt_BP[i]
+        N = num
+
+        for j in range(10):
+            LDPC_final, bits_info = BeliefPropagation(N, snr_dB, device)
+
+            BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
+
+            if error_num_LDPC < 100:
+                N += 10000000
+                print(f"the code number is {N}")
+
+            else:
+                print(f"LDPC: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
+                result[3, i] = BER_LDPC
+                break
 
     return result
 
