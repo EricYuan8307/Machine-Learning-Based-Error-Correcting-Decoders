@@ -31,22 +31,22 @@ def main():
     result = np.zeros((4, len(SNR_opt_BPSK)))
     N = num
 
-    # # De-Encoder, BPSK only
-    # for i in range(len(SNR_opt_BPSK)):
-    #     snr_dB =SNR_opt_BPSK[i]
-    #
-    #     for _ in range(10):
-    #         BPSK_final, bits_info, snr_measure = UncodedBPSK(N, snr_dB, device)
-    #
-    #         BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info)
-    #         if error_num_BPSK < 100:
-    #             N += 2000000
-    #             print(f"the code number is {N}")
-    #
-    #         else:
-    #             print(f"BPSK: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BPSK} and BER is {BER_BPSK}")
-    #             result[0, i] = BER_BPSK
-    #             break
+    # De-Encoder, BPSK only
+    for i in range(len(SNR_opt_BPSK)):
+        snr_dB =SNR_opt_BPSK[i]
+
+        for _ in range(10):
+            BPSK_final, bits_info, snr_measure = UncodedBPSK(N, snr_dB, device)
+
+            BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info)
+            if error_num_BPSK < 100:
+                N += 2000000
+                print(f"the code number is {N}")
+
+            else:
+                print(f"BPSK: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BPSK} and BER is {BER_BPSK}")
+                result[0, i] = BER_BPSK
+                break
 
 
     # Soft-Decision Maximum Likelihood
@@ -87,23 +87,23 @@ def main():
                 break
 
 
-    # # Belief Propagation
-    # for i in range(len(SNR_opt_BP)):
-    #     snr_dB = SNR_opt_BP[i]
-    #
-    #     for _ in range(10):
-    #         LDPC_final, bits_info, snr_measure = BeliefPropagation(N, snr_dB, device)
-    #
-    #         BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
-    #
-    #         if error_num_LDPC < 100:
-    #             N += 10000000
-    #             print(f"the code number is {N}")
-    #
-    #         else:
-    #             print(f"LDPC: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
-    #             result[3, i] = BER_LDPC
-    #             break
+    # Belief Propagation
+    for i in range(len(SNR_opt_BP)):
+        snr_dB = SNR_opt_BP[i]
+
+        for _ in range(10):
+            LDPC_final, bits_info, snr_measure = BeliefPropagation(N, snr_dB, device)
+
+            BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
+
+            if error_num_LDPC < 100:
+                N += 10000000
+                print(f"the code number is {N}")
+
+            else:
+                print(f"LDPC: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
+                result[3, i] = BER_LDPC
+                break
 
 
 
