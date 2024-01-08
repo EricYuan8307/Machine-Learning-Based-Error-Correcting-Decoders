@@ -29,25 +29,22 @@ class LDPCBeliefPropagation(torch.nn.Module):
         # print("initial llr", llr)
 
         for iteration in range(max_iters):
-            # Check nodes to variable nodes
+            #  From variable nodes to check nodes
             llr_update = self.H * (llr + messages_v_to_c)
             log_llr_update = self.phi(llr_update)
             sum_log_llr = self.H * torch.sum(log_llr_update)
             sum_log_llr_update = sum_log_llr - log_llr_update
             phi_sum_log_llr_updat = self.phi(sum_log_llr_update)
 
-            # S_{mj} calculate the sign in each check node
             sign1 = torch.sign(llr_update)
             masked_sign_phi = sign1 * self.H
             masked_sign_phi_ones = masked_sign_phi + (1 - self.H)
             sign = masked_sign_phi_ones.prod(dim=2) # torch.Size([2, 4])
             sign_mask = self.H * sign.unsqueeze(2)
             sign_mask_update = torch.div(sign_mask, masked_sign_phi_ones)
-            # print("sign_mask_update", sign_mask_update)
 
-            # From check node to variable node
+            # From check nodes to variable nodes
             messages_c_to_v = -phi_sum_log_llr_updat * sign_mask_update
-            # print(messages_c_to_v)
 
             sum_messages_c_to_v = torch.sum(messages_c_to_v,dim=1)
             final_llr = llr + sum_messages_c_to_v
