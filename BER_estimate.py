@@ -197,10 +197,10 @@ def BeliefPropagation(nr_codeword, snr_dB, device):
 
 
 if __name__ == "__main__":
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #                                 else (torch.device("cuda") if torch.backends.cuda.is_available()
-    #                                       else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+                                    else (torch.device("cuda") if torch.backends.cuda.is_available()
+                                          else torch.device("cpu")))
+    # device = torch.device("cpu")
 
     #Hpyer parameters
     num = int(1e7) #how many original need to generate
