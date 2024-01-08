@@ -81,12 +81,9 @@ class SoftDecisionML(nn.Module):
         # Compute the distance between each input vector and each codeword(euclidean distance)
         distances = torch.cdist(llr, self.sd_c.unsqueeze(0))
 
-        # Calculate softmax over the negative distances (as softmax is exp(-distance))
-        # to represent the probability of each codeword being the correct one
+        # Calculate softmax over the negative distances
         soft_assignments = F.softmax(-distances, dim=2)
-
         most_like = torch.argmax(soft_assignments, dim=2)
-
         softdecision_output = self.sd_c[most_like]
 
         return softdecision_output

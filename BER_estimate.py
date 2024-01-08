@@ -25,9 +25,8 @@ def generator(nr_codewords, device):
 # Calculate the Error number and BER
 def main():
     SNR_opt_BPSK = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
-    SNR_opt_ML = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5]
-    SNR_opt_BP = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7]
-    # SNR_opt_BP = [7]
+    SNR_opt_ML = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5]
+    SNR_opt_BP = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]
 
     result = np.zeros((4, len(SNR_opt_BPSK)))
     N = num
@@ -36,7 +35,7 @@ def main():
     for i in range(len(SNR_opt_BPSK)):
         snr_dB =SNR_opt_BPSK[i]
 
-        for j in range(10):
+        for _ in range(10):
             BPSK_final, bits_info, snr_measure = UncodedBPSK(N, snr_dB, device)
 
             BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info)
@@ -54,11 +53,11 @@ def main():
     for i in range(len(SNR_opt_ML)):
         snr_dB = SNR_opt_ML[i]
 
-        for j in range(10):
+        for _ in range(10):
             SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
 
             BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
-            if error_num_SDML < 100 & N <= 40000000: # Have some problems especially after the SNR >= 6, the error number is 65 and Signal number do not update.
+            if error_num_SDML < 100 & N <= 40000000:
                 N += 1000000
                 print(f"the code number is {N}")
 
@@ -73,11 +72,11 @@ def main():
     for i in range(len(SNR_opt_ML)):
         snr_dB = SNR_opt_ML[i]
 
-        for l in range(10):
+        for _ in range(10):
             HDML_final, bits_info, snr_measure = HardDecisionMLP(N, snr_dB, device)
 
             BER_HDML, error_num_HDML = calculate_ber(HDML_final, bits_info)
-            if error_num_HDML < 100 & N <= 40000000:  # Have some problems especially after the SNR >= 6, the error number is 65 and Signal number do not update.
+            if error_num_HDML < 100 & N <= 40000000:
                 N += 1000000
                 print(f"the code number is {N}")
 
@@ -92,7 +91,7 @@ def main():
     for i in range(len(SNR_opt_BP)):
         snr_dB = SNR_opt_BP[i]
 
-        for j in range(10):
+        for _ in range(10):
             LDPC_final, bits_info, snr_measure = BeliefPropagation(N, snr_dB, device)
 
             BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
@@ -105,6 +104,8 @@ def main():
                 print(f"LDPC: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
                 result[3, i] = BER_LDPC
                 break
+
+
 
     return result
 
@@ -197,10 +198,10 @@ def BeliefPropagation(nr_codeword, snr_dB, device):
 
 
 if __name__ == "__main__":
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-                                    else (torch.device("cuda") if torch.backends.cuda.is_available()
-                                          else torch.device("cpu")))
-    # device = torch.device("cpu")
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #                                 else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                                       else torch.device("cpu")))
+    device = torch.device("cuda")
 
     #Hpyer parameters
     num = int(1e7) #how many original need to generate
