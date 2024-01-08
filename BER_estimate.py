@@ -25,8 +25,8 @@ def generator(nr_codewords, device):
 # Calculate the Error number and BER
 def main():
     SNR_opt_BPSK = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
-    SNR_opt_ML = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5]
-    SNR_opt_BP = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7]
+    SNR_opt_ML = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5]
+    SNR_opt_BP = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]
 
     result = np.zeros((4, len(SNR_opt_BPSK)))
     N = num
@@ -198,10 +198,10 @@ def BeliefPropagation(nr_codeword, snr_dB, device):
 
 
 if __name__ == "__main__":
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-                                    else (torch.device("cuda") if torch.backends.cuda.is_available()
-                                          else torch.device("cpu")))
-    # device = torch.device("cpu")
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #                                 else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                                       else torch.device("cpu")))
+    device = torch.device("cuda")
 
     #Hpyer parameters
     num = int(1e7) #how many original need to generate
