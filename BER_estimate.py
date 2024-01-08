@@ -173,6 +173,9 @@ def BeliefPropagation(nr_codeword, snr_dB, device):
 
     llr_output = llr(noised_signal, snr_dB)  # LLR
     BP_result = torch.zeros(llr_output.shape, device=device)
+
+    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+
     for k in range(llr_output.shape[0]):
         start_time = time.time()
 
@@ -185,12 +188,10 @@ def BeliefPropagation(nr_codeword, snr_dB, device):
             print(f"Processed {k} iterations in {elapsed_time * 10000} seconds")
 
     iter_end_time = time.time()
-    print(f"For {snr_dB}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
+    print(f"For {practical_snr}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
 
     LDPC_HD = hard_decision(BP_result, device)  # Hard Decision
     LDPC_final = decoder(LDPC_HD)  # Decoder
-
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
 
     return LDPC_final, bits_info, practical_snr
 
