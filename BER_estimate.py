@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import torch
 import numpy as np
 import time
@@ -12,6 +11,7 @@ from Transmit.noise import AWGN
 from Estimation.BitErrorRate import calculate_ber
 from Decoder.HammingDecoder import Hamming74decoder
 from Decoder.MaximumLikelihood import HardDecisionML, SoftDecisionML
+from Transmit.NoiseMeasure import NoiseMeasure
 
 
 # Code Generation
@@ -24,9 +24,9 @@ def generator(nr_codewords, device):
 
 # Calculate the Error number and BER
 def main():
-    SNR_opt_BPSK = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    SNR_opt_ML = [-1, 0, 1, 2, 3, 4, 5, 6, 7]
-    SNR_opt_BP = [0, 1, 2, 3, 4, 5, 6, 7]
+    SNR_opt_BPSK = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
+    SNR_opt_ML = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5]
+    SNR_opt_BP = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7]
     # SNR_opt_BP = [7]
 
     result = np.zeros((4, len(SNR_opt_BPSK)))
@@ -37,7 +37,7 @@ def main():
         snr_dB =SNR_opt_BPSK[i]
 
         for j in range(10):
-            BPSK_final, bits_info = UncodedBPSK(N, snr_dB, device)
+            BPSK_final, bits_info, snr_measure = UncodedBPSK(N, snr_dB, device)
 
             BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info)
             if error_num_BPSK < 100:
@@ -45,7 +45,7 @@ def main():
                 print(f"the code number is {N}")
 
             else:
-                print(f"BPSK: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_BPSK} and BER is {BER_BPSK}")
+                print(f"BPSK: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BPSK} and BER is {BER_BPSK}")
                 result[0, i] = BER_BPSK
                 break
 
@@ -53,10 +53,9 @@ def main():
     # Soft-Decision Maximum Likelihood
     for i in range(len(SNR_opt_ML)):
         snr_dB = SNR_opt_ML[i]
-        N = num
 
         for j in range(10):
-            SDML_final, bits_info = SoftDecisionMLP(N, snr_dB, device)
+            SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
 
             BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
             if error_num_SDML < 100 & N <= 40000000: # Have some problems especially after the SNR >= 6, the error number is 65 and Signal number do not update.
@@ -65,7 +64,7 @@ def main():
 
             else:
                 print(
-                    f"SD-ML: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
+                    f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
                 result[1, i] = BER_SDML
                 break
 
@@ -73,10 +72,9 @@ def main():
     # Hard-Decision Maximum Likelihood
     for i in range(len(SNR_opt_ML)):
         snr_dB = SNR_opt_ML[i]
-        N = num
 
         for l in range(10):
-            HDML_final, bits_info = HardDecisionMLP(N, snr_dB, device)
+            HDML_final, bits_info, snr_measure = HardDecisionMLP(N, snr_dB, device)
 
             BER_HDML, error_num_HDML = calculate_ber(HDML_final, bits_info)
             if error_num_HDML < 100 & N <= 40000000:  # Have some problems especially after the SNR >= 6, the error number is 65 and Signal number do not update.
@@ -85,7 +83,7 @@ def main():
 
             else:
                 print(
-                    f"HD-ML: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_HDML} and BER is {BER_HDML}")
+                    f"HD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_HDML} and BER is {BER_HDML}")
                 result[2, i] = BER_HDML
                 break
 
@@ -93,10 +91,9 @@ def main():
     # Belief Propagation
     for i in range(len(SNR_opt_BP)):
         snr_dB = SNR_opt_BP[i]
-        N = num
 
         for j in range(10):
-            LDPC_final, bits_info = BeliefPropagation(N, snr_dB, device)
+            LDPC_final, bits_info, snr_measure = BeliefPropagation(N, snr_dB, device)
 
             BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
 
@@ -105,7 +102,7 @@ def main():
                 print(f"the code number is {N}")
 
             else:
-                print(f"LDPC: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
+                print(f"LDPC: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
                 result[3, i] = BER_LDPC
                 break
 
@@ -115,11 +112,13 @@ def main():
 def UncodedBPSK(nr_codeword, snr_dB, device):
     bits_info = generator(nr_codeword, device)
     modulated_signal = bpsk_modulator(bits_info)
-    modulated_noise_signal = AWGN(modulated_signal, snr_dB, device)
+    noised_signal = AWGN(modulated_signal, snr_dB, device)
 
-    BPSK_final = hard_decision(modulated_noise_signal, device)
+    BPSK_final = hard_decision(noised_signal, device)
 
-    return BPSK_final, bits_info
+    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+
+    return BPSK_final, bits_info, practical_snr
 
 def SoftDecisionMLP(nr_codeword, snr_dB, device):
     encoder = hamming_encoder(device)
@@ -136,7 +135,9 @@ def SoftDecisionMLP(nr_codeword, snr_dB, device):
     HD_final = hard_decision(SD_ML, device)
     SDML_final = decoder(HD_final)
 
-    return SDML_final, bits_info
+    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+
+    return SDML_final, bits_info, practical_snr
 
 def HardDecisionMLP(nr_codeword, snr_dB, device):
     encoder = hamming_encoder(device)
@@ -153,7 +154,9 @@ def HardDecisionMLP(nr_codeword, snr_dB, device):
     HD_ML = HD_MaximumLikelihood(HD_signal)
     HDML_final = decoder(HD_ML)
 
-    return HDML_final, bits_info
+    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+
+    return HDML_final, bits_info, practical_snr
 
 def BeliefPropagation(nr_codeword, snr_dB, device):
     iter_start_time = time.time()
@@ -169,6 +172,9 @@ def BeliefPropagation(nr_codeword, snr_dB, device):
 
     llr_output = llr(noised_signal, snr_dB)  # LLR
     BP_result = torch.zeros(llr_output.shape, device=device)
+
+    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+
     for k in range(llr_output.shape[0]):
         start_time = time.time()
 
@@ -181,12 +187,12 @@ def BeliefPropagation(nr_codeword, snr_dB, device):
             print(f"Processed {k} iterations in {elapsed_time * 10000} seconds")
 
     iter_end_time = time.time()
-    print(f"For {snr_dB}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
+    print(f"For {practical_snr}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
 
     LDPC_HD = hard_decision(BP_result, device)  # Hard Decision
     LDPC_final = decoder(LDPC_HD)  # Decoder
 
-    return LDPC_final, bits_info
+    return LDPC_final, bits_info, practical_snr
 
 
 
@@ -203,14 +209,14 @@ if __name__ == "__main__":
     result_all = main()
     print(result_all)
 
-    # Create the Plot
-    plt.semilogy(result_all.T,marker='*')
-
-    plt.xlabel('SNR')
-    plt.ylabel('BER')
-    plt.title('Estimation')
-    plt.legend(['Uncoded-BPSK', 'Soft-Decision ML', 'Hard-Decision ML', 'Belief Propagation'])
-
-    # Display the Plot
-    plt.show()
+    # # Create the Plot
+    # plt.semilogy(result_all,marker='*')
+    #
+    # plt.xlabel('SNR')
+    # plt.ylabel('BER')
+    # plt.title('Estimation')
+    # plt.legend(['Uncoded-BPSK', 'Soft-Decision ML', 'Hard-Decision ML', 'Belief Propagation'])
+    #
+    # # Display the Plot
+    # plt.show()
 

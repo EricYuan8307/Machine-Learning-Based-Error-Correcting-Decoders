@@ -1,5 +1,4 @@
 import torch
-from torch import nn
 
 class Hamming74decoder(torch.nn.Module):
     def __init__(self, mps_device):

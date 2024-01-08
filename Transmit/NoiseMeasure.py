@@ -1,9 +1,9 @@
 import torch
 
-def NoiseMeasure(noised_signal, beforenoise_signal):
+def NoiseMeasure(noised_signal, modulated_signal):
 
     # Noise Measurment
-    ch_noise = noised_signal - beforenoise_signal
+    ch_noise = noised_signal - modulated_signal
     # Calculate noise power
     noise_power = torch.mean(ch_noise ** 2)
 
