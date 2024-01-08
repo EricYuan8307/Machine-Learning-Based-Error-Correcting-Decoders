@@ -1,8 +1,5 @@
-import time
-
 import torch
 from Decoder.HardDecision import hard_decision
-from Estimation.BitErrorRate import calculate_ber
 
 class LDPCBeliefPropagation(torch.nn.Module):
     def __init__(self, device):
@@ -42,7 +39,7 @@ class LDPCBeliefPropagation(torch.nn.Module):
             # S_{mj} calculate the sign in each check node
             sign1 = torch.sign(llr_update)
             masked_sign_phi = sign1 * self.H
-            masked_sign_phi_ones = masked_sign_phi + + (1 - self.H)
+            masked_sign_phi_ones = masked_sign_phi + (1 - self.H)
             sign = masked_sign_phi_ones.prod(dim=2) # torch.Size([2, 4])
             sign_mask = self.H * sign.unsqueeze(2)
             sign_mask_update = torch.div(sign_mask, masked_sign_phi_ones)
