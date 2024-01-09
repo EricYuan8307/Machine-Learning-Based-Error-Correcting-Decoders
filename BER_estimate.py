@@ -28,7 +28,7 @@ def main():
     SNR_opt_BPSK = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
     SNR_opt_ML = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5]
     # SNR_opt_BP = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]
-    SNR_opt_BP = [5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]
+    SNR_opt_BP = [6.5, 7, 7.5, 8, 8.5, 9]
 
 
     result = np.zeros((4, len(SNR_opt_BPSK)))
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     # device = torch.device("cpu")
 
     #Hpyer parameters
-    num = int(5e6) #how many original need to generate
+    num = int(2e7) #how many original need to generate
     iter = 5 # LDPC Belief Propagation iteration time
 
     result_all = main()
