@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import time
+import os
 
 from Encoder.BPSK import bpsk_modulator
 from Encoder.Hamming74 import hamming_encoder
@@ -33,7 +34,7 @@ def main():
     result = np.zeros((4, len(SNR_opt_BPSK)))
     N = num
 
-    # De-Encoder, BPSK only
+    # # De-Encoder, BPSK only
     # for i in range(len(SNR_opt_BPSK)):
     #     snr_dB =SNR_opt_BPSK[i]
     #
@@ -51,7 +52,7 @@ def main():
     #             break
 
 
-    # Soft-Decision Maximum Likelihood
+    # # Soft-Decision Maximum Likelihood
     # for i in range(len(SNR_opt_ML)):
     #     snr_dB = SNR_opt_ML[i]
     #
@@ -70,7 +71,7 @@ def main():
     #             break
 
 
-    # Hard-Decision Maximum Likelihood
+    # # Hard-Decision Maximum Likelihood
     # for i in range(len(SNR_opt_ML)):
     #     snr_dB = SNR_opt_ML[i]
     #
@@ -200,15 +201,19 @@ def BeliefPropagation(nr_codeword, snr_dB, device):
 
 
 if __name__ == "__main__":
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #                                 else (torch.device("cuda") if torch.backends.cuda.is_available()
-    #                                       else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+                                    else (torch.device("cuda") if torch.backends.cuda.is_available()
+                                          else torch.device("cpu")))
+    # device = torch.device("cpu")
 
     #Hpyer parameters
-    num = int(1e6) #how many original need to generate
+    num = int(5e6) #how many original need to generate
     iter = 5 # LDPC Belief Propagation iteration time
 
     result_all = main()
     print(result_all)
 
+    directory_path = "Result"
+    csv_filename = "result.csv"
+    full_csv_path = os.path.join(directory_path, csv_filename)
+    np.savetxt(full_csv_path, result_all, delimiter=',')
