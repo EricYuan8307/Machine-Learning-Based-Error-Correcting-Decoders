@@ -15,12 +15,9 @@ class LDPCBeliefPropagation(torch.nn.Module):
         """
 
         super(LDPCBeliefPropagation, self).__init__()
-        # self.H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
-        #                        [0, 1, 1, 0, 0, 1, 1],
-        #                        [0, 0, 0, 1, 1, 1, 1], ], ],dtype=torch.float64, device=device)
-        self.H = torch.tensor([[[1, 1, 0, 1, 1, 0, 0],
-                                [1, 0, 1, 1, 0, 1, 0],
-                                [0, 1, 1, 1, 0, 0, 1], ], ], dtype=torch.float64, device=device)
+        self.H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
+                               [0, 1, 1, 0, 0, 1, 1],
+                               [0, 0, 0, 1, 1, 1, 1], ], ],dtype=torch.float64, device=device)
         self.num_check_nodes = self.H.shape[1]
         self.num_variable_nodes = self.H.shape[2]
         self.device = device
@@ -73,12 +70,11 @@ class LDPCBeliefPropagation(torch.nn.Module):
 
 # device = torch.device("cpu")
 #
-# llr_output = torch.tensor([[[6.5670, 8.5779, -2.2217, -5.2829, -8.0088, -0.2273, 2.9470]]], dtype=torch.float,device=device)
-# # llr_output = torch.tensor([[[20.4128, -16.3902, -19.1344, -15.7405, -26.6343, 23.9271, 21.8500]]], dtype=torch.float,device=device)  # torch.Size([2, 1, 7])
+# # llr_output = torch.tensor([[[6.5670, 8.5779, -2.2217, -5.2829, -8.0088, -0.2273, 2.9470]]], dtype=torch.float,device=device)
+# llr_output = torch.tensor([[[20.4128, -16.3902, -19.1344, -15.7405, -26.6343, 23.9271, 21.8500]]], dtype=torch.float,device=device)  # torch.Size([2, 1, 7])
 #
 # iter = 5
 # ldpc_bp = LDPCBeliefPropagation(device)
 # LDPC_result = ldpc_bp(llr_output, iter) # LDPC
-#
 #
 # print("LDPC_result: ", LDPC_result)
