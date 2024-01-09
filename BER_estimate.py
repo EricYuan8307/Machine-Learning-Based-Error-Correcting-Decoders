@@ -26,7 +26,9 @@ def generator(nr_codewords, device):
 def main():
     SNR_opt_BPSK = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
     SNR_opt_ML = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5]
-    SNR_opt_BP = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]
+    # SNR_opt_BP = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]
+    SNR_opt_BP = [5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]
+
 
     result = np.zeros((4, len(SNR_opt_BPSK)))
     N = num
@@ -97,7 +99,7 @@ def main():
             BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
 
             if error_num_LDPC < 100:
-                N += 100000
+                N += 1000000
                 print(f"the code number is {N}")
 
             else:
@@ -177,18 +179,18 @@ def BeliefPropagation(nr_codeword, snr_dB, device):
     practical_snr = NoiseMeasure(noised_signal, modulated_signal)
 
     for k in range(llr_output.shape[0]):
-        # start_time = time.time()
+        start_time = time.time()
 
         BP = ldpc_bp(llr_output[k], iter)  # LDPC
         BP_result[k] = BP
-        # end_time = time.time()
+        end_time = time.time()
 
-        # if k % 10000 == 0 and k > 0:
-        #     elapsed_time = end_time - start_time
-        #     print(f"Processed {k} iterations in {elapsed_time * 10000} seconds")
+        if k % 10000 == 0 and k > 0:
+            elapsed_time = end_time - start_time
+            print(f"Processed {k} iterations in {elapsed_time * 10000} seconds")
 
-    # iter_end_time = time.time()
-    # print(f"For {practical_snr}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
+    iter_end_time = time.time()
+    print(f"For {practical_snr}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
 
     LDPC_HD = hard_decision(BP_result, device)  # Hard Decision
     LDPC_final = decoder(LDPC_HD)  # Decoder
@@ -204,7 +206,7 @@ if __name__ == "__main__":
     device = torch.device("cpu")
 
     #Hpyer parameters
-    num = int(1e4) #how many original need to generate
+    num = int(1e6) #how many original need to generate
     iter = 5 # LDPC Belief Propagation iteration time
 
     result_all = main()
