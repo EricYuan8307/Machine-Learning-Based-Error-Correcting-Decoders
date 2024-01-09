@@ -177,18 +177,18 @@ def BeliefPropagation(nr_codeword, snr_dB, device):
     practical_snr = NoiseMeasure(noised_signal, modulated_signal)
 
     for k in range(llr_output.shape[0]):
-        start_time = time.time()
+        # start_time = time.time()
 
         BP = ldpc_bp(llr_output[k], iter)  # LDPC
         BP_result[k] = BP
-        end_time = time.time()
+        # end_time = time.time()
 
         # if k % 10000 == 0 and k > 0:
         #     elapsed_time = end_time - start_time
         #     print(f"Processed {k} iterations in {elapsed_time * 10000} seconds")
 
-    iter_end_time = time.time()
-    print(f"For {practical_snr}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
+    # iter_end_time = time.time()
+    # print(f"For {practical_snr}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
 
     LDPC_HD = hard_decision(BP_result, device)  # Hard Decision
     LDPC_final = decoder(LDPC_HD)  # Decoder
