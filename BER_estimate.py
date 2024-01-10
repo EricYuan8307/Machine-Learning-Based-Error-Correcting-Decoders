@@ -29,7 +29,6 @@ def main():
     SNR_opt_BPSK = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
     SNR_opt_ML = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5]
     SNR_opt_BP = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]
-    # SNR_opt_BP = [7, 7.5, 8, 8.5, 9]
 
 
     result = np.zeros((4, len(SNR_opt_BPSK)))
@@ -61,7 +60,7 @@ def main():
             SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
 
             BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
-            if error_num_SDML < 100 & N <= 40000000:
+            if error_num_SDML < 100:
                 N += 1000000
                 print(f"the code number is {N}")
 
@@ -80,7 +79,7 @@ def main():
             HDML_final, bits_info, snr_measure = HardDecisionMLP(N, snr_dB, device)
 
             BER_HDML, error_num_HDML = calculate_ber(HDML_final, bits_info)
-            if error_num_HDML < 100 & N <= 40000000:
+            if error_num_HDML < 100:
                 N += 1000000
                 print(f"the code number is {N}")
 
@@ -202,14 +201,14 @@ def BeliefPropagation(nr_codeword, snr_dB, device):
 
 
 if __name__ == "__main__":
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #                                 else (torch.device("cuda") if torch.backends.cuda.is_available()
-    #                                       else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+                                    else (torch.device("cuda") if torch.backends.cuda.is_available()
+                                          else torch.device("cpu")))
+    # device = torch.device("cpu")
 
     #Hpyer parameters
-    num = int(2e7) #how many original need to generate
-    iter = 5 # LDPC Belief Propagation iteration time
+    num = int(2e7)
+    iter = 5
 
     result_all = main()
     print(result_all)
