@@ -18,9 +18,6 @@ class LDPCBeliefPropagation(torch.nn.Module):
         self.H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
                                [0, 1, 1, 0, 0, 1, 1],
                                [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float64, device=device)
-        # self.H = torch.tensor([[[1, 1, 0, 1, 1, 0, 0],
-        #                        [1, 0, 1, 1, 0, 1, 0],
-        #                        [0, 1, 1, 1, 0, 0, 1]]], dtype=torch.float64, device=device)
         self.num_check_nodes = self.H.shape[1]
         self.num_variable_nodes = self.H.shape[2]
         self.device = device
@@ -28,12 +25,10 @@ class LDPCBeliefPropagation(torch.nn.Module):
     def forward(self, llr, max_iters):
         # Initial values
         messages_v_to_c = torch.zeros(llr.shape, dtype=torch.float64, device=self.device)
-        # print("initial llr", llr)
 
         for iteration in range(max_iters):
             #  From variable nodes to check nodes
             llr_update = self.H * llr if iteration == 0 else messages_v_to_c
-            # llr_update = self.H * llr
             log_llr_update = self.phi(llr_update)
             sum_log_llr = torch.sum(log_llr_update, dim=2).unsqueeze(2)
             masked_sum_log_llr = self.H * sum_log_llr
@@ -58,16 +53,12 @@ class LDPCBeliefPropagation(torch.nn.Module):
 
             if torch.all(mult == torch.zeros(mult.shape, device=self.device)):
                 break
-            else:
-                M = self.H * llr_total
-                messages_v_to_c = M - messages_c_to_v
+            else: messages_v_to_c = self.H * llr_total - messages_c_to_v
 
 
         return llr_total
 
     def phi(self, x):
-        """Stable computation of log(tanh(x/2)) for belief propagation."""
-        # Avoid division by zero
         result0 =torch.tanh(x/2)
         result1 = torch.abs(result0)
         result = torch.where(self.H == 1, torch.log(result1), torch.tensor(0.0, device=self.device))
