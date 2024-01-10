@@ -17,50 +17,53 @@ class LDPCBeliefPropagation(torch.nn.Module):
         super(LDPCBeliefPropagation, self).__init__()
         self.H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
                                [0, 1, 1, 0, 0, 1, 1],
-                               [0, 0, 0, 1, 1, 1, 1], ], ],dtype=torch.float, device=device)
+                               [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float64, device=device)
+        # self.H = torch.tensor([[[1, 1, 0, 1, 1, 0, 0],
+        #                        [1, 0, 1, 1, 0, 1, 0],
+        #                        [0, 1, 1, 1, 0, 0, 1]]], dtype=torch.float64, device=device)
         self.num_check_nodes = self.H.shape[1]
         self.num_variable_nodes = self.H.shape[2]
         self.device = device
 
     def forward(self, llr, max_iters):
         # Initial values
-        messages_v_to_c = torch.zeros(llr.shape, dtype=torch.float, device=self.device)
-
+        messages_v_to_c = torch.zeros(llr.shape, dtype=torch.float64, device=self.device)
         # print("initial llr", llr)
 
         for iteration in range(max_iters):
-            # Check nodes to variable nodes
-            llr_update = self.H * (llr + messages_v_to_c)
+            #  From variable nodes to check nodes
+            llr_update = self.H * llr if iteration == 0 else messages_v_to_c
+            # llr_update = self.H * llr
             log_llr_update = self.phi(llr_update)
-            sum_log_llr = self.H * torch.sum(log_llr_update)
-            sum_log_llr_update = sum_log_llr - log_llr_update
-            phi_sum_log_llr_updat = self.phi(sum_log_llr_update)
+            sum_log_llr = torch.sum(log_llr_update, dim=2).unsqueeze(2)
+            masked_sum_log_llr = self.H * sum_log_llr
+            sum_log_llr_update = masked_sum_log_llr - log_llr_update
+            phi_sum_log_llr_update = self.phi(sum_log_llr_update)
 
-            # S_{mj} calculate the sign in each check node
-            sign1 = torch.sign(llr_update)
-            masked_sign_phi = sign1 * self.H
-            masked_sign_phi_ones = masked_sign_phi + (1 - self.H)
-            sign = masked_sign_phi_ones.prod(dim=2) # torch.Size([2, 4])
+            sign0 = torch.sign(llr_update)
+            masked_sign = sign0 * self.H
+            masked_sign_ones = masked_sign + (1 - self.H)
+            sign = masked_sign_ones.prod(dim=2) # torch.Size([2, 4])
             sign_mask = self.H * sign.unsqueeze(2)
-            sign_mask_update = torch.div(sign_mask, masked_sign_phi_ones)
-            # print("sign_mask_update", sign_mask_update)
+            sign_mask_update = torch.div(sign_mask, masked_sign_ones)
 
-            # From check node to variable node
-            messages_c_to_v = -phi_sum_log_llr_updat * sign_mask_update
-            # print(messages_c_to_v)
+            # From check nodes to variable nodes
+            messages_c_to_v = -phi_sum_log_llr_update * sign_mask_update
 
             sum_messages_c_to_v = torch.sum(messages_c_to_v,dim=1)
-            final_llr = llr + sum_messages_c_to_v
+            llr_total = llr + sum_messages_c_to_v
 
-            est = hard_decision(final_llr, self.device).to(torch.float) # torch.Size([1, 1, 7])
+            est = hard_decision(llr_total, self.device).to(torch.float64) # torch.Size([1, 1, 7])
             mult = torch.matmul(est, self.H.transpose(1, 2))%2
 
             if torch.all(mult == torch.zeros(mult.shape, device=self.device)):
                 break
-            else: messages_v_to_c = self.H * final_llr - messages_c_to_v
+            else:
+                M = self.H * llr_total
+                messages_v_to_c = M - messages_c_to_v
 
 
-        return final_llr
+        return llr_total
 
     def phi(self, x):
         """Stable computation of log(tanh(x/2)) for belief propagation."""
@@ -73,34 +76,11 @@ class LDPCBeliefPropagation(torch.nn.Module):
 
 # device = torch.device("cpu")
 #
-# # llr_output = torch.tensor([[[20.4128,  -16.3902,  -19.1344,  -15.7405,  -26.6343,   23.9271,   21.8500]],
-# #                            [[  92.018,  -20.977,  -13.301, -176.342, -154.045,  -58.012,  -11.695]],
-# #                            ], dtype=torch.float,device=device)  # torch.Size([2, 1, 7])
-# nr_number = int(1e6)
-# llr_output = torch.randn(nr_number, 1, 7, dtype=torch.float, device=device)
-# # print("llr_output", llr_output)
-# result = torch.zeros(llr_output.shape)
+# llr_output = torch.tensor([[[-0.227861747916372,-0.371519925363314,-0.212513607051216,0.232155258660031,0.254121391049793,0.323201541013432,-0.094486115781860]]], dtype=torch.float,device=device)
+# # llr_output = torch.tensor([[[20.4128, -16.3902, -19.1344, -15.7405, -26.6343, 23.9271, 21.8500]]], dtype=torch.float,device=device)  # torch.Size([2, 1, 7])
 #
-# for i in range(nr_number):
-#     input = llr_output[i]
-#     iter = 5
-#     start = time.time()
-#     ldpc_bp = LDPCBeliefPropagation(device)
-#     LDPC_result = ldpc_bp(input, iter) # LDPC
-#     end = time.time()
-#     result[i] = LDPC_result
+# iter = 5
+# ldpc_bp = LDPCBeliefPropagation(device)
+# LDPC_result = ldpc_bp(llr_output, iter) # LDPC
 #
-#     print("time_elapsed", end - start)
-#
-# print(result)
-#
-# # print("LDPC_result: ", LDPC_result)
-# #
-# # HD_result = hard_decision(LDPC_result, device)
-# # HD_input = hard_decision(llr_output, device)
-# #
-# #
-# # print("HD_input", HD_input.shape)
-# # print("HD_result", HD_result.shape)
-# #
-# # print("BER", calculate_ber(HD_result,HD_input))
+# print("LDPC_result: ", LDPC_result)
