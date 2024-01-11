@@ -4,6 +4,7 @@ import time
 import os
 import matplotlib.pyplot as plt
 
+from Encoder.Generator import generator
 from Encoder.BPSK import bpsk_modulator
 from Encoder.Hamming74 import hamming_encoder
 from Decoder.HardDecision import hard_decision
@@ -14,14 +15,6 @@ from Estimation.BitErrorRate import calculate_ber
 from Decoder.HammingDecoder import Hamming74decoder
 from Decoder.MaximumLikelihood import HardDecisionML, SoftDecisionML
 from Transmit.NoiseMeasure import NoiseMeasure
-
-
-# Code Generation
-def generator(nr_codewords, device):
-    bits = torch.randint(0, 2, size=(nr_codewords, 1, 4), dtype=torch.int, device=device)
-    # bits = torch.tensor([[[1, 1, 0, 1]], [[0, 1, 0, 0,]]], dtype=torch.int, device=device)
-
-    return bits
 
 
 # Calculate the Error number and BER
