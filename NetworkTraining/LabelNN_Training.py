@@ -68,6 +68,6 @@ if __name__ == '__main__':
     hidden_size = 7
     learning_rate = 0.01
     epochs = 10000
-    nr_codeword = int(1e4)
+    nr_codeword = int(40)
 
     main()
