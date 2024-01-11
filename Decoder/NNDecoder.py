@@ -11,7 +11,6 @@ class SingleLableNNDecoder(nn.Module):
         self.relu = nn.ReLU()
         self.output = nn.Linear(hidden_size, output_size)
         self.softmax = nn.Softmax(dim=2)
-        # self.softmax = nn.Softmax()
 
     def forward(self, x):
         x = self.hidden(x)
@@ -60,8 +59,6 @@ optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 for epoch in range(epochs):
     # Forward pass
     outputs = model(data)
-    # outputs = torch.tensor(outputs, requires_grad=True)
-    # x = torch.argmax(x, dim=2).unsqueeze(1).to(torch.float) # torch.Size([5, 1, 7])
 
     # Compute the loss
     loss = criterion(outputs, labels)
