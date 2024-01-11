@@ -11,7 +11,8 @@ from Transmit.NoiseMeasure import NoiseMeasure
 
 
 def main():
-    snr = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5]
+    # snr = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5]
+    snr = [4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5]
 
     for i in range(len(snr)):
         snr_dB = snr[i]
@@ -19,7 +20,7 @@ def main():
 
         # ML:
         bits_info = generator(nr_codeword, device)
-        encoded_codeword = encoder(bits_info).to(torch.float)
+        encoded_codeword = encoder(bits_info)
         modulated_signal = bpsk_modulator(encoded_codeword)
         noised_signal = AWGN(modulated_signal, snr_dB, device)
 
@@ -58,15 +59,15 @@ def main():
         #     print(predicted_labels)
 
 if __name__ == '__main__':
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
-    # device = torch.device("cpu")
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                 else torch.device("cpu")))
+    device = torch.device("cpu")
 
     # Hyperparameters
     hidden_size = 7
     learning_rate = 0.01
     epochs = 10000
-    nr_codeword = int(1e5)
+    nr_codeword = int(1e4)
 
     main()
