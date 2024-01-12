@@ -18,9 +18,8 @@ from Transmit.NoiseMeasure import NoiseMeasure
 
 
 # Calculate the Error number and BER
-def estimation(num, iter, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, device):
+def estimation(num, iter, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, result,device):
 
-    result = np.zeros((4, len(SNR_opt_BPSK)))
     N = num
 
     # De-Encoder, BPSK only
@@ -196,11 +195,13 @@ def main():
     # Hpyer parameters
     num = int(2e7)
     iter = 5
-    SNR_opt_BPSK = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
-    SNR_opt_ML = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5]
-    SNR_opt_BP = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]
+    SNR_opt_BPSK = torch.arange(0, 6.5, 0.5)
+    SNR_opt_ML = torch.arange(0, 9.5, 0.5)
+    SNR_opt_BP = torch.arange(0, 9, 0.5)
 
-    result_all = estimation(num, iter, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, device)
+    result_save = np.zeros((4, len(SNR_opt_BPSK)))
+
+    result_all = estimation(num, iter, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, result_save, device)
 
     directory_path = "Result/BER"
     # Create the directory if it doesn't exist
