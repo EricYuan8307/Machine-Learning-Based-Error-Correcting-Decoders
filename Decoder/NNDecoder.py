@@ -15,7 +15,7 @@ class SingleLableNNDecoder(nn.Module):
         x = self.hidden(x)
         x = self.relu(x)
         x = self.output(x)
-        x = x.view(x.shape[0], self.input_size, 2) # torch.Size([5, 1, 14]) to torch.Size([5, 7, 2])
+        x = x.view(x.shape[0], self.input_size, 2).requires_grad_(True) # torch.Size([5, 1, 14]) to torch.Size([5, 7, 2])
         x = self.softmax(x)
         x = torch.argmax(x, dim=2).unsqueeze(1).to(torch.float).requires_grad_(True) # torch.Size([5, 1, 7])
 
@@ -46,13 +46,19 @@ def training(snr, nr_codeword, epochs, learning_rate, hidden_size, device):
         modulated_signal = bpsk_modulator(encoded_codeword)
         noised_signal = AWGN(modulated_signal, snr_dB, device)
 
+
         practical_snr = NoiseMeasure(noised_signal, modulated_signal)
 
+        input_size = noised_signal.shape[2]
+        output_size = 2*noised_signal.shape[2]
+        # output_size = noised_signal.shape[2]
+
         # Create an instance of the SimpleNN class
-        model = SingleLableNNDecoder(noised_signal.shape[2], hidden_size, 2*noised_signal.shape[2]).to(device)
+        model = SingleLableNNDecoder(input_size, hidden_size, output_size).to(device)
 
         # Define the loss function and optimizer
-        criterion = nn.BCELoss()  # Binary Cross Entropy Loss for binary classification
+        # criterion = nn.BCELoss()  # Binary Cross Entropy Loss for binary classification
+        criterion = nn.CrossEntropyLoss()  # Binary Cross Entropy Loss for binary classification
         optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
         # Training loop
@@ -69,7 +75,7 @@ def training(snr, nr_codeword, epochs, learning_rate, hidden_size, device):
             optimizer.step()
 
             if (epoch + 1) % 1000 == 0:
-                print(f'When SNR is {practical_snr}, Epoch [{epoch + 1}/{epochs}], BER: {loss.item()/100}')
+                print(f'When SNR is {practical_snr}, Epoch [{epoch + 1}/{epochs}], BER: {1 - loss.item()/100}')
 
     #     # Testing the model
     #     with torch.no_grad():
@@ -97,8 +103,7 @@ def training(snr, nr_codeword, epochs, learning_rate, hidden_size, device):
     #     plt.show()
 
 def main():
-    # snr = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5]
-    snr = [4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5]
+    snr = torch.arange(0, 9.5, 0.5)
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.backends.cuda.is_available()
     #                 else torch.device("cpu")))
@@ -106,9 +111,9 @@ def main():
 
     # Hyperparameters
     hidden_size = 7
-    learning_rate = 0.01
+    learning_rate = 1e-4
     epochs = 10000
-    nr_codeword = int(40)
+    nr_codeword = int(1e3)
 
     training(snr, nr_codeword, epochs, learning_rate, hidden_size, device)
 
