@@ -32,7 +32,7 @@ class hamming_encoder(torch.nn.Module):
         # Perform matrix multiplication to encode the data
         result_tensor = torch.matmul(input_data.to(torch.float), self.generator_matrix.t()) % 2
 
-        return result_tensor.to(torch.int)
+        return result_tensor
 
 # device = (torch.device("mps") if torch.backends.mps.is_available()
 #                                     else (torch.device("cuda") if torch.backends.cuda.is_available()
