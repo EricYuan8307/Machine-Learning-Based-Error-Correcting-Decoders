@@ -15,9 +15,8 @@ class SingleLableNNDecoder(nn.Module):
         x = self.hidden(x)
         x = self.relu(x)
         x = self.output(x)
-        x = x.view(x.shape[0], self.input_size, 2).requires_grad_(True) # torch.Size([5, 1, 14]) to torch.Size([5, 7, 2])
         x = self.softmax(x)
-        x = torch.argmax(x, dim=2).unsqueeze(1).to(torch.float).requires_grad_(True) # torch.Size([5, 1, 7])
+        # x = torch.argmax(x, dim=2).unsqueeze(1).to(torch.float).requires_grad_(True) # torch.Size([5, 1, 7])
 
         return x
 
@@ -46,28 +45,30 @@ def training(snr, nr_codeword, epochs, learning_rate, hidden_size, device):
         modulated_signal = bpsk_modulator(encoded_codeword)
         noised_signal = AWGN(modulated_signal, snr_dB, device)
 
-
         practical_snr = NoiseMeasure(noised_signal, modulated_signal)
 
+        # NN structure:
         input_size = noised_signal.shape[2]
-        output_size = 2*noised_signal.shape[2]
-        # output_size = noised_signal.shape[2]
+        output_size = torch.pow(torch.tensor(2, device=device), bits_info.shape[2]) # 2^x
+        label = BinarytoDecimal(bits_info)
 
         # Create an instance of the SimpleNN class
         model = SingleLableNNDecoder(input_size, hidden_size, output_size).to(device)
 
         # Define the loss function and optimizer
-        # criterion = nn.BCELoss()  # Binary Cross Entropy Loss for binary classification
-        criterion = nn.CrossEntropyLoss()  # Binary Cross Entropy Loss for binary classification
+        criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
         # Training loop
         for epoch in range(epochs):
+            print('inputs: ', noised_signal.shape) # torch.Size([1000, 1, 7])
+            print('labels: ', label.shape) # torch.Size([1000])
             # Forward pass
             outputs = model(noised_signal)
+            print('outputs: ', outputs.shape) # torch.Size([1000, 1, 16])
 
             # Compute the loss
-            loss = criterion(outputs, encoded_codeword)
+            loss = criterion(outputs, label)
 
             # Backpropagation and optimization
             optimizer.zero_grad()
@@ -102,6 +103,12 @@ def training(snr, nr_codeword, epochs, learning_rate, hidden_size, device):
     #     plt.savefig(place)
     #     plt.show()
 
+def BinarytoDecimal(binary_tensor):
+    decimal_values = torch.sum(binary_tensor * (2 ** torch.arange(binary_tensor.shape[-1], dtype=torch.float)), dim=-1)
+    decimal_values = decimal_values.squeeze()
+
+    return decimal_values
+
 def main():
     snr = torch.arange(0, 9.5, 0.5)
     # device = (torch.device("mps") if torch.backends.mps.is_available()
@@ -112,7 +119,7 @@ def main():
     # Hyperparameters
     hidden_size = 7
     learning_rate = 1e-4
-    epochs = 10000
+    epochs = 1
     nr_codeword = int(1e3)
 
     training(snr, nr_codeword, epochs, learning_rate, hidden_size, device)
