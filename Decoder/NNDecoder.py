@@ -10,121 +10,14 @@ class SingleLableNNDecoder(nn.Module):
         self.hidden = nn.Linear(input_size, hidden_size)
         self.relu = nn.ReLU()
         self.output = nn.Linear(hidden_size, output_size)
-        self.softmax = nn.Softmax(dim=2)
+        self.softmax = nn.LogSoftmax(dim=2)
 
     def forward(self, x):
         x = self.hidden(x)
         x = self.relu(x)
         x = self.output(x)
         x = self.softmax(x)
-        # x = torch.argmax(x, dim=2).unsqueeze(1).to(torch.float).requires_grad_(True) # torch.Size([5, 1, 7])
 
         return x
 
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
-
-from Encoder.Generator import generator
-from Encoder.BPSK import bpsk_modulator
-from Encoder.Hamming74 import hamming_encoder
-from Transmit.noise import AWGN
-from Decoder.NNDecoder import SingleLableNNDecoder
-from Transmit.NoiseMeasure import NoiseMeasure
-from Estimation.BitErrorRate import calculate_ber
-
-def training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, device):
-
-    for i in range(len(snr)):
-        snr_dB = snr[i]
-
-        # Transmitter:
-        encoder = hamming_encoder(device)
-        bits_info = generator(nr_codeword, device)
-        encoded_codeword = encoder(bits_info)
-        modulated_signal = bpsk_modulator(encoded_codeword)
-        noised_signal = AWGN(modulated_signal, snr_dB, device)
-        practical_snr = NoiseMeasure(noised_signal, modulated_signal)
-
-        # NN structure:
-        input_size = noised_signal.shape[2]
-        output_size = torch.pow(torch.tensor(2, device=device), bits_info.shape[2]) # 2^x
-        label = BinarytoDecimal(bits_info,device).to(torch.long)
-
-        # Create an instance of the SimpleNN class
-        model = SingleLableNNDecoder(input_size, hidden_size, output_size).to(device)
-
-        # Define the loss function and optimizer
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=learning_rate)
-
-        # Training loop
-        for epoch in range(epochs):
-            optimizer.zero_grad()
-
-            # Forward pass
-            outputs = model(noised_signal).squeeze(1)
-
-            # Compute the loss
-            loss = criterion(outputs, label)
-            loss.backward()
-            optimizer.step()
-
-            if (epoch + 1) % 1000 == 0:
-                print(f'When SNR is {practical_snr}, Epoch [{epoch + 1}/{epochs}], loss: {loss.item()}')
-
-
-        # # NN_result =
-        # BER_NN, error_num_NN = calculate_ber(outputs, bits_info)
-        # print(f"BPSK: When SNR is {practical_snr} , error number is {error_num_NN} and BER is {BER_NN}")
-
-    #     # Testing the model
-    #     with torch.no_grad():
-    #         test_data = torch.tensor([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=torch.float32)
-    #         predicted_labels = model(test_data)
-    #         predicted_labels = (predicted_labels > 0.5).float()  # Threshold the outputs
-    #
-    #         print("Predicted labels:")
-    #         print(predicted_labels)
-    #
-    # def img_loss(train_losses, test_losses, file_name):
-    #     num_epochs = len(train_losses)
-    #     place = "images/" + file_name
-    #     # plot the loss
-    #     fig, ax = plt.subplots(figsize=(12, 6))
-    #     ax.plot(train_losses, label='Training loss')
-    #     ax.plot(test_losses, label='Testing loss')
-    #     ax.set_xlim(0, num_epochs - 1)
-    #
-    #     # axis labels
-    #     plt.xlabel('Epoch')
-    #     plt.ylabel('Loss')
-    #     plt.legend()
-    #     plt.savefig(place)
-    #     plt.show()
-
-
-
-
-def main():
-    snr = torch.arange(0, 9.5, 0.5)
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
-    #                 else torch.device("cpu")))
-    device = torch.device("cpu")
-
-    # Hyperparameters
-    hidden_size = 7
-    batch_size = 32
-    learning_rate = 1e-6
-    epochs = 10000
-    nr_codeword = int(1e3)
-
-    training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, device)
-
-
-
-if __name__ == '__main__':
-    main()
