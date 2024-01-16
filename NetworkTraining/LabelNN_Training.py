@@ -65,14 +65,14 @@ def training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, d
 
 def main():
     # Device Setting
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                 else torch.device("cpu")))
     # device = torch.device("cpu")
     device = torch.device("cuda")
 
     # Hyperparameters
-    snr = torch.arange(4, 9.5, 0.5)
+    snr = torch.arange(0, 9.5, 0.5)
     hidden_size = 7
     batch_size = 32
     learning_rate = 1e-2
