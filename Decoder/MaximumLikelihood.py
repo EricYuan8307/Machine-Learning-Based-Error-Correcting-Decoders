@@ -14,7 +14,6 @@ class HardDecisionML(torch.nn.Module):
         Returns:
             result: The final estimate result.
         """
-
         super(HardDecisionML, self).__init__()
         self.C = torch.tensor([[0, 0, 0, 0, 0, 0, 0],
                                [1, 1, 1, 0, 0, 0, 0],
@@ -58,7 +57,6 @@ class SoftDecisionML(nn.Module):
         Returns:
             result: The final estimate result(closest euclidean distance).
         """
-
         super(SoftDecisionML, self).__init__()
         self.sd_c = torch.tensor([[-1, -1, -1, -1, -1, -1, -1],
                                [ 1,  1,  1, -1, -1, -1, -1],
