@@ -1,4 +1,4 @@
-## master-thesis: Improve Belief-Propagation in Maximum likelihood
+## Master Thesis: Improve Belief Propagation in Maximum Likelihood
 
 ### Implement the Soft-Decision Maximum Likelihood, Hard-Decsion Maximum Likelihood, and Belief propagation
 LDPC Belief Propagation Reference: <br>
