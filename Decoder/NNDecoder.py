@@ -20,7 +20,6 @@ class SingleLabelNNDecoder(nn.Module):
 
         return x
 
-
 class MultiLabelNNDecoder(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
 

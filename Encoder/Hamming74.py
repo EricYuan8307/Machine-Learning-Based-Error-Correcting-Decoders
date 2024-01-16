@@ -26,9 +26,6 @@ class hamming_encoder(torch.nn.Module):
             [0, 0, 0, 1],], dtype=torch.float, device=device)
 
     def forward(self, input_data):
-        # Ensure input_data has shape (batch_size)
-        # assert input_data.size(0) == self.generator_matrix.shape[1], "Input data must have same generator matrix row number bits."
-
         # Perform matrix multiplication to encode the data
         result_tensor = torch.matmul(input_data.to(torch.float), self.generator_matrix.t()) % 2
 
