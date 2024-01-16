@@ -8,7 +8,6 @@ class DecimaltoBinary(nn.Module):
         super().__init__()
         self.device = device
         self.B = torch.tensor([[0, 0, 0, 0],
-                               [1, 1, 1, 0],
                                [0, 0, 0, 1],
                                [0, 0, 1, 0],
                                [0, 0, 1, 1],
@@ -22,6 +21,7 @@ class DecimaltoBinary(nn.Module):
                                [1, 0, 1, 1],
                                [1, 1, 0, 0],
                                [1, 1, 0, 1],
+                               [1, 1, 1, 0],
                                [1, 1, 1, 1]], device=self.device, dtype=torch.float) # torch.Size([1, 16, 4])
 
 
