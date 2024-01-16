@@ -125,14 +125,15 @@ def main():
 
     # Hyperparameters
     snr = torch.arange(0, 9.5, 0.5)
-    hidden_size = 7
+    SLNN_hidden_size = 7
+    MLNN_hidden_size = 100
     batch_size = 32
     learning_rate = 1e-2
     epochs = 10000
-    nr_codeword = int(1e2)
+    nr_codeword = int(1e4)
 
-    # SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, device)
-    MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, device)
+    # SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, device)
+    MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, device)
 
 
 if __name__ == '__main__':
