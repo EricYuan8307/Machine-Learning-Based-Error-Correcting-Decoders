@@ -14,7 +14,7 @@ class DecimaltoBinary(nn.Module):
 
         super().__init__()
         self.device = device
-        self.B = torch.tensor([[[0, 0, 0, 0],
+        self.B = torch.tensor([[0, 0, 0, 0],
                                [1, 1, 1, 0],
                                [0, 0, 0, 1],
                                [0, 0, 1, 0],
@@ -29,13 +29,15 @@ class DecimaltoBinary(nn.Module):
                                [1, 0, 1, 1],
                                [1, 1, 0, 0],
                                [1, 1, 0, 1],
-                               [1, 1, 1, 1]],], device=self.device, dtype=torch.float) # torch.Size([1, 16, 4])
+                               [1, 1, 1, 1]], device=self.device, dtype=torch.float) # torch.Size([1, 16, 4])
 
 
     def forward(self, decimal_tensor):
+        decimal_tensor = decimal_tensor.unsqueeze(1)
+        decimal_tensor = torch.argmax(decimal_tensor, dim=2)
+        Binary_output = self.B[decimal_tensor]
 
-
-        return
+        return Binary_output
 
 
 
