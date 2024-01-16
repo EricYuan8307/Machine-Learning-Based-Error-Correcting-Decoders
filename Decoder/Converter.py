@@ -1,14 +1,7 @@
 import torch
-import torch.nn.functional as F
 import torch.nn as nn
 
-def BinarytoDecimal(binary_tensor, device):
-    decimal_values = torch.sum(binary_tensor * (2 ** torch.arange(binary_tensor.shape[-1], dtype=torch.float, device=device)), dim=-1)
-    decimal_values = decimal_values.squeeze()
-
-    return decimal_values
-
-
+# Single-label Neural Network Decoder:
 class DecimaltoBinary(nn.Module):
     def __init__(self, device):
 
@@ -39,5 +32,18 @@ class DecimaltoBinary(nn.Module):
 
         return Binary_output
 
+def BinarytoDecimal(binary_tensor, device):
+    decimal_values = torch.sum(binary_tensor * (2 ** torch.arange(binary_tensor.shape[-1], dtype=torch.float, device=device)), dim=-1)
+    decimal_values = decimal_values.squeeze()
 
+    return decimal_values
+
+
+# Multi-label Neural Network Decoder:
+def MLNN_decision(bitcodeword, mps_device):
+    tensor_1 = torch.tensor(1, dtype=torch.float, device=mps_device)
+    tensor_0 = torch.tensor(0, dtype=torch.float, device=mps_device)
+    estimated_bits = torch.where(bitcodeword > 0.5, tensor_1, tensor_0)
+
+    return estimated_bits
 
