@@ -23,7 +23,7 @@ def training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, d
         encoded_codeword = encoder(bits_info)
         modulated_signal = bpsk_modulator(encoded_codeword)
         noised_signal = AWGN(modulated_signal, snr_dB, device)
-        practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+        snr_measure = NoiseMeasure(noised_signal, modulated_signal)
 
         # NN structure:
         input_size = noised_signal.shape[2]
@@ -50,12 +50,34 @@ def training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, d
             optimizer.step()
 
             if (epoch + 1) % 1000 == 0:
-                print(f'When SNR is {practical_snr}, Epoch [{epoch + 1}/{epochs}], loss: {loss.item()}')
+                print(f'When SNR is {snr_measure}, Epoch [{epoch + 1}/{epochs}], loss: {loss.item()}')
+
+        tobinary = DecimaltoBinary(device)
+        SLNN_final = tobinary(outputs)
+
+        BER_SLNN, error_num_SLNN = calculate_ber(SLNN_final, bits_info)  # BER calculation
+        print(f"SLNN: When SNR is {snr_measure} and signal number is {nr_codeword}, error number is {error_num_SLNN} and BER is {BER_SLNN}")
 
 
-        # # NN_result =
-        # BER_NN, error_num_NN = calculate_ber(outputs, bits_info)
-        # print(f"BPSK: When SNR is {practical_snr} , error number is {error_num_NN} and BER is {BER_NN}")
+
+
+
+
+def main():
+    snr = torch.arange(4, 9.5, 0.5)
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+              else (torch.device("cuda") if torch.backends.cuda.is_available()
+                    else torch.device("cpu")))
+    # device = torch.device("cpu")
+
+    # Hyperparameters
+    hidden_size = 7
+    batch_size = 32
+    learning_rate = 1e-2
+    epochs = 10000
+    nr_codeword = int(1e6)
+
+    training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, device)
 
     #     # Testing the model
     #     with torch.no_grad():
@@ -82,24 +104,6 @@ def training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, d
     #     plt.savefig(place)
     #     plt.show()
 
-
-
-
-def main():
-    snr = torch.arange(0, 9.5, 0.5)
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
-    # device = torch.device("cpu")
-
-    # Hyperparameters
-    hidden_size = 7
-    batch_size = 32
-    learning_rate = 1e-2
-    epochs = 10000
-    nr_codeword = int(1e3)
-
-    training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, device)
 
 
 
