@@ -132,7 +132,7 @@ def main():
     epochs = 10000
     nr_codeword = int(1e4)
 
-    # SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, device)
+    SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, device)
     MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, device)
 
 
