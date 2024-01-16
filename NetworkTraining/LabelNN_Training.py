@@ -1,3 +1,4 @@
+import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -39,6 +40,8 @@ def training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, d
 
         # Training loop
         for epoch in range(epochs):
+            start_time = time.time()
+
             optimizer.zero_grad()
 
             # Forward pass
@@ -49,8 +52,10 @@ def training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, d
             loss.backward()
             optimizer.step()
 
+            end_time = time.time()
+
             if (epoch + 1) % 1000 == 0:
-                print(f'When SNR is {snr_measure}, Epoch [{epoch + 1}/{epochs}], loss: {loss.item()}')
+                print(f'When SNR is {snr_measure}, Epoch [{epoch + 1}/{epochs}], loss: {loss.item()}, time: {end_time - start_time}')
 
         tobinary = DecimaltoBinary(device)
         SLNN_final = tobinary(outputs)
@@ -69,7 +74,7 @@ def main():
     #           else (torch.device("cuda") if torch.backends.cuda.is_available()
     #                 else torch.device("cpu")))
     # device = torch.device("cpu")
-    device = torch.device("cuda")
+    device = torch.device("cuda:2")
 
     # Hyperparameters
     snr = torch.arange(0, 9.5, 0.5)
@@ -80,33 +85,6 @@ def main():
     nr_codeword = int(1e6)
 
     training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, device)
-
-    #     # Testing the model
-    #     with torch.no_grad():
-    #         test_data = torch.tensor([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=torch.float32)
-    #         predicted_labels = model(test_data)
-    #         predicted_labels = (predicted_labels > 0.5).float()  # Threshold the outputs
-    #
-    #         print("Predicted labels:")
-    #         print(predicted_labels)
-    #
-    # def img_loss(train_losses, test_losses, file_name):
-    #     num_epochs = len(train_losses)
-    #     place = "images/" + file_name
-    #     # plot the loss
-    #     fig, ax = plt.subplots(figsize=(12, 6))
-    #     ax.plot(train_losses, label='Training loss')
-    #     ax.plot(test_losses, label='Testing loss')
-    #     ax.set_xlim(0, num_epochs - 1)
-    #
-    #     # axis labels
-    #     plt.xlabel('Epoch')
-    #     plt.ylabel('Loss')
-    #     plt.legend()
-    #     plt.savefig(place)
-    #     plt.show()
-
-
 
 
 if __name__ == '__main__':
