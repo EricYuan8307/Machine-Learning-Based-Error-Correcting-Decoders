@@ -157,7 +157,7 @@ def main():
     # device = torch.device("cuda:2")
 
     # Hyperparameters
-    snr = torch.arange(0, 10.5, 0.5)
+    snr = torch.arange(0, 6.5, 0.5)
     SLNN_hidden_size = 7
     MLNN_hidden_size = 100
     batch_size = 32
@@ -165,14 +165,14 @@ def main():
     epochs = 10000
     nr_codeword = int(1e4)
     # 如果是在主目录子文件夹下，就需要使用absloyte path, 当BER_estimate在主目录中，所以Reference address就行。
-    SLNN_directory_path = "/Users/yunchengyuan/Documents/ProgrammingProject/master-thesis/Result/Model/SLNN"
-    MLNN_directory_path = "/Users/yunchengyuan/Documents/ProgrammingProject/master-thesis/Result/Model/MLNN"
+    SLNN_directory_path = "/Result/Model/SLNN"
+    MLNN_directory_path = "/Result/Model/MLNN"
     # SLNN_directory_path = "Result/Model/SLNN"
     # MLNN_directory_path = "Result/Model/MLNN"
 
     result_save = np.zeros((1, len(snr)))
 
-    # SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_directory_path, result_save, device)
+    SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_directory_path, result_save, device)
     MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_directory_path,result_save, device)
 
 
