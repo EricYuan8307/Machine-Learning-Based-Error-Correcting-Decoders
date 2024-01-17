@@ -18,7 +18,7 @@ from Transmit.NoiseMeasure import NoiseMeasure
 
 
 # Calculate the Error number and BER
-def estimation(num, iter, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, result,device):
+def estimation(num, iter, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, result, device):
 
     N = num
 
@@ -195,7 +195,7 @@ def main():
     # Hpyer parameters
     num = int(2e7)
     iter = 5
-    SNR_opt_BPSK = torch.arange(0, 6.5, 0.5)
+    SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
     SNR_opt_BP = torch.arange(0, 9, 0.5)
 
