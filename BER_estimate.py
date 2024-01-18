@@ -100,25 +100,25 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, SLNN
     #             break
 
 
-    # Single-label Neural Network:
-    for i in range(len(SNR_opt_NN)):
-        snr_dB = SNR_opt_NN[i]
-        input_size = 7
-        output_size = 16
-
-        model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
-        SLNN_final, bits_info, snr_measure = SLNNDecoder(N, snr_dB, model, device)
-
-        BER_SLNN, error_num_SLNN = calculate_ber(SLNN_final, bits_info) # BER calculation
-
-        if error_num_SLNN < 100:
-            N += 1000000
-            print(f"the code number is {N}")
-
-        else:
-            print(f"SLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SLNN} and BER is {BER_SLNN}")
-            result[4, i] = BER_SLNN
-            break
+    # # Single-label Neural Network:
+    # for i in range(len(SNR_opt_NN)):
+    #     snr_dB = SNR_opt_NN[i]
+    #     input_size = 7
+    #     output_size = 16
+    #
+    #     model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
+    #     SLNN_final, bits_info, snr_measure = SLNNDecoder(N, snr_dB, model, device)
+    #
+    #     BER_SLNN, error_num_SLNN = calculate_ber(SLNN_final, bits_info) # BER calculation
+    #
+    #     if error_num_SLNN < 100:
+    #         N += 1000000
+    #         print(f"the code number is {N}")
+    #
+    #     else:
+    #         print(f"SLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SLNN} and BER is {BER_SLNN}")
+    #         result[4, i] = BER_SLNN
+    #         break
 
 
     # Multi-label Neural Network:
@@ -128,7 +128,8 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, SLNN
         output_size = 4
 
         model = MultiLabelNNDecoder(input_size, MLNN_hidden_size, output_size).to(device)
-        MLNN_final, bits_info, snr_measure = MLNNDecoder(N, snr_dB, model, device)
+        MLNN_result, bits_info, snr_measure = MLNNDecoder(N, snr_dB, model, device)
+        MLNN_final = MLNN_decision(MLNN_result, device)
 
         BER_MLNN, error_num_MLNN = calculate_ber(MLNN_final, bits_info) # BER calculation
 
@@ -137,7 +138,7 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, SLNN
             print(f"the code number is {N}")
 
         else:
-            print(f"LDPC: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_MLNN} and BER is {BER_MLNN}")
+            print(f"MLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_MLNN} and BER is {BER_MLNN}")
             result[5, i] = BER_MLNN
             break
 
@@ -277,7 +278,7 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.backends.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = torch.device("cuda")
 
     # Hpyer parameters
     num = int(1e4)
