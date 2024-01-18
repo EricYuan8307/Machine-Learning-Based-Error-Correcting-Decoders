@@ -63,20 +63,20 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
                     print(f'Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.3f}')
                     running_loss = 0.0
 
-        # Test data:
-        SLNN_testloader = torch.utils.data.DataLoader(SLNN_trainset, batch_size, shuffle=False)
-        error = 0
-        total = 0
-
-        with torch.no_grad():
-            for data in SLNN_testloader:
-                inputs, labels = data
-                outputs = model(inputs)
-                predicted = torch.argmax(outputs.data, 2)
-                total += labels.size(0)
-                error += (predicted != labels).sum().item()
-
-        print(f'BLER on the test data: {100*error / total}%')
+        # # Test data:
+        # SLNN_testloader = torch.utils.data.DataLoader(SLNN_trainset, batch_size, shuffle=False)
+        # error = 0
+        # total = 0
+        #
+        # with torch.no_grad():
+        #     for data in SLNN_testloader:
+        #         inputs, labels = data
+        #         outputs = model(inputs)
+        #         predicted = torch.argmax(outputs.data, 2)
+        #         total += labels.size(0)
+        #         error += (predicted != labels).sum().item()
+        #
+        # print(f'BLER on the test data: {100*error / total}%')
 
         os.makedirs(model_path, exist_ok=True)
         torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{snr_dB}.pth")
@@ -149,19 +149,19 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
                     print(f'Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.3f}')
                     running_loss = 0.0
 
-        # Test data:
-        MLNN_testloader = torch.utils.data.DataLoader(MLNN_trainset, batch_size, shuffle=False)
-        error = 0
-        total = 0
-
-        with torch.no_grad():
-            for data in MLNN_testloader:
-                inputs, labels = data
-                outputs = model(inputs)
-                total += labels.size(0)
-                error += (outputs != labels).sum().item()
-
-        print(f'BLER on the test data: {100*error / total}%')
+        # # Test data:
+        # MLNN_testloader = torch.utils.data.DataLoader(MLNN_trainset, batch_size, shuffle=False)
+        # error = 0
+        # total = 0
+        #
+        # with torch.no_grad():
+        #     for data in MLNN_testloader:
+        #         inputs, labels = data
+        #         outputs = model(inputs)
+        #         total += labels.size(0)
+        #         error += (outputs != labels).sum().item()
+        #
+        # print(f'BLER on the test data: {100*error / total}%')
 
         os.makedirs(model_path, exist_ok=True)
         torch.save(model.state_dict(), f"{model_path}MLNN_model_BER{snr_dB}.pth")
@@ -189,11 +189,11 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
 def main():
     # Device Setting
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                 else torch.device("cpu")))
     # device = torch.device("cpu")
-    # device = torch.device("cuda")
+    device = torch.device("cuda")
 
     # Hyperparameters
     snr = torch.arange(3, 6, 0.5)
