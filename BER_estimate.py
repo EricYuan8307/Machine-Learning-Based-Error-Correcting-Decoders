@@ -47,15 +47,15 @@ def estimation(num, iter, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, result, device):
         for _ in range(10):
             SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
 
-            # BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
-            BER_SDML = calculate_bler(SDML_final, bits_info)
+            BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
+            # BER_SDML = calculate_bler(SDML_final, bits_info)
             if error_num_SDML < 100:
                 N += 1000000
                 print(f"the code number is {N}")
 
             else:
-                # print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
-                print(f"SD-ML: When SNR is {snr_measure} and signal number is {N} and BLER is {BER_SDML}")
+                print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
+                # print(f"SD-ML: When SNR is {snr_measure} and signal number is {N} and BLER is {BLER_SDML}")
                 result[1, i] = BER_SDML
                 break
 

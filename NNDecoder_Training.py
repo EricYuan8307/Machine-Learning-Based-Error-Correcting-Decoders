@@ -151,7 +151,7 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
                 running_loss += loss.item()
                 if i % 100 == 99:  # Print every 100 mini-batches
-                    print(f'Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.3f}')
+                    print(f'SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.3f}')
                     running_loss = 0.0
 
         # # Test data:
@@ -206,7 +206,7 @@ def main():
     device = torch.device("cuda")
 
     # Hyperparameters
-    snr = torch.arange(3, 6, 0.5)
+    snr = torch.arange(4, 6, 0.5)
     SLNN_hidden_size = 7
     MLNN_hidden_size = 100
     batch_size = 64
@@ -218,7 +218,7 @@ def main():
     SLNN_model_path = "Result/Model/SLNN/"
     MLNN_model_path = "Result/Model/MLNN/"
 
-    SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, device)
+    # SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, device)
     MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, device)
 
 
