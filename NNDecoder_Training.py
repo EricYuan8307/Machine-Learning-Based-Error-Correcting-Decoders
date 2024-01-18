@@ -177,17 +177,17 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.backends.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
-    # device = torch.device("cuda:2")
+    # device = torch.device("cpu")
+    device = torch.device("cuda")
 
     # Hyperparameters
-    snr = torch.arange(0, 1, 0.5)
+    snr = torch.arange(4, 6, 0.5)
     SLNN_hidden_size = 7
     MLNN_hidden_size = 100
     batch_size = 64
     learning_rate = 1e-2
     epochs = 10000
-    nr_codeword = int(1e3)
+    nr_codeword = int(1e7)
     # 如果是在主目录子文件夹下，就需要使用absloyte path, 当BER_estimate在主目录中，所以Reference address就行。
     SLNN_directory_path = "/Result/Model/SLNN"
     SLNN_model_path = "Result/Model/SLNN/"
