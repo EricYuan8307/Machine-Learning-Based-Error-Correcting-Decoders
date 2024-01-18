@@ -60,7 +60,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
                 running_loss += loss.item()
                 if i % 100 == 99:  # Print every 100 mini-batches
-                    print(f'Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.3f}')
+                    print(f'SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.3f}')
                     running_loss = 0.0
 
         # # Test data:
@@ -83,7 +83,6 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
         # Save MLNN model with specific SNR and time
         os.makedirs(model_path, exist_ok=True)
-        # torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{snr_dB}_{current_time}.pth")
         torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{snr_dB}.pth")
 
         # tobinary = DecimaltoBinary(device)
@@ -173,7 +172,6 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
         # Save MLNN model with specific SNR and time
         os.makedirs(model_path, exist_ok=True)
-        # torch.save(model.state_dict(), f"{model_path}MLNN_model_BER{snr_dB}_{current_time}.pth")
         torch.save(model.state_dict(), f"{model_path}MLNN_model_BER{snr_dB}.pth")
 
 
@@ -218,7 +216,7 @@ def main():
     SLNN_model_path = "Result/Model/SLNN/"
     MLNN_model_path = "Result/Model/MLNN/"
 
-    # SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, device)
+    SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, device)
     MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, device)
 
 
