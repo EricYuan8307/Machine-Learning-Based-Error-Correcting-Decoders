@@ -11,7 +11,7 @@ from Decoder.HardDecision import hard_decision
 from Decoder.LDPC_BP import LDPCBeliefPropagation
 from Decoder.likelihood import llr
 from Transmit.noise import AWGN
-from Estimation.BitErrorRate import calculate_ber
+from Metric.ErrorRate import calculate_ber, calculate_bler
 from Decoder.HammingDecoder import Hamming74decoder
 from Decoder.MaximumLikelihood import HardDecisionML, SoftDecisionML
 from Transmit.NoiseMeasure import NoiseMeasure
