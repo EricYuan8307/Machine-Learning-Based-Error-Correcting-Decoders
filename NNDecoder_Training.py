@@ -15,7 +15,7 @@ from Decoder.NNDecoder import SingleLabelNNDecoder, MultiLabelNNDecoder
 from Transmit.NoiseMeasure import NoiseMeasure
 from Decoder.Converter import BinarytoDecimal, DecimaltoBinary, MLNN_decision
 
-def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, directory_path, model_path, result, device):
+def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, model_path, device):
 
     for i in range(len(snr)):
         snr_dB = snr[i]
@@ -102,8 +102,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
     # np.savetxt(full_csv_path, result, delimiter=' ,')
 
 
-
-def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, directory_path, result, device):
+def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, model_path, device):
 
     for i in range(len(snr)):
         snr_dB = snr[i]
@@ -150,6 +149,24 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
                     print(f'Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.3f}')
                     running_loss = 0.0
 
+        # Test data:
+        MLNN_testloader = torch.utils.data.DataLoader(MLNN_trainset, batch_size, shuffle=False)
+        correct = 0
+        total = 0
+
+        with torch.no_grad():
+            for data in MLNN_testloader:
+                inputs, labels = data
+                outputs = model(inputs)
+                predicted = torch.argmax(outputs.data, 2)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+
+        print(f'Accuracy on the test data: {correct / total}%')
+
+        os.makedirs(model_path, exist_ok=True)
+        torch.save(model.state_dict(), f"{model_path}MLNN_model_BER{snr_dB}.pth")
+
 
         # MLNN_final = MLNN_decision(outputs, device)
         # BER_MLNN, error_num_MLNN = calculate_ber(MLNN_final, bits_info)  # BER calculation
@@ -180,22 +197,22 @@ def main():
     device = torch.device("cuda")
 
     # Hyperparameters
-    snr = torch.arange(4, 6, 0.5)
+    snr = torch.arange(3, 6, 0.5)
     SLNN_hidden_size = 7
     MLNN_hidden_size = 100
     batch_size = 64
     learning_rate = 1e-2
-    epochs = 10000
-    nr_codeword = int(1e7)
+    epochs = 150
+    nr_codeword = int(1e6)
+
     # 如果是在主目录子文件夹下，就需要使用absloyte path, 当BER_estimate在主目录中，所以Reference address就行。
-    SLNN_directory_path = "/Result/Model/SLNN"
     SLNN_model_path = "Result/Model/SLNN/"
-    MLNN_directory_path = "Result/Model/MLNN"
+    MLNN_model_path = "Result/Model/MLNN"
 
     result_save = np.zeros((1, len(snr)))
 
-    SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_directory_path, SLNN_model_path, result_save, device)
-    # MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_directory_path,result_save, device)
+    SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, device)
+    MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, device)
 
 
 if __name__ == '__main__':
