@@ -78,7 +78,12 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
         #
         # print(f'BLER on the test data: {100*error / total}%')
 
+        # Get the current timestamp as a string
+        current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+        # Save MLNN model with specific SNR and time
         os.makedirs(model_path, exist_ok=True)
+        # torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{snr_dB}_{current_time}.pth")
         torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{snr_dB}.pth")
 
         # tobinary = DecimaltoBinary(device)
@@ -163,7 +168,12 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
         #
         # print(f'BLER on the test data: {100*error / total}%')
 
+        # Get the current timestamp as a string
+        current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+        # Save MLNN model with specific SNR and time
         os.makedirs(model_path, exist_ok=True)
+        # torch.save(model.state_dict(), f"{model_path}MLNN_model_BER{snr_dB}_{current_time}.pth")
         torch.save(model.state_dict(), f"{model_path}MLNN_model_BER{snr_dB}.pth")
 
 
