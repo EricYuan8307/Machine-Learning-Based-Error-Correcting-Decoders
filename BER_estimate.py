@@ -115,7 +115,7 @@ def estimation(num, iter, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, SNR_opt_NN, MLNN
             print(f"the code number is {N}")
 
         else:
-            print(f"LDPC: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_MLNN} and BER is {BER_MLNN}")
+            print(f"MLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_MLNN} and BER is {BER_MLNN}")
             result[4, i] = BER_MLNN
             break
 
@@ -235,7 +235,7 @@ def main():
     device = torch.device("cpu")
 
     # Hpyer parameters
-    num = int(1e4)
+    num = int(1e8)
     iter = 5
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
@@ -244,7 +244,7 @@ def main():
     SLNN_hidden_size = 100
     MLNN_hidden_size = 100
 
-    result_save = np.zeros((4, len(SNR_opt_BPSK)))
+    result_save = np.zeros((7, len(SNR_opt_BPSK)))
 
     result_all = estimation(num, iter, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, SNR_opt_NN, MLNN_hidden_size, result_save, device)
 
