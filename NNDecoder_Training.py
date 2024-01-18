@@ -13,7 +13,6 @@ from Encoder.Hamming74 import hamming_encoder
 from Transmit.noise import AWGN
 from Decoder.NNDecoder import SingleLabelNNDecoder, MultiLabelNNDecoder
 from Transmit.NoiseMeasure import NoiseMeasure
-from Estimation.BitErrorRate import calculate_ber
 from Decoder.Converter import BinarytoDecimal, DecimaltoBinary, MLNN_decision
 
 def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, directory_path, model_path, result, device):
