@@ -44,12 +44,13 @@ def calculate_bler(predicted, target):
     # Calculate BLER
     bler = erroneous_blocks.float() / target.shape[0]
 
-    return bler
+    return bler, erroneous_blocks
 
 
-# transmitted_bits = torch.tensor([[[1, 0, 1, 1]], [[0, 1, 0, 0,]]], dtype=torch.int)
-# origin_bits = torch.tensor([[[1, 1, 0, 1]], [[0, 1, 0, 0,]]], dtype=torch.int)
-#
+transmitted_bits = torch.tensor([[[1, 0, 1, 1]], [[0, 1, 0, 0,]]], dtype=torch.int)
+origin_bits = torch.tensor([[[1, 1, 0, 1]], [[0, 1, 0, 0,]]], dtype=torch.int)
+
 # ber, error = calculate_ber(transmitted_bits, origin_bits)
-# bler = calculate_bler(transmitted_bits, origin_bits)
-# print(f"BLER: {bler}")
+bler, error_num = calculate_bler(transmitted_bits, origin_bits)
+print(f"BLER: {bler}")
+print(f"error nun: {error_num}")
