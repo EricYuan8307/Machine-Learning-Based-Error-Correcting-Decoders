@@ -5,7 +5,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-
 from torch.utils.data import DataLoader, TensorDataset
 
 from Encoder.Generator import generator
@@ -35,6 +34,8 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
         input_size = noised_signal.shape[2]
         output_size = torch.pow(torch.tensor(2, device=device), bits_info.shape[2]) # 2^x
         label = BinarytoDecimal(bits_info,device).to(torch.long)
+        trainset = TensorDataset(noised_signal, label)
+        trainloader = torch.utils.data.DataLoader(trainset, batch_size, shuffle=True)
 
         # Create an instance of the SimpleNN class
         model = SingleLabelNNDecoder(input_size, hidden_size, output_size).to(device)
@@ -45,17 +46,25 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
         # Training loop
         for epoch in range(epochs):
+            running_loss = 0.0
             start_time = time.time()
+            for i, data in enumerate(trainloader, 0):
+                inputs, labels = data
 
-            optimizer.zero_grad()
+                # Forward pass
+                outputs = model(inputs).squeeze(1)
+                # output_test = torch.argmax(outputs, dim=1)
 
-            # Forward pass
-            outputs = model(noised_signal).squeeze(1)
+                # Compute the loss
+                optimizer.zero_grad()
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
 
-            # Compute the loss
-            loss = criterion(outputs, label)
-            loss.backward()
-            optimizer.step()
+                running_loss += loss.item()
+                if i % 100 == 99:  # Print every 100 mini-batches
+                    print(f'Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.3f}')
+                    running_loss = 0.0
 
             end_time = time.time()
 
@@ -80,7 +89,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
     csv_filename = f"SLNN_BER_result_{current_time}.csv"
 
     full_csv_path = os.path.join(directory_path, csv_filename)
-    np.savetxt(full_csv_path, result, delimiter=',')
+    np.savetxt(full_csv_path, result, delimiter=' ,')
 
 
 
@@ -111,14 +120,13 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
         # Training loop
         for epoch in range(epochs):
+
             start_time = time.time()
-
-            optimizer.zero_grad()
-
             # Forward pass
             outputs = model(noised_signal)
 
             # Compute the loss
+            optimizer.zero_grad()
             loss = criterion(outputs, bits_info)
             loss.backward()
             optimizer.step()
@@ -144,7 +152,7 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
     csv_filename = f"MLNN_BER_result_{current_time}.csv"
 
     full_csv_path = os.path.join(directory_path, csv_filename)
-    np.savetxt(full_csv_path, result, delimiter=',')
+    np.savetxt(full_csv_path, result, delimiter=' ,')
 
 
 
@@ -157,23 +165,21 @@ def main():
     # device = torch.device("cuda:2")
 
     # Hyperparameters
-    snr = torch.arange(0, 6.5, 0.5)
+    snr = torch.arange(4, 6.5, 0.5)
     SLNN_hidden_size = 7
     MLNN_hidden_size = 100
-    batch_size = 32
+    batch_size = 64
     learning_rate = 1e-2
     epochs = 10000
-    nr_codeword = int(1e4)
+    nr_codeword = int(1e7)
     # 如果是在主目录子文件夹下，就需要使用absloyte path, 当BER_estimate在主目录中，所以Reference address就行。
     SLNN_directory_path = "/Result/Model/SLNN"
     MLNN_directory_path = "/Result/Model/MLNN"
-    # SLNN_directory_path = "Result/Model/SLNN"
-    # MLNN_directory_path = "Result/Model/MLNN"
 
     result_save = np.zeros((1, len(snr)))
 
     SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_directory_path, result_save, device)
-    MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_directory_path,result_save, device)
+    # MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_directory_path,result_save, device)
 
 
 if __name__ == '__main__':
