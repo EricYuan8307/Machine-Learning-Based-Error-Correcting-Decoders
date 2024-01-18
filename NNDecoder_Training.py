@@ -65,7 +65,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
         # Test data:
         SLNN_testloader = torch.utils.data.DataLoader(SLNN_trainset, batch_size, shuffle=False)
-        correct = 0
+        error = 0
         total = 0
 
         with torch.no_grad():
@@ -74,9 +74,9 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
                 outputs = model(inputs)
                 predicted = torch.argmax(outputs.data, 2)
                 total += labels.size(0)
-                correct += (predicted == labels).sum().item()
+                error += (predicted != labels).sum().item()
 
-        print(f'Accuracy on the test data: {correct / total}%')
+        print(f'BLER on the test data: {100*error / total}%')
 
         os.makedirs(model_path, exist_ok=True)
         torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{snr_dB}.pth")
@@ -151,18 +151,17 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
         # Test data:
         MLNN_testloader = torch.utils.data.DataLoader(MLNN_trainset, batch_size, shuffle=False)
-        correct = 0
+        error = 0
         total = 0
 
         with torch.no_grad():
             for data in MLNN_testloader:
                 inputs, labels = data
                 outputs = model(inputs)
-                predicted = torch.argmax(outputs.data, 2)
                 total += labels.size(0)
-                correct += (predicted == labels).sum().item()
+                error += (outputs != labels).sum().item()
 
-        print(f'Accuracy on the test data: {correct / total}%')
+        print(f'BLER on the test data: {100*error / total}%')
 
         os.makedirs(model_path, exist_ok=True)
         torch.save(model.state_dict(), f"{model_path}MLNN_model_BER{snr_dB}.pth")
@@ -190,11 +189,11 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
 def main():
     # Device Setting
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
-    #                 else torch.device("cpu")))
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+              else (torch.device("cuda") if torch.backends.cuda.is_available()
+                    else torch.device("cpu")))
     # device = torch.device("cpu")
-    device = torch.device("cuda")
+    # device = torch.device("cuda")
 
     # Hyperparameters
     snr = torch.arange(3, 6, 0.5)
@@ -203,13 +202,11 @@ def main():
     batch_size = 64
     learning_rate = 1e-2
     epochs = 150
-    nr_codeword = int(1e6)
+    nr_codeword = int(1e5)
 
     # 如果是在主目录子文件夹下，就需要使用absloyte path, 当BER_estimate在主目录中，所以Reference address就行。
     SLNN_model_path = "Result/Model/SLNN/"
-    MLNN_model_path = "Result/Model/MLNN"
-
-    result_save = np.zeros((1, len(snr)))
+    MLNN_model_path = "Result/Model/MLNN/"
 
     SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, device)
     MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, device)
