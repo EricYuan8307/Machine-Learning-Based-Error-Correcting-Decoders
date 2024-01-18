@@ -39,18 +39,21 @@ def calculate_bler(predicted, target):
         raise ValueError("Predicted and target tensors must have the same shape")
 
     # Calculate number of erroneous blocks
-    erroneous_blocks = torch.sum(predicted != target)
+    erroneous_blocks = torch.sum(predicted != target).item()
+
+    # Calculate total number of blocks, which is the size of the first dimension
+    total_blocks = predicted.size(0)
 
     # Calculate BLER
-    bler = erroneous_blocks.float() / target.shape[0]
+    bler = erroneous_blocks / total_blocks
 
     return bler, erroneous_blocks
 
-
-transmitted_bits = torch.tensor([[[1, 0, 1, 1]], [[0, 1, 0, 0,]]], dtype=torch.int)
-origin_bits = torch.tensor([[[1, 1, 0, 1]], [[0, 1, 0, 0,]]], dtype=torch.int)
-
-# ber, error = calculate_ber(transmitted_bits, origin_bits)
-bler, error_num = calculate_bler(transmitted_bits, origin_bits)
-print(f"BLER: {bler}")
-print(f"error nun: {error_num}")
+# device = torch.device("cpu")
+# transmitted_bits = torch.tensor([[[1, 0, 1, 1]], [[0, 1, 0, 0,]]], dtype=torch.int)
+# origin_bits = torch.tensor([[[1, 1, 0, 1]], [[0, 1, 0, 0,]]], dtype=torch.int)
+#
+# # ber, error = calculate_ber(transmitted_bits, origin_bits)
+# bler, error_num = calculate_bler(transmitted_bits, origin_bits)
+# print(f"BLER: {bler}")
+# print(f"error nun: {error_num}")
