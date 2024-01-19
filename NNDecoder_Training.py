@@ -1,10 +1,7 @@
 import os
-from datetime import datetime
-import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import numpy as np
 from torch.utils.data import DataLoader, TensorDataset
 
 from Encoder.Generator import generator
@@ -13,7 +10,7 @@ from Encoder.Hamming74 import hamming_encoder
 from Transmit.noise import AWGN
 from Decoder.NNDecoder import SingleLabelNNDecoder, MultiLabelNNDecoder
 from Transmit.NoiseMeasure import NoiseMeasure
-from Decoder.Converter import BinarytoDecimal, DecimaltoBinary, MLNN_decision
+from Decoder.Converter import BinarytoDecimal
 
 def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, model_path, device):
 
@@ -32,7 +29,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
         # NN structure:
         input_size = noised_signal.shape[2]
         output_size = torch.pow(torch.tensor(2, device=device), bits_info.shape[2]) # 2^x
-        label = BinarytoDecimal(bits_info,device).to(torch.long)
+        label = BinarytoDecimal(bits_info, device).to(torch.int64)
         SLNN_trainset = TensorDataset(noised_signal, label)
         SLNN_trainloader = torch.utils.data.DataLoader(SLNN_trainset, batch_size, shuffle=True)
 
@@ -63,47 +60,9 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
                     print(f'SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.3f}')
                     running_loss = 0.0
 
-        # # Test data:
-        # SLNN_testloader = torch.utils.data.DataLoader(SLNN_trainset, batch_size, shuffle=False)
-        # error = 0
-        # total = 0
-        #
-        # with torch.no_grad():
-        #     for data in SLNN_testloader:
-        #         inputs, labels = data
-        #         outputs = model(inputs)
-        #         predicted = torch.argmax(outputs.data, 2)
-        #         total += labels.size(0)
-        #         error += (predicted != labels).sum().item()
-        #
-        # print(f'BLER on the test data: {100*error / total}%')
-
-        # Get the current timestamp as a string
-        # current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
         # Save MLNN model with specific SNR and time
         os.makedirs(model_path, exist_ok=True)
         torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{snr_dB}.pth")
-
-        # tobinary = DecimaltoBinary(device)
-        # SLNN_final = tobinary(outputs)
-        #
-        # BER_SLNN, error_num_SLNN = calculate_ber(SLNN_final, bits_info)  # BER calculation
-        # print(f"SLNN: When SNR is {snr_measure} and signal number is {nr_codeword}, error number is {error_num_SLNN} and BER is {BER_SLNN}")
-        # result[0, i] = BER_SLNN
-
-    # Create the directory if it doesn't exist
-    # if not os.path.exists(directory_path):
-    #     os.makedirs(directory_path)
-    #
-    # # Get the current timestamp as a string
-    # current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    #
-    # # Construct the filename with the timestamp
-    # csv_filename = f"SLNN_BER_result_{current_time}.csv"
-    #
-    # full_csv_path = os.path.join(directory_path, csv_filename)
-    # np.savetxt(full_csv_path, result, delimiter=' ,')
 
 
 def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, model_path, device):
@@ -153,45 +112,9 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
                     print(f'SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.3f}')
                     running_loss = 0.0
 
-        # # Test data:
-        # MLNN_testloader = torch.utils.data.DataLoader(MLNN_trainset, batch_size, shuffle=False)
-        # error = 0
-        # total = 0
-        #
-        # with torch.no_grad():
-        #     for data in MLNN_testloader:
-        #         inputs, labels = data
-        #         outputs = model(inputs)
-        #         total += labels.size(0)
-        #         error += (outputs != labels).sum().item()
-        #
-        # print(f'BLER on the test data: {100*error / total}%')
-
-        # Get the current timestamp as a string
-        # current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
         # Save MLNN model with specific SNR and time
         os.makedirs(model_path, exist_ok=True)
         torch.save(model.state_dict(), f"{model_path}MLNN_model_BER{snr_dB}.pth")
-
-
-        # MLNN_final = MLNN_decision(outputs, device)
-        # BER_MLNN, error_num_MLNN = calculate_ber(MLNN_final, bits_info)  # BER calculation
-        # print(f"MLNN: When SNR is {snr_measure} and signal number is {nr_codeword}, error number is {error_num_MLNN} and BER is {BER_MLNN}")
-        # result[0, i] = BER_MLNN
-
-    # # Create the directory if it doesn't exist
-    # if not os.path.exists(directory_path):
-    #     os.makedirs(directory_path)
-    #
-    # # Get the current timestamp as a string
-    # current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    #
-    # # Construct the filename with the timestamp
-    # csv_filename = f"MLNN_BER_result_{current_time}.csv"
-    #
-    # full_csv_path = os.path.join(directory_path, csv_filename)
-    # np.savetxt(full_csv_path, result, delimiter=' ,')
 
 
 
