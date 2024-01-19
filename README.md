@@ -1,4 +1,5 @@
 ## Master Thesis: Improve Belief Propagation in Maximum Likelihood
+Implemented in PyTorch.
 
 ### Implement the Soft-Decision Maximum Likelihood, Hard-Decsion Maximum Likelihood, and Belief propagation
 LDPC Belief Propagation Reference: <br>
