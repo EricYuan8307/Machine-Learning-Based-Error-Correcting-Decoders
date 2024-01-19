@@ -136,7 +136,7 @@ def main():
     epochs = 250
     nr_codeword = int(1e6)
 
-    # 如果是在主目录子文件夹下，就需要使用absloyte path, 当BER_estimate在主目录中，所以Reference address就行。
+    # Save model
     SLNN_model_path = "Result/Model/SLNN/"
     MLNN_model_path = "Result/Model/MLNN/"
 
