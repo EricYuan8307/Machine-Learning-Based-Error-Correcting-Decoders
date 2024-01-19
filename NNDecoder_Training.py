@@ -127,7 +127,8 @@ def main():
     device = torch.device("cuda")
 
     # Hyperparameters
-    snr = torch.arange(0, 10, 0.5)
+    snr_SLNN = torch.arange(4.0, 10, 0.5)
+    snr_MLNN = torch.arange(0, 10, 0.5)
     SLNN_hidden_size = 7
     MLNN_hidden_size = 100
     batch_size = 64
@@ -139,8 +140,8 @@ def main():
     SLNN_model_path = "Result/Model/SLNN/"
     MLNN_model_path = "Result/Model/MLNN/"
 
-    SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, device)
-    MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, device)
+    SLNN_training(snr_SLNN, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, device)
+    MLNN_training(snr_MLNN, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, device)
 
 
 if __name__ == '__main__':
