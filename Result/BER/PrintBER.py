@@ -24,11 +24,9 @@ HDML = [0.04415109, 0.033231805, 0.0241618475, 0.0169061, 0.0113552825, 0.007274
 BP = [0.0265, 0.018725, 0.013625, 0.0079, 0.0048, 0.003075, 0.0015113636363636364,7.136363636363637e-04,
       2.659090909090909e-04, 1.2016129032258065e-04, 6.470588235294117e-05, 1.755e-05,6.3e-06, 1.685e-06,
       0, 0, 0, 0, 0, 0, 0]
-SLNN = [4.35e-01,4.5e-01,5.325e-01,5.5e-01,
-        5.075e-01,4.475e-01,5.0e-01,4.7e-01, 5.4e-01,3.925000000000000155e-01,4.35e-01,5.075e-01,
-        4.175e-01,5.274999999999999689e-01,5.025e-01,5.55e-01,5.5e-01,5.5e-01,5.0e-01,5.05e-01,5.25e-01]
-MLNN = [0.070425,0.051175,0.041275,0.031275,0.026575,0.018325,0.013,0.009925, 0.00745, 0.004425, 0.003425,
-        0.00155, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+SLNN = [0.028175, 0.0207, 0.014275, 0.00975, 0.006325, 0.003925, 0.002625, 0.001395525, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+# MLNN = [0.070425,0.051175,0.041275,0.031275,0.026575,0.018325,0.013,0.009925, 0.00745, 0.004425, 0.003425,
+#         0.00155, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 SNR = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
 
@@ -41,12 +39,14 @@ plt.semilogy(SNR, HDML, marker='*', label='HDML')
 plt.semilogy(SNR, SDML, marker='x', label='SDML')
 plt.semilogy(SNR, BP, marker='+', label='BP')
 plt.semilogy(SNR, SLNN, marker='.', label='SLNN')
-plt.semilogy(SNR, MLNN, marker='.', label='MLNN')
+# plt.semilogy(SNR, MLNN, marker='.', label='MLNN')
 
 plt.xlabel('SNR')
 plt.ylabel('BER')
 plt.title('BER Estimation')
 # plt.legend(['ref_HDML', 'ref_SDML', 'ref_BP', 'uncoded_BPSK', 'HDML', 'SDML', "BP"], loc='lower left')
-plt.legend(['uncoded_BPSK', 'HDML', 'SDML', "BP", 'SLNN', "MLNN"], loc='lower left')
+# plt.legend(['uncoded_BPSK', 'HDML', 'SDML', "BP", 'SLNN', "MLNN"], loc='lower left')
+plt.legend(['uncoded_BPSK', 'HDML', 'SDML', "BP", 'SLNN'], loc='lower left')
 # Display the Plot
+
 plt.show()
