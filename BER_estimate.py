@@ -42,24 +42,37 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, SLNN
     #             break
 
 
-    # # Soft-Decision Maximum Likelihood
-    # for i in range(len(SNR_opt_ML)):
-    #     snr_dB = SNR_opt_ML[i]
-    #
-    #     for _ in range(10):
-    #         SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
-    #
-    #         BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
-    #         # BER_SDML = calculate_bler(SDML_final, bits_info)
-    #         if error_num_SDML < 100:
-    #             N += 1000000
-    #             print(f"the code number is {N}")
-    #
-    #         else:
-    #             print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
-    #             # print(f"SD-ML: When SNR is {snr_measure} and signal number is {N} and BLER is {BLER_SDML}")
-    #             result[1, i] = BER_SDML
-    #             break
+    # Soft-Decision Maximum Likelihood
+    for i in range(len(SNR_opt_ML)):
+        snr_dB = SNR_opt_ML[i]
+
+        # # BER
+        # for _ in range(10):
+        #     SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
+        #
+        #     BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
+        #     if error_num_SDML < 100:
+        #         N += 1000000
+        #         print(f"the code number is {N}")
+        #
+        #     else:
+        #         print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
+        #         result[1, i] = BER_SDML
+        #         break
+
+        # # BLER
+        for _ in range(10):
+            SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
+
+            BLER_SDML, block_error_num_SDML = calculate_ber(SDML_final, bits_info)
+            if block_error_num_SDML < 100:
+                N += 1000000
+                print(f"the code number is {N}")
+
+            else:
+                print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {block_error_num_SDML} and BLER is {BLER_SDML}")
+                result[1, i] = BLER_SDML
+                break
 
 
     # # Hard-Decision Maximum Likelihood
@@ -79,6 +92,7 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, SLNN
     #                 f"HD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_HDML} and BER is {BER_HDML}")
     #             result[2, i] = BER_HDML
     #             break
+
 
 
     # # Belief Propagation
@@ -120,7 +134,6 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, SLNN
             result[4, i] = BER_SLNN
 
 
-
     # Multi-label Neural Network:
     for i in range(len(SNR_opt_NN)):
         snr_dB = SNR_opt_NN[i]
@@ -140,7 +153,6 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, SLNN
         else:
             print(f"MLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_MLNN} and BER is {BER_MLNN}")
             result[5, i] = BER_MLNN
-
 
 
 
@@ -287,8 +299,7 @@ def main():
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
     SNR_opt_BP = torch.arange(0, 9, 0.5)
-    SNR_opt_NN = torch.tensor([0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5])
-    # SNR_opt_NN = torch.arange(0, 10, 0.5)
+    SNR_opt_NN = torch.arange(0, 10, 0.5)
     SLNN_hidden_size = 7
     MLNN_hidden_size = 100
 
