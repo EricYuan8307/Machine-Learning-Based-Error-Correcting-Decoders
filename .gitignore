@@ -1,6 +1,5 @@
 /.vscode
 /.idea
-/TestingVersion.py
 /Transmit/__pycache__
 /Estimation/__pycache__
 /Encoder/__pycache__
