@@ -133,7 +133,7 @@ def main():
     MLNN_hidden_size = 100
     batch_size = 64
     learning_rate = 1e-2
-    epochs = 250
+    epochs = 300
     nr_codeword = int(1e8)
 
     # Save model
