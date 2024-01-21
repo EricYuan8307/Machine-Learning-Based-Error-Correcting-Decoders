@@ -46,33 +46,33 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, SLNN
     # for i in range(len(SNR_opt_ML)):
     #     snr_dB = SNR_opt_ML[i]
     #
-    #     # # BER
-    #     # for _ in range(10):
-    #     #     SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
-    #     #
-    #     #     BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
-    #     #     if error_num_SDML < 100:
-    #     #         N += 1000000
-    #     #         print(f"the code number is {N}")
-    #     #
-    #     #     else:
-    #     #         print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
-    #     #         result[1, i] = BER_SDML
-    #     #         break
-    #
-    #     # # BLER
+    #     # BER
     #     for _ in range(10):
     #         SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
     #
-    #         BLER_SDML, block_error_num_SDML = calculate_ber(SDML_final, bits_info)
-    #         if block_error_num_SDML < 100:
+    #         BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
+    #         if error_num_SDML < 100:
     #             N += 1000000
     #             print(f"the code number is {N}")
     #
     #         else:
-    #             print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {block_error_num_SDML} and BLER is {BLER_SDML}")
-    #             result[1, i] = BLER_SDML
+    #             print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
+    #             result[1, i] = BER_SDML
     #             break
+    #
+    #     # # # BLER
+    #     # for _ in range(10):
+    #     #     SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
+    #     #
+    #     #     BLER_SDML, block_error_num_SDML = calculate_ber(SDML_final, bits_info)
+    #     #     if block_error_num_SDML < 100:
+    #     #         N += 1000000
+    #     #         print(f"the code number is {N}")
+    #     #
+    #     #     else:
+    #     #         print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {block_error_num_SDML} and BLER is {BLER_SDML}")
+    #     #         result[1, i] = BLER_SDML
+    #     #         break
 
 
     # # Hard-Decision Maximum Likelihood
@@ -294,12 +294,12 @@ def main():
     device = torch.device("cuda")
 
     # Hpyer parameters
-    num = int(1e8)
+    num = int(1e6)
     iter = 5
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
     SNR_opt_BP = torch.arange(0, 9, 0.5)
-    SNR_opt_NN = torch.arange(0, 10, 0.5)
+    SNR_opt_NN = torch.arange(0, 8.5, 0.5)
     SLNN_hidden_size = 7
     MLNN_hidden_size = 100
 
@@ -319,7 +319,7 @@ def main():
     csv_filename = f"BER_result_{current_time}.csv"
 
     full_csv_path = os.path.join(directory_path, csv_filename)
-    np.savetxt(full_csv_path, result_all, delimiter=' ,')
+    np.savetxt(full_csv_path, result_all, delimiter=', ')
 
 
 if __name__ == "__main__":

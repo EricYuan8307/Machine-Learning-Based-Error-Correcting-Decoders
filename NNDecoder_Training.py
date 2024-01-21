@@ -127,14 +127,14 @@ def main():
     device = torch.device("cuda")
 
     # Hyperparameters
-    SLNN_snr = torch.arange(4.0, 10, 0.5)
-    MLNN_snr = torch.arange(3.5, 10, 0.5)
+    SLNN_snr = torch.arange(4.0, 7, 0.5)
+    MLNN_snr = torch.arange(4.0, 7, 0.5)
     SLNN_hidden_size = 7
     MLNN_hidden_size = 100
     batch_size = 64
     learning_rate = 1e-2
     epochs = 250
-    nr_codeword = int(1e6)
+    nr_codeword = int(1e8)
 
     # Save model
     SLNN_model_path = "Result/Model/SLNN/"
