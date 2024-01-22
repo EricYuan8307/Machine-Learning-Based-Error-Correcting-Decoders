@@ -128,7 +128,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
         current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
         # Specify the full path to the JSON file within the directory
-        loss_data_file = os.path.join(SLNN_loss_data_dir, f'SLNN_loss_data_SNR{snr_dB}_{current_time}.json')
+        loss_data_file = os.path.join(SLNN_loss_data_dir, f'SLNN_loss_SNR{snr_dB}_{current_time}.json')
 
         # Save the loss data to the specified JSON file
         with open(loss_data_file, 'w') as f:
@@ -202,10 +202,10 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
                 loss.backward()
                 optimizer.step()
 
-            running_loss += loss.item()
-            if i % 100 == 99:  # Print every 100 mini-batches
-                print(f'MLNN: SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.9f}')
-                running_loss = 0.0
+                running_loss += loss.item()
+                if i % 100 == 99:  # Print every 100 mini-batches
+                    print(f'MLNN: SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.9f}')
+                    running_loss = 0.0
 
             # Calculate the average training loss for this epoch
             avg_train_loss = running_loss / len(MLNN_trainloader)
@@ -295,8 +295,8 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.backends.cuda.is_available()
     #                 else torch.device("cpu")))
-    # device = torch.device("cpu")
-    device = torch.device("cuda")
+    device = torch.device("cpu")
+    # device = torch.device("cuda")
 
     # Hyperparameters
     SLNN_snr = torch.arange(0.0, 6.5, 0.5)
