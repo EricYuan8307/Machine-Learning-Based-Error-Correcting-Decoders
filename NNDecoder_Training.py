@@ -242,6 +242,7 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
             if early_stopping(running_loss, model, model_path):
                 print('MLNN: Early stopping')
                 print(f'MLNN: Stop at total val_loss is {running_loss} and epoch is {epoch}')
+                break
             else:
                 print("MLNN: Continue Training")
 
@@ -306,7 +307,7 @@ def main():
     batch_size = 64
     learning_rate = 1e-2
     epochs = 150
-    nr_codeword = int(1e6)
+    nr_codeword = int(1e5)
     patience = 4
     delta = 0.001
 
