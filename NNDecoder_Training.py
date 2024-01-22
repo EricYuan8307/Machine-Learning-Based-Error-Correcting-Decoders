@@ -295,8 +295,8 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.backends.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
-    # device = torch.device("cuda")
+    # device = torch.device("cpu")
+    device = torch.device("cuda")
 
     # Hyperparameters
     SLNN_snr = torch.arange(0.0, 6.5, 0.5)
@@ -306,7 +306,7 @@ def main():
     batch_size = 64
     learning_rate = 1e-2
     epochs = 150
-    nr_codeword = int(1e5)
+    nr_codeword = int(1e6)
     patience = 4
     delta = 0.001
 
