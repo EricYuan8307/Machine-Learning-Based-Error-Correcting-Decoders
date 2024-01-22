@@ -60,19 +60,19 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, SLNN
     #             result[1, i] = BER_SDML
     #             break
     #
-    #     # # # BLER
-    #     # for _ in range(10):
-    #     #     SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
-    #     #
-    #     #     BLER_SDML, block_error_num_SDML = calculate_ber(SDML_final, bits_info)
-    #     #     if block_error_num_SDML < 100:
-    #     #         N += 1000000
-    #     #         print(f"the code number is {N}")
-    #     #
-    #     #     else:
-    #     #         print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {block_error_num_SDML} and BLER is {BLER_SDML}")
-    #     #         result[1, i] = BLER_SDML
-    #     #         break
+    #     # BLER
+    #     for _ in range(10):
+    #         SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
+    #
+    #         BLER_SDML, block_error_num_SDML = calculate_bler(SDML_final, bits_info)
+    #         if block_error_num_SDML < 100:
+    #             N += 1000000
+    #             print(f"the code number is {N}")
+    #
+    #         else:
+    #             print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {block_error_num_SDML} and BLER is {BLER_SDML}")
+    #             result[1, i] = BLER_SDML
+    #             break
 
 
     # # Hard-Decision Maximum Likelihood
@@ -123,14 +123,14 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, SLNN
         model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
         SLNN_final, bits_info, snr_measure = SLNNDecoder(N, snr_dB, model, device)
 
-        BER_SLNN, error_num_SLNN = calculate_ber(SLNN_final, bits_info) # BER calculation
+        BER_SLNN, error_num_SLNN = calculate_bler(SLNN_final, bits_info) # BER calculation
 
         if error_num_SLNN < 100:
             N += 1000000
             print(f"the code number is {N}")
 
         else:
-            print(f"SLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SLNN} and BER is {BER_SLNN}")
+            print(f"SLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SLNN} and BLER is {BER_SLNN}")
             result[4, i] = BER_SLNN
 
 
@@ -290,8 +290,8 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.backends.cuda.is_available()
     #                 else torch.device("cpu")))
-    # device = torch.device("cpu")
-    device = torch.device("cuda")
+    device = torch.device("cpu")
+    # device = torch.device("cuda")
 
     # Hpyer parameters
     num = int(1e6)
@@ -299,7 +299,8 @@ def main():
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
     SNR_opt_BP = torch.arange(0, 9, 0.5)
-    SNR_opt_NN = torch.arange(0, 8.5, 0.5)
+    SNR_opt_NN = torch.arange(0, 7, 0.5)
+
     SLNN_hidden_size = 7
     MLNN_hidden_size = 100
 
