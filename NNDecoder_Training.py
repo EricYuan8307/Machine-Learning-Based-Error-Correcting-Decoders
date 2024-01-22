@@ -188,8 +188,8 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.backends.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
-    # device = torch.device("cuda")
+    # device = torch.device("cpu")
+    device = torch.device("cuda")
 
     # Hyperparameters
     SLNN_snr = torch.arange(0.0, 6.5, 0.5)
@@ -207,7 +207,7 @@ def main():
     SLNN_model_path = "Result/Model/SLNN/"
     MLNN_model_path = "Result/Model/MLNN/"
 
-    # SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, patience, delta, device)
+    SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, patience, delta, device)
     MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, patience, delta, device)
 
 
