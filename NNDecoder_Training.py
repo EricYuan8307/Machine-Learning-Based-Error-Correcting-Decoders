@@ -70,7 +70,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
                 running_loss += loss.item()
                 if i % 100 == 99:  # Print every 100 mini-batches
-                    print(f'SLNN: SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.3f}')
+                    print(f'SLNN: SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.9f}')
                     running_loss = 0.0
 
             # Calculate the average training loss for this epoch
@@ -102,12 +102,13 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
             avg_test_loss = running_loss / len(SLNN_testloader)
             SLNN_test_losses.append(avg_test_loss)
 
-            print(f'SLNN Testing - SNR{snr_dB} - Loss: {running_loss / len(SLNN_testloader):.3f}')
+            print(f'SLNN Testing - SNR{snr_dB} - Loss: {running_loss / len(SLNN_testloader):.9f}')
 
             # Early Stopping
             if early_stopping(running_loss, model, model_path):
                 print('SLNN: Early stopping')
                 print(f'SLNN: SNR={snr_dB} Stop at total val_loss is {running_loss} and epoch is {epoch}')
+                break
             else:
                 print(f"SLNN: SNR={snr_dB} Continue Training")
 
@@ -203,7 +204,7 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
             running_loss += loss.item()
             if i % 100 == 99:  # Print every 100 mini-batches
-                print(f'MLNN: SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.3f}')
+                print(f'MLNN: SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.9f}')
                 running_loss = 0.0
 
             # Calculate the average training loss for this epoch
@@ -234,7 +235,7 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
             avg_test_loss = running_loss / len(MLNN_testloader)
             MLNN_test_losses.append(avg_test_loss)
 
-            print(f'MLNN Testing - SNR{snr_dB} - Loss: {running_loss / len(MLNN_testloader):.3f}')
+            print(f'MLNN Testing - SNR{snr_dB} - Loss: {running_loss / len(MLNN_testloader):.9f}')
 
 
             # Early Stopping
@@ -260,7 +261,7 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
         current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
         # Specify the full path to the JSON file within the directory
-        loss_data_file = os.path.join(MLNN_loss_data_dir, f'MLNN_loss_data_SNR{snr_dB}_{current_time}.json')
+        loss_data_file = os.path.join(MLNN_loss_data_dir, f'MLNN_loss_SNR{snr_dB}_{current_time}.json')
 
         # Save the loss data to the specified JSON file
         with open(loss_data_file, 'w') as f:
@@ -304,8 +305,8 @@ def main():
     MLNN_hidden_size = 10
     batch_size = 64
     learning_rate = 1e-2
-    epochs = 200
-    nr_codeword = int(1e7)
+    epochs = 150
+    nr_codeword = int(1e5)
     patience = 4
     delta = 0.001
 
@@ -313,7 +314,7 @@ def main():
     SLNN_model_path = "Result/Model/SLNN/"
     MLNN_model_path = "Result/Model/MLNN/"
 
-    SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, patience, delta, device)
+    # SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, patience, delta, device)
     MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, patience, delta, device)
 
 
