@@ -291,15 +291,15 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
 def main():
     # Device Setting
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                 else torch.device("cpu")))
     # device = torch.device("cpu")
-    # device = torch.device("cuda")
+    device = torch.device("cuda")
 
     # Hyperparameters
-    SLNN_snr = torch.arange(0.0, 1.5, 0.5)
-    MLNN_snr = torch.arange(0.0, 1.5, 0.5)
+    SLNN_snr = torch.arange(0.0, 6.5, 0.5)
+    MLNN_snr = torch.arange(0.0, 6.5, 0.5)
     SLNN_hidden_size = 7
     MLNN_hidden_size = 10
     batch_size = 64
