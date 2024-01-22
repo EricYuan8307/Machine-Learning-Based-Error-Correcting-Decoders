@@ -53,8 +53,14 @@ def calculate_bler(predicted, target):
     return bler, block_errors
 
 # device = torch.device("cpu")
-# transmitted_bits = torch.tensor([[[1, 0, 0, 1]], [[1, 0, 1, 1]], [[0, 1, 0, 0,]]], dtype=torch.int)
-# origin_bits = torch.tensor([[[1, 0, 1, 1]], [[1, 1, 0, 1]], [[0, 1, 0, 0,]]], dtype=torch.int)
+# # transmitted_bits = torch.tensor([[[1, 0, 0, 1]], [[1, 0, 1, 1]], [[0, 1, 0, 0,]], [[0, 1, 0, 1,]]], dtype=torch.int)
+# # origin_bits = torch.tensor([[[1, 0, 1, 1]], [[1, 1, 1, 1]], [[0, 1, 0, 0,]], [[0, 1, 0, 1,]]], dtype=torch.int)
+# transmitted_bits = torch.randint(0, 2, size=(100,1,4),dtype=torch.int, device=device)
+# origin_bits = torch.torch.randint(0, 2, size=(100,1,4),dtype=torch.int, device=device)
+#
+# # print("Original bits:", origin_bits)
+# # print("Transmitted bits:", transmitted_bits)
+# print("error:", origin_bits - transmitted_bits)
 #
 # # ber, error = calculate_ber(transmitted_bits, origin_bits)
 # bler, error_num = calculate_bler(transmitted_bits, origin_bits)
