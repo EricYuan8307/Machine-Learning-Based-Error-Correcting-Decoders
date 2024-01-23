@@ -209,7 +209,7 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN
 
         model_pth = f"MLNN_model_BER{snr_dB}.pth"
 
-        model_pth = os.path.join(model_pth, save_pth)
+        model_pth = os.path.join(save_pth, model_pth)
         model = MultiLabelNNDecoder(input_size, MLNN_hidden_size, output_size).to(device)
         MLNN_result, bits_info, snr_measure = MLNNDecoder(N, snr_dB, model, model_pth, device)
         MLNN_final = MLNN_decision(MLNN_result, device)
@@ -246,7 +246,7 @@ def main():
     SNR_opt_NN = torch.arange(0, 7, 0.5)
 
     MLNN_hidden_size = 100
-    save_pth = "Result/Model/MLNN"
+    save_pth = "Result/Model/MLNN_01-23_13-04-19"
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
 
