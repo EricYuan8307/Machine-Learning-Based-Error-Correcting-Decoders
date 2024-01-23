@@ -47,7 +47,7 @@ def SoftDecisionMLP(nr_codeword, snr_dB, device):
 
     return SDML_final, bits_info, practical_snr
 
-def SLNNDecoder(nr_codeword, snr_dB, model, device):
+def SLNNDecoder(nr_codeword, snr_dB, model, model_pth, device):
     encoder = hamming_encoder(device)
 
     bits_info = generator(nr_codeword, device)  # Code Generator
@@ -59,7 +59,7 @@ def SLNNDecoder(nr_codeword, snr_dB, model, device):
 
     # use SLNN model:
     model.eval()
-    model.load_state_dict(torch.load(f"Result/Model/SLNN/SLNN_model_BER{snr_dB}.pth"))
+    model.load_state_dict(torch.load(model_pth))
 
     SLNN_result = model(noised_signal)
     SLNN_decimal = torch.argmax(SLNN_result, dim=2)
@@ -70,7 +70,7 @@ def SLNNDecoder(nr_codeword, snr_dB, model, device):
 
     return SLNN_binary, bits_info, practical_snr
 
-def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, result, device):
+def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, save_pth, result, device):
     N = num
 
     # # De-Encoder, BPSK only
@@ -116,8 +116,11 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, resu
         input_size = 7
         output_size = 16
 
+        model_pth = f"Result/Model/SLNN/SLNN_model_BER{snr_dB}.pth"
+        model_pth = os.path.join(model_pth, save_pth)
+
         model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
-        SLNN_final, bits_info, snr_measure = SLNNDecoder(N, snr_dB, model, device)
+        SLNN_final, bits_info, snr_measure = SLNNDecoder(N, snr_dB, model, model_pth, device)
 
         BLER_SLNN, error_num_SLNN = calculate_bler(SLNN_final, bits_info) # BER calculation
 
@@ -150,8 +153,9 @@ def main():
     SLNN_hidden_size = 7
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
+    save_pth = "Result/Model/SLNN"
 
-    result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, result_save, device)
+    result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, device)
 
     directory_path = "Result/BER"
     # Create the directory if it doesn't exist
