@@ -27,6 +27,8 @@ class SLNN_EarlyStopping:
             self.save_checkpoint(val_loss, model, path)
             self.counter = 0
 
+        return self.early_stop
+
     def save_checkpoint(self, val_loss, model, model_path):
         os.makedirs(model_path, exist_ok=True)
         torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{self.snr_dB}.pth")
@@ -57,6 +59,8 @@ class MLNN_EarlyStopping:
             self.best_score = score
             self.save_checkpoint(val_loss, model, path)
             self.counter = 0
+
+        return self.early_stop
 
     def save_checkpoint(self, val_loss, model, model_path):
         os.makedirs(model_path, exist_ok=True)
