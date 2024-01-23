@@ -116,8 +116,8 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, save
         input_size = 7
         output_size = 16
 
-        model_pth = f"Result/Model/SLNN/SLNN_model_BER{snr_dB}.pth"
-        model_pth = os.path.join(model_pth, save_pth)
+        model_pth = f"SLNN_model_BER{snr_dB}.pth"
+        model_pth = os.path.join(save_pth, model_pth)
 
         model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
         SLNN_final, bits_info, snr_measure = SLNNDecoder(N, snr_dB, model, model_pth, device)
