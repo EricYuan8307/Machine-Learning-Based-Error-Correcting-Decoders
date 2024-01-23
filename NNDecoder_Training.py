@@ -69,8 +69,8 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
                 optimizer.step()
 
                 running_loss += loss.item()
-                if i % 100 == 99:  # Print every 100 mini-batches
-                    print(f'SLNN: SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.9f}')
+                if i % 1000 == 999:  # Print every 100 mini-batches
+                    print(f'SLNN: SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
                     running_loss = 0.0
 
             # Calculate the average training loss for this epoch
@@ -107,7 +107,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
             # Early Stopping
             if early_stopping(running_loss, model, model_path):
                 print('SLNN: Early stopping')
-                print(f'SLNN: SNR={snr_dB} Stop at total val_loss is {running_loss} and epoch is {epoch}')
+                print(f'SLNN: SNR={snr_dB} Stop at total val_loss is {running_loss/len(SLNN_testloader)} and epoch is {epoch}')
                 break
             else:
                 print(f"SLNN: SNR={snr_dB} Continue Training")
@@ -239,13 +239,13 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
             avg_test_loss = running_loss / len(MLNN_testloader)
             MLNN_test_losses.append(avg_test_loss)
 
-            print(f'MLNN Testing - SNR{snr_dB} - Loss: {running_loss / len(MLNN_testloader):.9f}')
+            print(f'MLNN Testing - SNR{snr_dB} - Loss: {running_loss/len(MLNN_testloader):.9f}')
 
 
             # Early Stopping
             if early_stopping(running_loss, model, model_path):
                 print('MLNN: Early stopping')
-                print(f'MLNN: Stop at total val_loss is {running_loss} and epoch is {epoch}')
+                print(f'MLNN: Stop at total val_loss is {running_loss/len(MLNN_testloader)} and epoch is {epoch}')
                 break
             else:
                 print("MLNN: Continue Training")
@@ -313,8 +313,8 @@ def main():
     epochs = 150
     nr_codeword = int(1e6)
 
-    # Early Stoppinhg
-    SLNN_patience = 32
+    # Early Stopping # Guess same number of your output
+    SLNN_patience = 16
     MLNN_patience = 4
     delta = 0.001
 
@@ -324,8 +324,8 @@ def main():
     SLNN_model_path = f"Result/Model/SLNN_{current_time}/"
     MLNN_model_path = f"Result/Model/MLNN_{current_time}/"
 
-    # SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
-    MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
+    SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
+    # MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
 
 
 if __name__ == '__main__':
