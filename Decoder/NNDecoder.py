@@ -9,7 +9,7 @@ class SingleLabelNNDecoder(nn.Module):
         self.hidden = nn.Linear(input_size, hidden_size)
         self.relu = nn.ReLU()
         self.output = nn.Linear(hidden_size, output_size)
-        self.softmax = nn.LogSoftmax(dim = 0)
+        self.softmax = nn.LogSoftmax(dim = 2)
         # self.softmax = nn.LogSoftmax(dim=2) # dim=2 performance worse than dim=0
 
     def forward(self, x):
