@@ -238,7 +238,7 @@ def main():
     device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e6)
+    num = int(1e7)
     iter = 5
     MLNN_hidden_size = 100
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
