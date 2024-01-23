@@ -303,7 +303,7 @@ def main():
     SLNN_snr = torch.arange(0.0, 6.5, 0.5)
     MLNN_snr = torch.arange(0.0, 6.5, 0.5)
     SLNN_hidden_size = 7
-    MLNN_hidden_size = 10
+    MLNN_hidden_size = 100
     batch_size = 64
     learning_rate = 1e-2
     epochs = 150
