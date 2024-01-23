@@ -17,69 +17,6 @@ from Decoder.Converter import DecimaltoBinary
 
 
 # Calculate the Error number and BLER
-def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, result, device):
-    N = num
-
-    # De-Encoder, BPSK only
-    for i in range(len(SNR_opt_BPSK)):
-        snr_dB =SNR_opt_BPSK[i]
-
-        for _ in range(10):
-            BPSK_final, bits_info, snr_measure = UncodedBPSK(N, snr_dB, device)
-
-            BLER_BPSK, error_num_BPSK= calculate_bler(BPSK_final, bits_info)
-            if error_num_BPSK < 100:
-                N += 2000000
-                print(f"the code number is {N}")
-
-            else:
-                print(f"BPSK: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BPSK} and BER is {BLER_BPSK}")
-                result[0, i] = BLER_BPSK
-                break
-
-
-    # Soft-Decision Maximum Likelihood
-    for i in range(len(SNR_opt_ML)):
-        snr_dB = SNR_opt_ML[i]
-
-        # BLER
-        for _ in range(10):
-            SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
-
-            BLER_SDML, block_error_num_SDML = calculate_bler(SDML_final, bits_info)
-            if block_error_num_SDML < 100:
-                N += 1000000
-                print(f"the code number is {N}")
-
-            else:
-                print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {block_error_num_SDML} and BLER is {BLER_SDML}")
-                result[1, i] = BLER_SDML
-                break
-
-
-    # Single-label Neural Network:
-    for i in range(len(SNR_opt_NN)):
-        snr_dB = SNR_opt_NN[i]
-        input_size = 7
-        output_size = 16
-
-        model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
-        SLNN_final, bits_info, snr_measure = SLNNDecoder(N, snr_dB, model, device)
-
-        BLER_SLNN, error_num_SLNN = calculate_bler(SLNN_final, bits_info) # BER calculation
-
-        if error_num_SLNN < 100:
-            N += 1000000
-            print(f"the code number is {N}")
-
-        else:
-            print(f"SLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
-            result[4, i] = BLER_SLNN
-
-
-    return result
-
-
 def UncodedBPSK(nr_codeword, snr_dB, device):
     bits_info = generator(nr_codeword, device)
     modulated_signal = bpsk_modulator(bits_info)
@@ -133,6 +70,68 @@ def SLNNDecoder(nr_codeword, snr_dB, model, device):
 
     return SLNN_binary, bits_info, practical_snr
 
+def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, result, device):
+    N = num
+
+    # # De-Encoder, BPSK only
+    # for i in range(len(SNR_opt_BPSK)):
+    #     snr_dB =SNR_opt_BPSK[i]
+    #
+    #     for _ in range(10):
+    #         BPSK_final, bits_info, snr_measure = UncodedBPSK(N, snr_dB, device)
+    #
+    #         BLER_BPSK, error_num_BPSK= calculate_bler(BPSK_final, bits_info)
+    #         if error_num_BPSK < 100:
+    #             N += 2000000
+    #             print(f"the code number is {N}")
+    #
+    #         else:
+    #             print(f"BPSK: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BPSK} and BER is {BLER_BPSK}")
+    #             result[0, i] = BLER_BPSK
+    #             break
+
+
+    # # Soft-Decision Maximum Likelihood
+    # for i in range(len(SNR_opt_ML)):
+    #     snr_dB = SNR_opt_ML[i]
+    #
+    #     # BLER
+    #     for _ in range(10):
+    #         SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
+    #
+    #         BLER_SDML, block_error_num_SDML = calculate_bler(SDML_final, bits_info)
+    #         if block_error_num_SDML < 100:
+    #             N += 1000000
+    #             print(f"the code number is {N}")
+    #
+    #         else:
+    #             print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {block_error_num_SDML} and BLER is {BLER_SDML}")
+    #             result[1, i] = BLER_SDML
+    #             break
+
+
+    # Single-label Neural Network:
+    for i in range(len(SNR_opt_NN)):
+        snr_dB = SNR_opt_NN[i]
+        input_size = 7
+        output_size = 16
+
+        model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
+        SLNN_final, bits_info, snr_measure = SLNNDecoder(N, snr_dB, model, device)
+
+        BLER_SLNN, error_num_SLNN = calculate_bler(SLNN_final, bits_info) # BER calculation
+
+        if error_num_SLNN < 100:
+            N += 1000000
+            print(f"the code number is {N}")
+
+        else:
+            print(f"SLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
+            result[4, i] = BLER_SLNN
+
+
+    return result
+
 
 def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
@@ -146,7 +145,6 @@ def main():
     iter = 5
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
-    SNR_opt_BP = torch.arange(0, 9, 0.5)
     SNR_opt_NN = torch.arange(0, 7, 0.5)
 
     SLNN_hidden_size = 7
