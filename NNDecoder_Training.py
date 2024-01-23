@@ -44,7 +44,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
         # Define the loss function and optimizer
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+        optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
 
         # Define lists to store loss values
         SLNN_train_losses = []
@@ -104,13 +104,17 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
             print(f'SLNN Testing - SNR{snr_dB} - Loss: {running_loss / len(SLNN_testloader):.9f}')
 
-            # Early Stopping
-            if early_stopping(running_loss, model, model_path):
-                print('SLNN: Early stopping')
-                print(f'SLNN: SNR={snr_dB} Stop at total val_loss is {running_loss} and epoch is {epoch}')
-                break
-            else:
-                print(f"SLNN: SNR={snr_dB} Continue Training")
+            # # Early Stopping
+            # if early_stopping(running_loss, model, model_path):
+            #     print('SLNN: Early stopping')
+            #     print(f'SLNN: SNR={snr_dB} Stop at total val_loss is {running_loss} and epoch is {epoch}')
+            #     break
+            # else:
+            #     print(f"SLNN: SNR={snr_dB} Continue Training")
+
+            # Save MLNN model with specific SNR and time
+            os.makedirs(model_path, exist_ok=True)
+            torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{snr_dB}.pth")
 
         # Save the loss data to a file
         loss_data = {
@@ -126,10 +130,6 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
             # Get the current timestamp as a string
         current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-        # Save MLNN model with specific SNR and time
-        os.makedirs(model_path, exist_ok=True)
-        torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{snr_dB}.pth")
 
         # Specify the full path to the JSON file within the directory
         loss_data_file = os.path.join(SLNN_loss_data_dir, f'SLNN_loss_SNR{snr_dB}_{current_time}.json')
@@ -182,7 +182,7 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
         # Define the loss function and optimizer
         criterion = nn.BCELoss()
-        optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+        optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
 
         # Define lists to store loss values
         MLNN_train_losses = []
@@ -207,8 +207,8 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
                 optimizer.step()
 
                 running_loss += loss.item()
-                if i % 100 == 99:  # Print every 100 mini-batches
-                    print(f'MLNN: SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.9f}')
+                if i % 1000 == 999:  # Print every 100 mini-batches
+                    print(f'MLNN: SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
                     running_loss = 0.0
 
             # Calculate the average training loss for this epoch
@@ -311,13 +311,13 @@ def main():
     batch_size = 64
     learning_rate = 1e-2
     epochs = 150
-    nr_codeword = int(1e5)
+    nr_codeword = int(1e6)
     patience = 4
     delta = 0.001
 
 
     # Save model
-    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    current_time = datetime.now().strftime("%m-%d_%H-%M-%S")
     SLNN_model_path = f"Result/Model/SLNN_{current_time}/"
     MLNN_model_path = f"Result/Model/MLNN_{current_time}/"
 
