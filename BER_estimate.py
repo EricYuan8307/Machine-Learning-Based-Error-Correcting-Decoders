@@ -237,14 +237,14 @@ def main():
     # device = torch.device("cpu")
     device = torch.device("cuda")
 
-    # Hpyer parameters
+    # Hyperparameters
     num = int(1e6)
     iter = 5
+    MLNN_hidden_size = 100
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
     SNR_opt_BP = torch.arange(0, 9, 0.5)
     SNR_opt_NN = torch.arange(4.5, 6.5, 0.5)
-    MLNN_hidden_size = 100
 
     model_save_pth = "Result/Model/MLNN"
 

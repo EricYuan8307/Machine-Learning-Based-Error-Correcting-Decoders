@@ -143,31 +143,25 @@ def main():
     # device = torch.device("cpu")
     device = torch.device("cuda")
 
-    # Hpyer parameters
-    num = int(1e5)
-    iter = 5
+    # Hyperparameters
+    num = int(1e6)
+    SLNN_hidden_size = 7
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
     SNR_opt_NN = torch.arange(0, 6.5, 0.5)
-
-    SLNN_hidden_size = 7
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
     save_pth = "Result/Model/SLNN"
 
     result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, device)
-
     directory_path = "Result/BER"
+
     # Create the directory if it doesn't exist
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
 
-    # Get the current timestamp as a string
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-    # Construct the filename with the timestamp
     csv_filename = f"BLER_result_{current_time}.csv"
-
     full_csv_path = os.path.join(directory_path, csv_filename)
     np.savetxt(full_csv_path, result_all, delimiter=', ')
 
