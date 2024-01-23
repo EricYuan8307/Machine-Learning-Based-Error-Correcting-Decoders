@@ -244,25 +244,20 @@ def main():
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
     SNR_opt_BP = torch.arange(0, 9, 0.5)
     SNR_opt_NN = torch.arange(0, 7, 0.5)
-
     MLNN_hidden_size = 100
-    save_pth = "Result/Model/MLNN_01-23_13-04-19"
+
+    model_save_pth = "Result/Model/MLNN_01-23_13-42-27"
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
-
-    result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN_hidden_size, save_pth, result_save, device)
-
+    result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN_hidden_size, model_save_pth, result_save, device)
     directory_path = "Result/BER"
+
     # Create the directory if it doesn't exist
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
 
-    # Get the current timestamp as a string
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-    # Construct the filename with the timestamp
     csv_filename = f"BER_result_{current_time}.csv"
-
     full_csv_path = os.path.join(directory_path, csv_filename)
     np.savetxt(full_csv_path, result_all, delimiter=', ')
 
