@@ -104,17 +104,17 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
             print(f'SLNN Testing - SNR{snr_dB} - Loss: {running_loss / len(SLNN_testloader):.9f}')
 
-            # # Early Stopping
-            # if early_stopping(running_loss, model, model_path):
-            #     print('SLNN: Early stopping')
-            #     print(f'SLNN: SNR={snr_dB} Stop at total val_loss is {running_loss} and epoch is {epoch}')
-            #     break
-            # else:
-            #     print(f"SLNN: SNR={snr_dB} Continue Training")
+            # Early Stopping
+            if early_stopping(running_loss, model, model_path):
+                print('SLNN: Early stopping')
+                print(f'SLNN: SNR={snr_dB} Stop at total val_loss is {running_loss} and epoch is {epoch}')
+                break
+            else:
+                print(f"SLNN: SNR={snr_dB} Continue Training")
 
-            # Save MLNN model with specific SNR and time
-            os.makedirs(model_path, exist_ok=True)
-            torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{snr_dB}.pth")
+            # # Save MLNN model with specific SNR and time
+            # os.makedirs(model_path, exist_ok=True)
+            # torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{snr_dB}.pth")
 
         # Save the loss data to a file
         loss_data = {
@@ -312,7 +312,10 @@ def main():
     learning_rate = 1e-2
     epochs = 150
     nr_codeword = int(1e6)
-    patience = 4
+
+    # Early Stoppinhg
+    SLNN_patience = 32
+    MLNN_patience = 4
     delta = 0.001
 
 
@@ -321,8 +324,8 @@ def main():
     SLNN_model_path = f"Result/Model/SLNN_{current_time}/"
     MLNN_model_path = f"Result/Model/MLNN_{current_time}/"
 
-    # SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, patience, delta, device)
-    MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, patience, delta, device)
+    # SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
+    MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
 
 
 if __name__ == '__main__':
