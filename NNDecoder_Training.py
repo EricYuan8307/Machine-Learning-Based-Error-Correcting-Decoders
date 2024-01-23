@@ -313,9 +313,9 @@ def main():
     epochs = 150
     nr_codeword = int(1e6)
 
-    # Early Stopping # Usually same number of your output
+    # Early Stopping # Guess same number of your output
     SLNN_patience = 16
-    MLNN_patience = 8
+    MLNN_patience = 4
     delta = 0.001
 
 
