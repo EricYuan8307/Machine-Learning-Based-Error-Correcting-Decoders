@@ -10,149 +10,114 @@ from Encoder.Hamming74 import hamming_encoder
 from Decoder.HardDecision import hard_decision
 from Decoder.LDPC_BP import LDPCBeliefPropagation
 from Decoder.likelihood import llr
-from Decoder.NNDecoder import SingleLabelNNDecoder, MultiLabelNNDecoder
+from Decoder.NNDecoder import MultiLabelNNDecoder
 from Transmit.noise import AWGN
-from Metric.ErrorRate import calculate_ber, calculate_bler
+from Metric.ErrorRate import calculate_ber
 from Decoder.HammingDecoder import Hamming74decoder
 from Decoder.MaximumLikelihood import HardDecisionML, SoftDecisionML
 from Transmit.NoiseMeasure import NoiseMeasure
-from Decoder.Converter import DecimaltoBinary, MLNN_decision
+from Decoder.Converter import MLNN_decision
 
 
 # Calculate the Error number and BER
-def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, SLNN_hidden_size,MLNN_hidden_size, result, device):
-
+def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN_hidden_size, result, device):
     N = num
 
-    # # De-Encoder, BPSK only
-    # for i in range(len(SNR_opt_BPSK)):
-    #     snr_dB =SNR_opt_BPSK[i]
-    #
-    #     for _ in range(10):
-    #         BPSK_final, bits_info, snr_measure = UncodedBPSK(N, snr_dB, device)
-    #
-    #         BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info)
-    #         if error_num_BPSK < 100:
-    #             N += 2000000
-    #             print(f"the code number is {N}")
-    #
-    #         else:
-    #             print(f"BPSK: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BPSK} and BER is {BER_BPSK}")
-    #             result[0, i] = BER_BPSK
-    #             break
+    # De-Encoder, BPSK only
+    for i in range(len(SNR_opt_BPSK)):
+        snr_dB =SNR_opt_BPSK[i]
+
+        for _ in range(10):
+            BPSK_final, bits_info, snr_measure = UncodedBPSK(N, snr_dB, device)
+
+            BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info)
+            if error_num_BPSK < 100:
+                N += 2000000
+                print(f"the code number is {N}")
+
+            else:
+                print(f"BPSK: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BPSK} and BER is {BER_BPSK}")
+                result[0, i] = BER_BPSK
+                break
 
 
-    # # Soft-Decision Maximum Likelihood
-    # for i in range(len(SNR_opt_ML)):
-    #     snr_dB = SNR_opt_ML[i]
-    #
-    #     # BER
-    #     for _ in range(10):
-    #         SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
-    #
-    #         BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
-    #         if error_num_SDML < 100:
-    #             N += 1000000
-    #             print(f"the code number is {N}")
-    #
-    #         else:
-    #             print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
-    #             result[1, i] = BER_SDML
-    #             break
-    #
-    #     # BLER
-    #     for _ in range(10):
-    #         SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
-    #
-    #         BLER_SDML, block_error_num_SDML = calculate_bler(SDML_final, bits_info)
-    #         if block_error_num_SDML < 100:
-    #             N += 1000000
-    #             print(f"the code number is {N}")
-    #
-    #         else:
-    #             print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {block_error_num_SDML} and BLER is {BLER_SDML}")
-    #             result[1, i] = BLER_SDML
-    #             break
+    # Soft-Decision Maximum Likelihood
+    for i in range(len(SNR_opt_ML)):
+        snr_dB = SNR_opt_ML[i]
+
+        # BER
+        for _ in range(10):
+            SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
+
+            BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
+            if error_num_SDML < 100:
+                N += 1000000
+                print(f"the code number is {N}")
+
+            else:
+                print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
+                result[1, i] = BER_SDML
+                break
 
 
-    # # Hard-Decision Maximum Likelihood
-    # for i in range(len(SNR_opt_ML)):
-    #     snr_dB = SNR_opt_ML[i]
-    #
-    #     for _ in range(10):
-    #         HDML_final, bits_info, snr_measure = HardDecisionMLP(N, snr_dB, device)
-    #
-    #         BER_HDML, error_num_HDML = calculate_ber(HDML_final, bits_info)
-    #         if error_num_HDML < 100:
-    #             N += 1000000
-    #             print(f"the code number is {N}")
-    #
-    #         else:
-    #             print(
-    #                 f"HD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_HDML} and BER is {BER_HDML}")
-    #             result[2, i] = BER_HDML
-    #             break
+    # Hard-Decision Maximum Likelihood
+    for i in range(len(SNR_opt_ML)):
+        snr_dB = SNR_opt_ML[i]
+
+        for _ in range(10):
+            HDML_final, bits_info, snr_measure = HardDecisionMLP(N, snr_dB, device)
+
+            BER_HDML, error_num_HDML = calculate_ber(HDML_final, bits_info)
+            if error_num_HDML < 100:
+                N += 1000000
+                print(f"the code number is {N}")
+
+            else:
+                print(
+                    f"HD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_HDML} and BER is {BER_HDML}")
+                result[2, i] = BER_HDML
+                break
 
 
 
-    # # Belief Propagation
-    # for i in range(len(SNR_opt_BP)):
-    #     snr_dB = SNR_opt_BP[i]
-    #
-    #     for _ in range(10):
-    #         LDPC_final, bits_info, snr_measure = BeliefPropagation(N, snr_dB, iter, device)
-    #
-    #         BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
-    #
-    #         if error_num_LDPC < 100:
-    #             N += 1000000
-    #             print(f"the code number is {N}")
-    #
-    #         else:
-    #             print(f"LDPC: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
-    #             result[3, i] = BER_LDPC
-    #             break
+    # Belief Propagation
+    for i in range(len(SNR_opt_BP)):
+        snr_dB = SNR_opt_BP[i]
+
+        for _ in range(10):
+            LDPC_final, bits_info, snr_measure = BeliefPropagation(N, snr_dB, iter, device)
+
+            BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
+
+            if error_num_LDPC < 100:
+                N += 1000000
+                print(f"the code number is {N}")
+
+            else:
+                print(f"LDPC: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
+                result[3, i] = BER_LDPC
+                break
 
 
-    # Single-label Neural Network:
+    # Multi-label Neural Network:
     for i in range(len(SNR_opt_NN)):
         snr_dB = SNR_opt_NN[i]
         input_size = 7
-        output_size = 16
+        output_size = 4
 
-        model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
-        SLNN_final, bits_info, snr_measure = SLNNDecoder(N, snr_dB, model, device)
+        model = MultiLabelNNDecoder(input_size, MLNN_hidden_size, output_size).to(device)
+        MLNN_result, bits_info, snr_measure = MLNNDecoder(N, snr_dB, model, device)
+        MLNN_final = MLNN_decision(MLNN_result, device)
 
-        BLER_SLNN, error_num_SLNN = calculate_bler(SLNN_final, bits_info) # BER calculation
+        BER_MLNN, error_num_MLNN = calculate_ber(MLNN_final, bits_info) # BER calculation
 
-        if error_num_SLNN < 100:
+        if error_num_MLNN < 100:
             N += 1000000
             print(f"the code number is {N}")
 
         else:
-            print(f"SLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
-            result[4, i] = BLER_SLNN
-
-
-    # # Multi-label Neural Network:
-    # for i in range(len(SNR_opt_NN)):
-    #     snr_dB = SNR_opt_NN[i]
-    #     input_size = 7
-    #     output_size = 4
-    #
-    #     model = MultiLabelNNDecoder(input_size, MLNN_hidden_size, output_size).to(device)
-    #     MLNN_result, bits_info, snr_measure = MLNNDecoder(N, snr_dB, model, device)
-    #     MLNN_final = MLNN_decision(MLNN_result, device)
-    #
-    #     BER_MLNN, error_num_MLNN = calculate_ber(MLNN_final, bits_info) # BER calculation
-    #
-    #     if error_num_MLNN < 100:
-    #         N += 1000000
-    #         print(f"the code number is {N}")
-    #
-    #     else:
-    #         print(f"MLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_MLNN} and BER is {BER_MLNN}")
-    #         result[5, i] = BER_MLNN
+            print(f"MLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_MLNN} and BER is {BER_MLNN}")
+            result[5, i] = BER_MLNN
 
 
 
@@ -244,29 +209,6 @@ def BeliefPropagation(nr_codeword, snr_dB, iter, device):
 
     return LDPC_final, bits_info, practical_snr
 
-def SLNNDecoder(nr_codeword, snr_dB, model, device):
-    encoder = hamming_encoder(device)
-
-    bits_info = generator(nr_codeword, device)  # Code Generator
-    encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
-    modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
-    noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
-
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
-
-    # use MLNN model:
-    model.eval()
-    model.load_state_dict(torch.load(f"Result/Model/SLNN/SLNN_model_BER{snr_dB}.pth"))
-
-    SLNN_result = model(noised_signal)
-    SLNN_decimal = torch.argmax(SLNN_result, dim=2)
-
-    Decimal_Binary =DecimaltoBinary(device)
-    SLNN_binary = Decimal_Binary(SLNN_decimal)
-
-
-    return SLNN_binary, bits_info, practical_snr
-
 def MLNNDecoder(nr_codeword, snr_dB, model, device):
     encoder = hamming_encoder(device)
 
@@ -301,12 +243,11 @@ def main():
     SNR_opt_BP = torch.arange(0, 9, 0.5)
     SNR_opt_NN = torch.arange(0, 7, 0.5)
 
-    SLNN_hidden_size = 7
     MLNN_hidden_size = 100
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
 
-    result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, SLNN_hidden_size, MLNN_hidden_size, result_save, device)
+    result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN_hidden_size, result_save, device)
 
     directory_path = "Result/BER"
     # Create the directory if it doesn't exist

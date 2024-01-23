@@ -1,0 +1,174 @@
+import torch
+import numpy as np
+import os
+from datetime import datetime
+
+from Encoder.Generator import generator
+from Encoder.BPSK import bpsk_modulator
+from Encoder.Hamming74 import hamming_encoder
+from Decoder.HardDecision import hard_decision
+from Decoder.NNDecoder import SingleLabelNNDecoder
+from Transmit.noise import AWGN
+from Metric.ErrorRate import calculate_bler
+from Decoder.HammingDecoder import Hamming74decoder
+from Decoder.MaximumLikelihood import SoftDecisionML
+from Transmit.NoiseMeasure import NoiseMeasure
+from Decoder.Converter import DecimaltoBinary
+
+
+# Calculate the Error number and BLER
+def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, result, device):
+    N = num
+
+    # De-Encoder, BPSK only
+    for i in range(len(SNR_opt_BPSK)):
+        snr_dB =SNR_opt_BPSK[i]
+
+        for _ in range(10):
+            BPSK_final, bits_info, snr_measure = UncodedBPSK(N, snr_dB, device)
+
+            BLER_BPSK, error_num_BPSK= calculate_bler(BPSK_final, bits_info)
+            if error_num_BPSK < 100:
+                N += 2000000
+                print(f"the code number is {N}")
+
+            else:
+                print(f"BPSK: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BPSK} and BER is {BLER_BPSK}")
+                result[0, i] = BLER_BPSK
+                break
+
+
+    # Soft-Decision Maximum Likelihood
+    for i in range(len(SNR_opt_ML)):
+        snr_dB = SNR_opt_ML[i]
+
+        # BLER
+        for _ in range(10):
+            SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
+
+            BLER_SDML, block_error_num_SDML = calculate_bler(SDML_final, bits_info)
+            if block_error_num_SDML < 100:
+                N += 1000000
+                print(f"the code number is {N}")
+
+            else:
+                print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {block_error_num_SDML} and BLER is {BLER_SDML}")
+                result[1, i] = BLER_SDML
+                break
+
+
+    # Single-label Neural Network:
+    for i in range(len(SNR_opt_NN)):
+        snr_dB = SNR_opt_NN[i]
+        input_size = 7
+        output_size = 16
+
+        model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
+        SLNN_final, bits_info, snr_measure = SLNNDecoder(N, snr_dB, model, device)
+
+        BLER_SLNN, error_num_SLNN = calculate_bler(SLNN_final, bits_info) # BER calculation
+
+        if error_num_SLNN < 100:
+            N += 1000000
+            print(f"the code number is {N}")
+
+        else:
+            print(f"SLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
+            result[4, i] = BLER_SLNN
+
+
+    return result
+
+
+def UncodedBPSK(nr_codeword, snr_dB, device):
+    bits_info = generator(nr_codeword, device)
+    modulated_signal = bpsk_modulator(bits_info)
+    noised_signal = AWGN(modulated_signal, snr_dB, device)
+
+    BPSK_final = hard_decision(noised_signal, device)
+
+    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+
+    return BPSK_final, bits_info, practical_snr
+
+def SoftDecisionMLP(nr_codeword, snr_dB, device):
+    encoder = hamming_encoder(device)
+    SD_MaximumLikelihood = SoftDecisionML(device)
+    decoder = Hamming74decoder(device)
+
+    # ML:
+    bits_info = generator(nr_codeword, device)
+    encoded_codeword = encoder(bits_info)
+    modulated_signal = bpsk_modulator(encoded_codeword)
+    noised_signal = AWGN(modulated_signal, snr_dB, device)
+
+    SD_ML = SD_MaximumLikelihood(noised_signal)
+    HD_final = hard_decision(SD_ML, device)
+    SDML_final = decoder(HD_final)
+
+    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+
+    return SDML_final, bits_info, practical_snr
+
+def SLNNDecoder(nr_codeword, snr_dB, model, device):
+    encoder = hamming_encoder(device)
+
+    bits_info = generator(nr_codeword, device)  # Code Generator
+    encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
+    modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
+    noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
+
+    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+
+    # use MLNN model:
+    model.eval()
+    model.load_state_dict(torch.load(f"Result/Model/SLNN/SLNN_model_BER{snr_dB}.pth"))
+
+    SLNN_result = model(noised_signal)
+    SLNN_decimal = torch.argmax(SLNN_result, dim=2)
+
+    Decimal_Binary =DecimaltoBinary(device)
+    SLNN_binary = Decimal_Binary(SLNN_decimal)
+
+
+    return SLNN_binary, bits_info, practical_snr
+
+
+def main():
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                 else torch.device("cpu")))
+    # device = torch.device("cpu")
+    device = torch.device("cuda")
+
+    # Hpyer parameters
+    num = int(1e5)
+    iter = 5
+    SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
+    SNR_opt_ML = torch.arange(0, 9.5, 0.5)
+    SNR_opt_BP = torch.arange(0, 9, 0.5)
+    SNR_opt_NN = torch.arange(0, 7, 0.5)
+
+    SLNN_hidden_size = 7
+
+    result_save = np.zeros((7, len(SNR_opt_BPSK)))
+
+    result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, result_save, device)
+
+    directory_path = "Result/BER"
+    # Create the directory if it doesn't exist
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
+
+    # Get the current timestamp as a string
+    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+    # Construct the filename with the timestamp
+    csv_filename = f"BLER_result_{current_time}.csv"
+
+    full_csv_path = os.path.join(directory_path, csv_filename)
+    np.savetxt(full_csv_path, result_all, delimiter=', ')
+
+
+if __name__ == "__main__":
+    main()
