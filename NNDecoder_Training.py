@@ -127,29 +127,33 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
             # Get the current timestamp as a string
         current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
+        # Save MLNN model with specific SNR and time
+        os.makedirs(model_path, exist_ok=True)
+        torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{snr_dB}.pth")
+
         # Specify the full path to the JSON file within the directory
         loss_data_file = os.path.join(SLNN_loss_data_dir, f'SLNN_loss_SNR{snr_dB}_{current_time}.json')
 
-        # Save the loss data to the specified JSON file
-        with open(loss_data_file, 'w') as f:
-            json.dump(loss_data, f)
-
-        # Extract the training and testing loss lists
-        train_losses = loss_data['train_losses']
-        test_losses = loss_data['test_losses']
-
-        # Create a plot
-        plt.figure(figsize=(10, 5))
-        plt.plot(range(1, len(train_losses) + 1), train_losses, label='Training Loss', marker='o')
-        plt.plot(range(1, len(test_losses) + 1), test_losses, label='Testing Loss', marker='o')
-        plt.xlabel('SLNN Epoch')
-        plt.ylabel('SLNN Loss')
-        plt.title('SLNN Training and Testing Loss')
-        plt.legend()
-        plt.grid(True)
-
-        # Show the plot
-        plt.show()
+        # # Save the loss data to the specified JSON file
+        # with open(loss_data_file, 'w') as f:
+        #     json.dump(loss_data, f)
+        #
+        # # Extract the training and testing loss lists
+        # train_losses = loss_data['train_losses']
+        # test_losses = loss_data['test_losses']
+        #
+        # # Create a plot
+        # plt.figure(figsize=(10, 5))
+        # plt.plot(range(1, len(train_losses) + 1), train_losses, label='Training Loss', marker='o')
+        # plt.plot(range(1, len(test_losses) + 1), test_losses, label='Testing Loss', marker='o')
+        # plt.xlabel('SLNN Epoch')
+        # plt.ylabel('SLNN Loss')
+        # plt.title('SLNN Training and Testing Loss')
+        # plt.legend()
+        # plt.grid(True)
+        #
+        # # Show the plot
+        # plt.show()
 
 
 def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
@@ -264,26 +268,26 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
         # Specify the full path to the JSON file within the directory
         loss_data_file = os.path.join(MLNN_loss_data_dir, f'MLNN_loss_SNR{snr_dB}_{current_time}.json')
 
-        # Save the loss data to the specified JSON file
-        with open(loss_data_file, 'w') as f:
-            json.dump(loss_data, f)
-
-        # Extract the training and testing loss lists
-        train_losses = loss_data['train_losses']
-        test_losses = loss_data['test_losses']
-
-        # Create a plot
-        plt.figure(figsize=(10, 5))
-        plt.plot(range(1, len(train_losses) + 1), train_losses, label='Training Loss', marker='o')
-        plt.plot(range(1, len(test_losses) + 1), test_losses, label='Testing Loss', marker='o')
-        plt.xlabel('MLNN Epoch')
-        plt.ylabel('MLNN Loss')
-        plt.title('MLNN Training and Testing Loss')
-        plt.legend()
-        plt.grid(True)
-
-        # Show the plot
-        plt.show()
+        # # Save the loss data to the specified JSON file
+        # with open(loss_data_file, 'w') as f:
+        #     json.dump(loss_data, f)
+        #
+        # # Extract the training and testing loss lists
+        # train_losses = loss_data['train_losses']
+        # test_losses = loss_data['test_losses']
+        #
+        # # Create a plot
+        # plt.figure(figsize=(10, 5))
+        # plt.plot(range(1, len(train_losses) + 1), train_losses, label='Training Loss', marker='o')
+        # plt.plot(range(1, len(test_losses) + 1), test_losses, label='Testing Loss', marker='o')
+        # plt.xlabel('MLNN Epoch')
+        # plt.ylabel('MLNN Loss')
+        # plt.title('MLNN Training and Testing Loss')
+        # plt.legend()
+        # plt.grid(True)
+        #
+        # # Show the plot
+        # plt.show()
 
         # # Save MLNN model with specific SNR and time
         # os.makedirs(model_path, exist_ok=True)
@@ -311,9 +315,11 @@ def main():
     patience = 4
     delta = 0.001
 
+
     # Save model
-    SLNN_model_path = "Result/Model/SLNN/"
-    MLNN_model_path = "Result/Model/MLNN/"
+    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    SLNN_model_path = f"Result/Model/SLNN_{current_time}/"
+    MLNN_model_path = f"Result/Model/MLNN_{current_time}/"
 
     # SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, patience, delta, device)
     MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, patience, delta, device)

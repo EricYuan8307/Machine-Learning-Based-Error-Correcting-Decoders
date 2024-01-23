@@ -57,7 +57,7 @@ def SLNNDecoder(nr_codeword, snr_dB, model, device):
 
     practical_snr = NoiseMeasure(noised_signal, modulated_signal)
 
-    # use MLNN model:
+    # use SLNN model:
     model.eval()
     model.load_state_dict(torch.load(f"Result/Model/SLNN/SLNN_model_BER{snr_dB}.pth"))
 
@@ -145,7 +145,7 @@ def main():
     iter = 5
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
-    SNR_opt_NN = torch.arange(0, 7, 0.5)
+    SNR_opt_NN = torch.arange(0, 6.5, 0.5)
 
     SLNN_hidden_size = 7
 

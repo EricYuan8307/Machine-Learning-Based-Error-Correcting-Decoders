@@ -105,7 +105,7 @@ def BeliefPropagation(nr_codeword, snr_dB, iter, device):
 
     return LDPC_final, bits_info, practical_snr
 
-def MLNNDecoder(nr_codeword, snr_dB, model, device):
+def MLNNDecoder(nr_codeword, snr_dB, model, model_pth, device):
     encoder = hamming_encoder(device)
 
     bits_info = generator(nr_codeword, device)  # Code Generator
@@ -117,7 +117,7 @@ def MLNNDecoder(nr_codeword, snr_dB, model, device):
 
     # use MLNN model:
     model.eval()
-    model.load_state_dict(torch.load(f"Result/Model/MLNN/MLNN_model_BER{snr_dB}.pth"))
+    model.load_state_dict(torch.load(model_pth))
 
     MLNN_final = model(noised_signal)
 
@@ -180,9 +180,8 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN
     #                 f"HD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_HDML} and BER is {BER_HDML}")
     #             result[2, i] = BER_HDML
     #             break
-    #
-    #
-    #
+
+
     # # Belief Propagation
     # for i in range(len(SNR_opt_BP)):
     #     snr_dB = SNR_opt_BP[i]
@@ -208,8 +207,9 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN
         input_size = 7
         output_size = 4
 
+        model_pth = f"Result/Model/MLNN/MLNN_model_BER{snr_dB}.pth"
         model = MultiLabelNNDecoder(input_size, MLNN_hidden_size, output_size).to(device)
-        MLNN_result, bits_info, snr_measure = MLNNDecoder(N, snr_dB, model, device)
+        MLNN_result, bits_info, snr_measure = MLNNDecoder(N, snr_dB, model, model_pth, device)
         MLNN_final = MLNN_decision(MLNN_result, device)
 
         BER_MLNN, error_num_MLNN = calculate_ber(MLNN_final, bits_info) # BER calculation
