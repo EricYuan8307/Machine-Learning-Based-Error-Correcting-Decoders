@@ -29,5 +29,5 @@ class EarlyStopping:
 
     def save_checkpoint(self, val_loss, model, model_path):
         os.makedirs(model_path, exist_ok=True)
-        torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{self.snr_dB}.pth")
+        torch.save(model.state_dict(), f"{model_path}NN_model_BER{self.snr_dB}.pth")
         self.val_loss_min = val_loss
