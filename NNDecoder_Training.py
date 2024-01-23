@@ -69,8 +69,8 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
                 optimizer.step()
 
                 running_loss += loss.item()
-                if i % 100 == 99:  # Print every 100 mini-batches
-                    print(f'SLNN: SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.9f}')
+                if i % 1000 == 999:  # Print every 100 mini-batches
+                    print(f'SLNN: SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
                     running_loss = 0.0
 
             # Calculate the average training loss for this epoch
