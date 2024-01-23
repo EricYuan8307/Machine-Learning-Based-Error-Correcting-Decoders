@@ -15,7 +15,7 @@ from Transmit.noise import AWGN
 from Decoder.NNDecoder import SingleLabelNNDecoder, MultiLabelNNDecoder
 from Transmit.NoiseMeasure import NoiseMeasure
 from Decoder.Converter import BinarytoDecimal
-from earlystopping import EarlyStopping
+from earlystopping import SLNN_EarlyStopping, MLNN_EarlyStopping
 
 def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
 
@@ -51,7 +51,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
         SLNN_test_losses = []
 
         # Early Stopping
-        early_stopping = EarlyStopping(patience, delta, snr_dB)
+        early_stopping = SLNN_EarlyStopping(patience, delta, snr_dB)
 
         # Single-Label Neural Network Training loop
         for epoch in range(epochs):
@@ -185,7 +185,7 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
         MLNN_test_losses = []
 
         # Early Stopping
-        early_stopping = EarlyStopping(patience, delta, snr_dB)
+        early_stopping = MLNN_EarlyStopping(patience, delta, snr_dB)
 
         # Multi-Label Neural Network Training loop
         for epoch in range(epochs):
