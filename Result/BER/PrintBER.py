@@ -46,8 +46,8 @@ MLNN_OF = [2.2355175e-02, 1.53993e-02, 1.00661e-02, 6.2342e-03, 3.6671e-03, 2.02
         3.77725e-04, 2.33225e-04, 3.5255e-04, 4.27925e-04, 2.41525e-04, 1.60075e-04, 8.635e-05, 4.8225e-05, 2.845e-05,
         0, 0, 0, 0]
 
-MLNN = [0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
+MLNN = [0.0224775, 0.0158875, 0.0105725, 0.0062175, 0.0036575, 0.0018325, 0.0011075, 0.0004225,9.454545454545455e-05,
+        0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0]
 
 
@@ -73,17 +73,17 @@ MLNN = [0, 0, 0, 0, 0, 0, 0, 0,
 def nnplot():
     plt.figure(figsize=(10, 10))
     plt.semilogy(SNR, uncoded_BPSK, marker='.', label='uncoded_BPSK')
-    plt.semilogy(SNR, new_SDML, marker='x', label='SDML')
-    plt.semilogy(SNR, article_BPSK, marker='.', label='article_BPSK')
-    plt.semilogy(SNR, article_SDML, marker='x', label='SDML')
+    plt.semilogy(SNR, SDML, marker='x', label='SDML')
+    # plt.semilogy(SNR, article_BPSK, marker='.', label='article_BPSK')
+    # plt.semilogy(SNR, article_SDML, marker='x', label='SDML')
     # plt.semilogy(SNR, MLNN_OF, marker='.', label='MLNN_OF')
-    # plt.semilogy(SNR, MLNN, marker='.', label='MLNN')
+    plt.semilogy(SNR, MLNN, marker='.', label='MLNN')
 
     plt.xlabel('SNR')
     plt.ylabel('BER')
     plt.title('BER Estimation')
-    # plt.legend(['uncoded_BPSK', 'SDML', "MLNN", "MLNN_OF"], loc='lower left')
-    plt.legend(['uncoded_BPSK', 'SDML','article_BPSK', 'article_SDML'], loc='lower left')
+    plt.legend(['uncoded_BPSK', 'SDML', "MLNN"], loc='lower left')
+    # plt.legend(['uncoded_BPSK', 'SDML','article_BPSK', 'article_SDML'], loc='lower left')
 
     # Display the Plot
     plt.show()
