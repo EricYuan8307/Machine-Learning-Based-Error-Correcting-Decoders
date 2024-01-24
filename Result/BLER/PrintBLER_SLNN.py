@@ -31,7 +31,7 @@ plt.semilogy(SNR, article_SDML, marker='x', label='Soft-decision ML, Article')
 plt.semilogy(SNR, article_BPSK, marker='+', label='BPSK, Uncoded, Article')
 plt.semilogy(SNR, BLER_SDML, marker='x', label='Soft-decision ML')
 plt.semilogy(SNR, BLER_BPSK, marker='+', label='BPSK, Uncoded')
-plt.semilogy(SNR, BLER_SLNN, marker='.', label='Single-label Neural network')
+# plt.semilogy(SNR, BLER_SLNN, marker='.', label='Single-label Neural network', color='blue')
 
 plt.xlabel('SNR')
 plt.ylabel('BLER')
