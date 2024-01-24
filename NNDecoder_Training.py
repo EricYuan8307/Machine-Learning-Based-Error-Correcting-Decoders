@@ -79,8 +79,6 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
             # Testing loop
             running_loss = 0.0
-            total_correct = 0
-            total_samples = 0
 
             with torch.no_grad():
                 for data in SLNN_testloader:
@@ -92,11 +90,6 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
                     # Compute the loss
                     loss = criterion(outputs, labels)
                     running_loss += loss.item()
-
-                    # Calculate accuracy
-                    predicted = torch.argmax(outputs, dim=1)
-                    total_correct += (predicted == labels).sum().item()
-                    total_samples += labels.size(0)
 
             # Calculate the average testing loss for this epoch
             avg_test_loss = running_loss / len(SLNN_testloader)
@@ -217,8 +210,6 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
             # Testing loop
             running_loss = 0.0
-            total_correct = 0
-            total_samples = 0
 
             with torch.no_grad():
                 for data in MLNN_testloader:
@@ -230,10 +221,6 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
                     # Compute the loss
                     loss = criterion(outputs, labels)
                     running_loss += loss.item()
-
-                    # Calculate accuracy
-                    total_correct += (outputs == labels).sum().item()
-                    total_samples += labels.size(0)
 
             # Calculate the average testing loss for this epoch
             avg_test_loss = running_loss / len(MLNN_testloader)
