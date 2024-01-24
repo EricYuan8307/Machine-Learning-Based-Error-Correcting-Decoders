@@ -310,7 +310,7 @@ def main():
     MLNN_hidden_size = 100
     batch_size = 64
     learning_rate = 1e-2
-    epochs = 150
+    epochs = 500
     nr_codeword = int(1e6)
 
     # Early Stopping # Guess same number of your output
@@ -324,8 +324,9 @@ def main():
     SLNN_model_path = f"Result/Model/SLNN_{current_time}/"
     MLNN_model_path = f"Result/Model/MLNN_{current_time}/"
 
-    SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
     # MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
+    SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
+
 
 
 if __name__ == '__main__':

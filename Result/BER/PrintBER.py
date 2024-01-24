@@ -35,21 +35,20 @@ article_SDML = [0.08, 0.065, 0.059, 0.04, 0.029, 0.0205, 0.014, 0.008, 0.007,
 uncoded_BPSK = [0.07864588, 0.0670532, 0.05630509, 0.046395885, 0.03750538, 0.02963852, 0.02287882,
                 0.01716848, 0.012505335, 0.00879166, 0.00595442, 0.003866035, 0.00238995, 0.00140195,
                 0.00076981, 0.000398745, 0.000193015, 8.405e-05, 3.335e-05, 1.21e-05, 3.855e-06]
-SDML = [0.021438075, 0.014477825, 0.009354125, 0.0056875, 0.003245525, 0.001715425, 0.000867975, 0.000398725,
-        0.00016595, 5.9475e-05, 2.1025e-05, 6.275e-06, 1.3875e-06, 3.675e-07, 0, 0,
-        0, 0, 0, 0, 0]
+SDML = [0.021438075, 0.014477825, 0.009354125, 0.0056875, 0.003245525, 0.001715425, 0.000867975, 0.000398725, # 0~3.5
+        0.00016595, 5.9475e-05, 2.1025e-05, 6.275e-06, 1.3875e-06, 3.675e-07, # 4~6.5
+        0, 0, 0, 0, 0, 0, 0]
 
-value_to_add = math.log10(4/7)
-new_SDML = [x + value_to_add for x in SDML]
+# value_to_add = math.log10(4/7)
+# new_SDML = [x + value_to_add for x in SDML]
+
+MLNN = [0.0224775, 0.0158875, 0.0105725, 0.0062175, 0.0036575, 0.0018325, 0.0011075, 0.00048125, #0~3.5
+        0.00021225, 8.8625e-05, 3.665e-05, 0, 0, 0, # 4~6.5
+        0, 0, 0, 0, 0, 0, 0]
 
 MLNN_OF = [2.2355175e-02, 1.53993e-02, 1.00661e-02, 6.2342e-03, 3.6671e-03, 2.0214e-03, 1.089425e-03, 5.53425e-04,
         3.77725e-04, 2.33225e-04, 3.5255e-04, 4.27925e-04, 2.41525e-04, 1.60075e-04, 8.635e-05, 4.8225e-05, 2.845e-05,
         0, 0, 0, 0]
-
-MLNN = [0.0224775, 0.0158875, 0.0105725, 0.0062175, 0.0036575, 0.0018325, 0.0011075, 0.00048125, 0.00021225,
-        8.525e-05, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0]
-
 
 # def originalplot():
 #     plt.figure(figsize=(10, 10))
@@ -76,13 +75,13 @@ def nnplot():
     plt.semilogy(SNR, SDML, marker='x', label='SDML')
     # plt.semilogy(SNR, article_BPSK, marker='.', label='article_BPSK')
     # plt.semilogy(SNR, article_SDML, marker='x', label='SDML')
-    # plt.semilogy(SNR, MLNN_OF, marker='.', label='MLNN_OF')
+    plt.semilogy(SNR, MLNN_OF, marker='.', label='MLNN_OF')
     plt.semilogy(SNR, MLNN, marker='.', label='MLNN')
 
     plt.xlabel('SNR')
     plt.ylabel('BER')
     plt.title('BER Estimation')
-    plt.legend(['uncoded_BPSK', 'SDML', "MLNN"], loc='lower left')
+    plt.legend(['uncoded_BPSK', 'SDML', "MLNN", "MLNN_OF"], loc='lower left')
     # plt.legend(['uncoded_BPSK', 'SDML','article_BPSK', 'article_SDML'], loc='lower left')
 
     # Display the Plot
