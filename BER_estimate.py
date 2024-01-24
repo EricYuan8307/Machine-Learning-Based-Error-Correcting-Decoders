@@ -144,25 +144,25 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN
     #             break
     #
     #
-    # # Soft-Decision Maximum Likelihood
-    # for i in range(len(SNR_opt_ML)):
-    #     snr_dB = SNR_opt_ML[i]
-    #
-    #     # BER
-    #     for _ in range(10):
-    #         SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
-    #
-    #         BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
-    #         if error_num_SDML < 100:
-    #             N += 1000000
-    #             print(f"the code number is {N}")
-    #
-    #         else:
-    #             print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
-    #             result[1, i] = BER_SDML
-    #             break
-    #
-    #
+    # Soft-Decision Maximum Likelihood
+    for i in range(len(SNR_opt_ML)):
+        snr_dB = SNR_opt_ML[i]
+
+        # BER
+        for _ in range(10):
+            SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
+
+            BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
+            if error_num_SDML < 100:
+                N += 1000000
+                print(f"the code number is {N}")
+
+            else:
+                print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
+                result[1, i] = BER_SDML
+                break
+
+
     # # Hard-Decision Maximum Likelihood
     # for i in range(len(SNR_opt_ML)):
     #     snr_dB = SNR_opt_ML[i]
@@ -201,30 +201,30 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN
     #             break
 
 
-    # Multi-label Neural Network:
-    for i in range(len(SNR_opt_NN)):
-        snr_dB = SNR_opt_NN[i]
-        input_size = 7
-        output_size = 4
-
-        model_pth = f"MLNN_model_BER{snr_dB}.pth"
-
-        model_pth = os.path.join(save_pth, model_pth)
-        model = MultiLabelNNDecoder(input_size, MLNN_hidden_size, output_size).to(device)
-        MLNN_result, bits_info, snr_measure = MLNNDecoder(N, snr_dB, model, model_pth, device)
-        MLNN_final = MLNN_decision(MLNN_result, device)
-
-        BER_MLNN, error_num_MLNN = calculate_ber(MLNN_final, bits_info) # BER calculation
-
-        if error_num_MLNN < 100:
-            N += 1000000
-            print(f"the code number is {N}")
-
-        else:
-            print(f"MLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_MLNN} and BER is {BER_MLNN}")
-            result[5, i] = BER_MLNN
-
-    return result
+    # # Multi-label Neural Network:
+    # for i in range(len(SNR_opt_NN)):
+    #     snr_dB = SNR_opt_NN[i]
+    #     input_size = 7
+    #     output_size = 4
+    #
+    #     model_pth = f"MLNN_model_BER{snr_dB}.pth"
+    #
+    #     model_pth = os.path.join(save_pth, model_pth)
+    #     model = MultiLabelNNDecoder(input_size, MLNN_hidden_size, output_size).to(device)
+    #     MLNN_result, bits_info, snr_measure = MLNNDecoder(N, snr_dB, model, model_pth, device)
+    #     MLNN_final = MLNN_decision(MLNN_result, device)
+    #
+    #     BER_MLNN, error_num_MLNN = calculate_ber(MLNN_final, bits_info) # BER calculation
+    #
+    #     if error_num_MLNN < 100:
+    #         N += 1000000
+    #         print(f"the code number is {N}")
+    #
+    #     else:
+    #         print(f"MLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_MLNN} and BER is {BER_MLNN}")
+    #         result[5, i] = BER_MLNN
+    #
+    # return result
 
 
 
@@ -242,13 +242,13 @@ def main():
     iter = 5
     MLNN_hidden_size = 100
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
-    SNR_opt_ML_NN = torch.arange(0, 9.5, 0.5) - 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))
+    SNR_opt_ML_NN = torch.arange(0, 9.5, 0.5) + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))
     # SNR_opt_ML = torch.arange(0, 9.5, 0.5)
     SNR_opt_BP = torch.arange(0, 9, 0.5)
-    # SNR_opt_NN_NN = torch.arange(0, 6, 0.5) - 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))
+    # SNR_opt_NN_NN = torch.arange(0, 6, 0.5) + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))
     SNR_opt_NN = torch.arange(0, 6, 0.5)
 
-    model_save_pth = "Result/Model/MLNN_01-23_14-29-40"
+    model_save_pth = "Result/Model/MLNN"
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
     result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML_NN, SNR_opt_BP, iter, SNR_opt_NN, MLNN_hidden_size, model_save_pth, result_save, device)
