@@ -244,9 +244,9 @@ def main():
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
     SNR_opt_BP = torch.arange(0, 9, 0.5)
-    SNR_opt_NN = torch.arange(4.5, 6.5, 0.5)
+    SNR_opt_NN = torch.arange(0, 6, 0.5)
 
-    model_save_pth = "Result/Model/MLNN"
+    model_save_pth = "Result/Model/MLNN_01-23_14-29-40"
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
     result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN_hidden_size, model_save_pth, result_save, device)
