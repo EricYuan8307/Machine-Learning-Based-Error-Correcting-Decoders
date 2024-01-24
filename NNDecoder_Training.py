@@ -305,7 +305,7 @@ def main():
 
     # Hyperparameters
     SLNN_snr = torch.arange(0.0, 6.5, 0.5)
-    MLNN_snr = torch.arange(4.5, 6.5, 0.5)
+    MLNN_snr = torch.arange(0.0, 6.5, 0.5)
     SLNN_hidden_size = 7
     MLNN_hidden_size = 100
     batch_size = 64
@@ -324,7 +324,7 @@ def main():
     SLNN_model_path = f"Result/Model/SLNN_{current_time}/"
     MLNN_model_path = f"Result/Model/MLNN_{current_time}/"
 
-    MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
+    # MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
     SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
 
 
