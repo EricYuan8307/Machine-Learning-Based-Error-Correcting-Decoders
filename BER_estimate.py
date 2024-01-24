@@ -203,11 +203,12 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN
 
     # Multi-label Neural Network:
     for i in range(len(SNR_opt_NN)):
+        snr_save = i/2
         snr_dB = SNR_opt_NN[i]
         input_size = 7
         output_size = 4
 
-        model_pth = f"MLNN_model_BER{snr_dB}.pth"
+        model_pth = f"MLNN_model_BER{snr_save}.pth"
 
         model_pth = os.path.join(save_pth, model_pth)
         model = MultiLabelNNDecoder(input_size, MLNN_hidden_size, output_size).to(device)
