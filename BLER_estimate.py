@@ -130,7 +130,7 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, save
             print(f"the code number is {N}")
 
         else:
-            print(f"SLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
+            print(f"SLNN: When SNR is {snr_save} and signal number is {N}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
             result[4, i] = BLER_SLNN
 
 
