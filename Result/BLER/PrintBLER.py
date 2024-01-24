@@ -25,12 +25,12 @@ SNR = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9
 plt.figure(figsize=(10, 10))
 plt.semilogy(SNR, BLER_SDML, marker='x', label='SDML')
 plt.semilogy(SNR, BLER_BPSK, marker='+', label='BPSK')
-# plt.semilogy(SNR, BLER_SLNN, marker='.', label='SLNN')
+plt.semilogy(SNR, BLER_SLNN, marker='.', label='SLNN')
 
 plt.xlabel('SNR')
 plt.ylabel('BLER')
 plt.title('BLER Estimation')
-plt.legend(['SDML', 'BPSK'], loc='lower left')
-# plt.legend(['SDML', 'BPSK','SLNN'], loc='lower left')
+# plt.legend(['SDML', 'BPSK'], loc='lower left')
+plt.legend(['SDML', 'BPSK','SLNN'], loc='lower left')
 
 plt.show()
