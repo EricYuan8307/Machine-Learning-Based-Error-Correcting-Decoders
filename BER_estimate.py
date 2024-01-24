@@ -15,7 +15,7 @@ from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber
 from Decoder.HammingDecoder import Hamming74decoder
 from Decoder.MaximumLikelihood import HardDecisionML, SoftDecisionML
-from Transmit.NoiseMeasure import NoiseMeasure
+from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 from Decoder.Converter import MLNN_decision
 
 
@@ -27,7 +27,7 @@ def UncodedBPSK(nr_codeword, snr_dB, device):
 
     BPSK_final = hard_decision(noised_signal, device)
 
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+    practical_snr = NoiseMeasure_BPSK(noised_signal, modulated_signal)
 
     return BPSK_final, bits_info, practical_snr
 
