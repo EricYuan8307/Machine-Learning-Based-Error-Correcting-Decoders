@@ -242,14 +242,16 @@ def main():
     iter = 5
     MLNN_hidden_size = 100
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
-    SNR_opt_ML = torch.arange(0, 9.5, 0.5)
+    SNR_opt_ML_NN = torch.arange(0, 9.5, 0.5) - 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))
+    # SNR_opt_ML = torch.arange(0, 9.5, 0.5)
     SNR_opt_BP = torch.arange(0, 9, 0.5)
+    # SNR_opt_NN_NN = torch.arange(0, 6, 0.5) - 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))
     SNR_opt_NN = torch.arange(0, 6, 0.5)
 
     model_save_pth = "Result/Model/MLNN_01-23_14-29-40"
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
-    result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN_hidden_size, model_save_pth, result_save, device)
+    result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML_NN, SNR_opt_BP, iter, SNR_opt_NN, MLNN_hidden_size, model_save_pth, result_save, device)
     directory_path = "Result/BER"
 
     # Create the directory if it doesn't exist

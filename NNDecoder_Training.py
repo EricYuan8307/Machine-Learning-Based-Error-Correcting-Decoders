@@ -203,7 +203,10 @@ def main():
 
     # Hyperparameters
     SLNN_snr = torch.arange(0.0, 6.5, 0.5)
+    SLNN_snr_nn = torch.arange(0.0, 6.5, 0.5) - 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))
     MLNN_snr = torch.arange(0.0, 6.5, 0.5)
+    MLNN_snr_nn = torch.arange(0.0, 6.5, 0.5) - 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))
+
     SLNN_hidden_size = 7
     MLNN_hidden_size = 100
     batch_size = 64
