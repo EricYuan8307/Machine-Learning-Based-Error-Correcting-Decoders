@@ -75,13 +75,13 @@ def nnplot():
     plt.semilogy(SNR, SDML, marker='x', label='SDML')
     # plt.semilogy(SNR, article_BPSK, marker='.', label='article_BPSK')
     # plt.semilogy(SNR, article_SDML, marker='x', label='SDML')
-    plt.semilogy(SNR, MLNN_OF, marker='.', label='MLNN_OF')
+    plt.semilogy(SNR, MLNN_OF, marker='.', label='overfitting MLNN')
     plt.semilogy(SNR, MLNN, marker='.', label='MLNN')
 
     plt.xlabel('SNR')
     plt.ylabel('BER')
     plt.title('BER Estimation')
-    plt.legend(['uncoded_BPSK', 'SDML', "MLNN", "MLNN_OF"], loc='lower left')
+    plt.legend(['uncoded_BPSK', 'SDML',"overfitting MLNN", "MLNN"], loc='lower left')
     # plt.legend(['uncoded_BPSK', 'SDML','article_BPSK', 'article_SDML'], loc='lower left')
 
     # Display the Plot
