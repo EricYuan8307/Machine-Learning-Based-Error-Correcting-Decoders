@@ -151,10 +151,10 @@ def main():
     SNR_opt_NN = torch.arange(0, 6.5, 0.5)
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
-    save_pth = "Result/Model/SLNN"
+    save_pth = "Result/Model/SLNN_01-24_11-00-23"
 
     result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, device)
-    directory_path = "Result/BER"
+    directory_path = "Result/BLER"
 
     # Create the directory if it doesn't exist
     if not os.path.exists(directory_path):
