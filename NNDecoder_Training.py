@@ -202,10 +202,15 @@ def main():
     device = torch.device("cuda")
 
     # Hyperparameters
-    SLNN_snr = torch.arange(0.0, 6.5, 0.5)
+    SLNN_snr = torch.arange(0.0, 4.5, 0.5)
     SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for SLNN article
-    MLNN_snr = torch.arange(0.0, 6.5, 0.5)
+    MLNN_snr = torch.arange(0.0, 4.5, 0.5)
     MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
+
+    SLNN_snr2 = torch.arange(4.5, 6.5, 0.5)
+    SLNN_snr2 = SLNN_snr2 + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))  # for SLNN article
+    MLNN_snr2 = torch.arange(4.5, 6.5, 0.5)
+    MLNN_snr2 = MLNN_snr2 + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))  # for MLNN article
 
     SLNN_hidden_size = 7
     MLNN_hidden_size = 100
@@ -224,8 +229,13 @@ def main():
     SLNN_model_path = f"Result/Model/SLNN_{current_time}/"
     MLNN_model_path = f"Result/Model/MLNN_{current_time}/"
 
-    MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
     SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
+    MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
+    
+    # Saparate and Get result faster
+    SLNN_training(SLNN_snr2, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
+    MLNN_training(MLNN_snr2, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
+
 
 
 
