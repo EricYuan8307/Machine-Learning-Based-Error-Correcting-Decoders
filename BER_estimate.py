@@ -246,7 +246,7 @@ def main():
     SNR_opt_BP = torch.arange(0, 9, 0.5)
 
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
-    # SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
+    SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
     SNR_opt_NN = torch.arange(0, 6, 0.5)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
 
