@@ -15,7 +15,7 @@ from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber
 from Decoder.HammingDecoder import Hamming74decoder
 from Decoder.MaximumLikelihood import HardDecisionML, SoftDecisionML
-from Transmit.NoiseMeasure import NoiseMeasure
+from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 from Decoder.Converter import MLNN_decision
 
 
@@ -27,7 +27,7 @@ def UncodedBPSK(nr_codeword, snr_dB, device):
 
     BPSK_final = hard_decision(noised_signal, device)
 
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+    practical_snr = NoiseMeasure_BPSK(noised_signal, modulated_signal)
 
     return BPSK_final, bits_info, practical_snr
 
@@ -203,11 +203,12 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN
 
     # Multi-label Neural Network:
     for i in range(len(SNR_opt_NN)):
+        snr_save = i/2
         snr_dB = SNR_opt_NN[i]
         input_size = 7
         output_size = 4
 
-        model_pth = f"MLNN_model_BER{snr_dB}.pth"
+        model_pth = f"MLNN_model_BER{snr_save}.pth"
 
         model_pth = os.path.join(save_pth, model_pth)
         model = MultiLabelNNDecoder(input_size, MLNN_hidden_size, output_size).to(device)
@@ -221,7 +222,7 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN
             print(f"the code number is {N}")
 
         else:
-            print(f"MLNN: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_MLNN} and BER is {BER_MLNN}")
+            print(f"MLNN: When SNR is {snr_save} and signal number is {N}, error number is {error_num_MLNN} and BER is {BER_MLNN}")
             result[5, i] = BER_MLNN
 
 

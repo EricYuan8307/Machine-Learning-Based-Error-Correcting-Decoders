@@ -17,6 +17,7 @@ from earlystopping import SLNN_EarlyStopping, MLNN_EarlyStopping
 def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
 
     for i in range(len(snr)):
+        snr_save = i/2
         snr_dB = snr[i]
 
         # Transmitter:
@@ -48,7 +49,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
         SLNN_test_losses = []
 
         # Early Stopping
-        early_stopping = SLNN_EarlyStopping(patience, delta, snr_dB)
+        early_stopping = SLNN_EarlyStopping(patience, delta, snr_save)
 
         # Single-Label Neural Network Training loop
         for epoch in range(epochs):
@@ -67,7 +68,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
                 running_loss += loss.item()
                 if i % 1000 == 999:  # Print every 100 mini-batches
-                    print(f'SLNN: SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
+                    print(f'SLNN: SNR{snr_save}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
                     running_loss = 0.0
 
             # Calculate the average training loss for this epoch
@@ -92,20 +93,21 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
             avg_test_loss = running_loss / len(SLNN_testloader)
             SLNN_test_losses.append(avg_test_loss)
 
-            print(f'SLNN Testing - SNR{snr_dB} - Loss: {running_loss / len(SLNN_testloader):.9f}')
+            print(f'SLNN Testing - SNR{snr_save} - Loss: {running_loss / len(SLNN_testloader):.9f}')
 
             # Early Stopping
             if early_stopping(running_loss, model, model_path):
                 print('SLNN: Early stopping')
-                print(f'SLNN: SNR={snr_dB} Stop at total val_loss is {running_loss/len(SLNN_testloader)} and epoch is {epoch}')
+                print(f'SLNN: SNR={snr_save} Stop at total val_loss is {running_loss/len(SLNN_testloader)} and epoch is {epoch}')
                 break
             else:
-                print(f"SLNN: SNR={snr_dB} Continue Training")
+                print(f"SLNN: Continue Training")
 
 
 def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
 
     for i in range(len(snr)):
+        snr_save = i/2
         snr_dB = snr[i]
 
         # Transmitter:
@@ -136,7 +138,7 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
         MLNN_test_losses = []
 
         # Early Stopping
-        early_stopping = MLNN_EarlyStopping(patience, delta, snr_dB)
+        early_stopping = MLNN_EarlyStopping(patience, delta, snr_save)
 
         # Multi-Label Neural Network Training loop
         for epoch in range(epochs):
@@ -155,7 +157,7 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
                 running_loss += loss.item()
                 if i % 1000 == 999:  # Print every 100 mini-batches
-                    print(f'MLNN: SNR{snr_dB}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
+                    print(f'MLNN: SNR{snr_save}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
                     running_loss = 0.0
 
             # Calculate the average training loss for this epoch
@@ -180,13 +182,13 @@ def MLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
             avg_test_loss = running_loss / len(MLNN_testloader)
             MLNN_test_losses.append(avg_test_loss)
 
-            print(f'MLNN Testing - SNR{snr_dB} - Loss: {running_loss/len(MLNN_testloader):.9f}')
+            print(f'MLNN Testing - SNR{snr_save} - Loss: {running_loss/len(MLNN_testloader):.9f}')
 
 
             # Early Stopping
             if early_stopping(running_loss, model, model_path):
                 print('MLNN: Early stopping')
-                print(f'MLNN: Stop at total val_loss is {running_loss/len(MLNN_testloader)} and epoch is {epoch}')
+                print(f'MLNN: SNR={snr_save} Stop at total val_loss is {running_loss/len(MLNN_testloader)} and epoch is {epoch}')
                 break
             else:
                 print("MLNN: Continue Training")
@@ -202,10 +204,15 @@ def main():
     device = torch.device("cuda")
 
     # Hyperparameters
-    SLNN_snr = torch.arange(0.0, 6.5, 0.5)
+    SLNN_snr = torch.arange(0.0, 4.5, 0.5)
     SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for SLNN article
-    MLNN_snr = torch.arange(0.0, 6.5, 0.5)
+    MLNN_snr = torch.arange(0.0, 4.5, 0.5)
     MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
+
+    SLNN_snr2 = torch.arange(4.5, 6.5, 0.5)
+    SLNN_snr2 = SLNN_snr2 + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))  # for SLNN article
+    MLNN_snr2 = torch.arange(4.5, 6.5, 0.5)
+    MLNN_snr2 = MLNN_snr2 + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))  # for MLNN article
 
     SLNN_hidden_size = 7
     MLNN_hidden_size = 100
@@ -224,8 +231,13 @@ def main():
     SLNN_model_path = f"Result/Model/SLNN_{current_time}/"
     MLNN_model_path = f"Result/Model/MLNN_{current_time}/"
 
-    MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
     SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
+    MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
+
+    # Saparate and Get result faster
+    SLNN_training(SLNN_snr2, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
+    MLNN_training(MLNN_snr2, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
+
 
 
 
