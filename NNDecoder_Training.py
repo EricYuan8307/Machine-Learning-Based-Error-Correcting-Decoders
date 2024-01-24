@@ -231,7 +231,7 @@ def main():
     SLNN_model_path = f"Result/Model/SLNN_{current_time}/"
     MLNN_model_path = f"Result/Model/MLNN_{current_time}/"
 
-    # SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
+    SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
     MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
 
     # Saparate and Get result faster
