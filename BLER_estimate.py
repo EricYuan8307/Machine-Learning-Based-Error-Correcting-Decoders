@@ -151,7 +151,7 @@ def main():
     SNR_opt_NN = torch.arange(0, 6.5, 0.5)
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
-    save_pth = "Result/Model/SLNN_01-24_11-00-23"
+    save_pth = "Result/Model/SLNN"
 
     result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, device)
     directory_path = "Result/BLER"
