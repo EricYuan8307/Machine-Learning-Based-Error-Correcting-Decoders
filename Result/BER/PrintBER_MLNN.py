@@ -14,29 +14,29 @@ article_SDML = [0.08, 0.065, 0.059, 0.04, 0.029, 0.0205, 0.014, 0.008, 0.0055, #
         ]
 
 
-uncoded_BPSK = [0.07864588, 0.0670532, 0.05630509, 0.046395885, 0.03750538, 0.02963852, 0.02287882, 0.01716848, # 0~3.5
+BER_uncoded_BPSK = [0.07864588, 0.0670532, 0.05630509, 0.046395885, 0.03750538, 0.02963852, 0.02287882, 0.01716848, # 0~3.5
                 0.012505335, 0.00879166, 0.00595442, 0.003866035, 0.00238995, 0.00140195, # 4~6.5
                 0.00076981, 0.000398745,
                 # 0.000193015, 8.405e-05, 3.335e-05, 1.21e-05, 3.855e-06
                 ]
-SDML = [0.082579625, 0.0665316, 0.05207925, 0.039591475, 0.028990875, 0.020399225, 0.013703275, 0.008746775, # 0~3.5
+BER_SDML = [0.082579625, 0.0665316, 0.05207925, 0.039591475, 0.028990875, 0.020399225, 0.013703275, 0.008746775, # 0~3.5
         0.0052823, 0.00298175, 0.001558025, 0.000787275, 0.000358275, 0.0001452, # 4~6.5
         5.7725e-05, 1.9325e-05,
         # 5.525e-06, 1.417e-06, 0, 0, 0
         ]
 
-MLNN = [0.08352515, 0.0676303, 0.05338105, 0.0409503, 0.030304225, 0.021553125, 0.014583725, 0.0094047, # 0~3.5
+BER_MLNN = [0.08352515, 0.0676303, 0.05338105, 0.0409503, 0.030304225, 0.021553125, 0.014583725, 0.0094047, # 0~3.5
         0.00586015, 0.00339805, 0.001841275, 0.000918575, 0.000422125, 0, # 4~6.5
         0, 0]
 
 
 def nnplot():
     plt.figure(figsize=(10, 10))
-    plt.semilogy(SNR, uncoded_BPSK, marker='.', label='BPSK, Uncoded')
-    plt.semilogy(SNR, SDML, marker='x', label='Soft-decision ML')
-    plt.semilogy(SNR, article_BPSK, marker='.', label='BPSK, Uncoded, Article')
-    plt.semilogy(SNR, article_SDML, marker='x', label='Soft-decision ML, Article')
-    plt.semilogy(SNR, MLNN, marker='.', label='Multi-label Neural Network')
+    plt.semilogy(SNR, BER_uncoded_BPSK, label='BPSK, Uncoded', color = "green")
+    plt.semilogy(SNR, BER_SDML, label='Soft-decision ML', color = "black")
+    # plt.semilogy(SNR, article_BPSK, marker='.', label='BPSK, Uncoded, Article')
+    # plt.semilogy(SNR, article_SDML, marker='x', label='Soft-decision ML, Article')
+    plt.semilogy(SNR, BER_MLNN, marker='.', label='Multi-label Neural Network', color = "orange")
 
     plt.xlabel('SNR')
     plt.ylabel('BER')

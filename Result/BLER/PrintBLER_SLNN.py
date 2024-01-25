@@ -28,9 +28,9 @@ SNR = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7]
 plt.figure(figsize=(10, 10))
 # plt.semilogy(SNR, article_SDML, marker='x', label='Soft-decision ML, Article')
 # plt.semilogy(SNR, article_BPSK, marker='+', label='BPSK, Uncoded, Article')
-plt.semilogy(SNR, BLER_SDML, marker='x', label='Soft-decision ML')
-plt.semilogy(SNR, BLER_BPSK, marker='+', label='BPSK, Uncoded')
-plt.semilogy(SNR, BLER_SLNN, marker='.', label='Single-label Neural network', color='blue')
+plt.semilogy(SNR, BLER_SDML,  label='Soft-decision ML', color = "black")
+plt.semilogy(SNR, BLER_BPSK,  label='BPSK, Uncoded', color = "green")
+plt.semilogy(SNR, BLER_SLNN, marker='.', label='Single-label Neural network', color='green')
 
 plt.xlabel('SNR')
 plt.ylabel('BLER')
