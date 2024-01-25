@@ -203,7 +203,7 @@ def main():
     device = torch.device("cuda")
 
     # Hyperparameters
-    SLNN_snr = torch.arange(0, 7.5, 0.5)
+    SLNN_snr = torch.arange(5.5, 7.5, 0.5)
     SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for SLNN article
     MLNN_snr = torch.arange(0, 7.5, 0.5)
     MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
@@ -212,7 +212,7 @@ def main():
     MLNN_hidden_size = 100
     batch_size = 64
     learning_rate = 1e-2
-    epochs = 500
+    epochs = 5000
     nr_codeword = int(1e6)
 
     # Early Stopping # Guess same number of your output
@@ -226,7 +226,7 @@ def main():
     MLNN_model_path = f"Result/Model/MLNN_{current_time}/"
 
     SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
-    MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
+    # MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
 
 
 
