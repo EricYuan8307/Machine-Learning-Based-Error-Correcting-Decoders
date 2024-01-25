@@ -36,14 +36,14 @@ def nnplot():
     plt.semilogy(SNR, SDML, marker='x', label='Soft-decision ML')
     plt.semilogy(SNR, article_BPSK, marker='.', label='BPSK, Uncoded, Article')
     plt.semilogy(SNR, article_SDML, marker='x', label='Soft-decision ML, Article')
-    # plt.semilogy(SNR, MLNN, marker='.', label='Multi-label Neural Network')
+    plt.semilogy(SNR, MLNN, marker='.', label='Multi-label Neural Network')
 
     plt.xlabel('SNR')
     plt.ylabel('BER')
     plt.title('BER Estimation')
     # plt.legend(['uncoded_BPSK', 'SDML', 'MLNN'], loc='lower left')
     plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'BPSK, Uncoded, Article', 'Soft-decision ML, Article', 'Multi-label Neural Network'], loc='lower left')
-
+    # plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'Multi-label Neural Network'], loc='lower left')
     # Display the Plot
     plt.show()
 
