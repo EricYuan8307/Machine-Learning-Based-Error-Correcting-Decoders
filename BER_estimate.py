@@ -248,11 +248,11 @@ def main():
 
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
-    SNR_opt_NN = torch.arange(0, 6.5, 0.5)
+    SNR_opt_NN = torch.arange(6.5, 8, 0.5)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
 
 
-    model_save_pth = "Result/Model/MLNN"
+    model_save_pth = "Result/Model/MLNN_01-25_17-41-56"
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
     result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN_hidden_size, model_save_pth, result_save, device)
