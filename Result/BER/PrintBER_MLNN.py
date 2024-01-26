@@ -42,8 +42,8 @@ def nnplot():
     plt.ylabel('BER')
     plt.title('BER Estimation')
     # plt.legend(['uncoded_BPSK', 'SDML', 'MLNN'], loc='lower left')
-    plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'BPSK, Uncoded, Article', 'Soft-decision ML, Article', 'Multi-label Neural Network'], loc='lower left')
-    # plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'Multi-label Neural Network'], loc='lower left')
+    # plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'BPSK, Uncoded, Article', 'Soft-decision ML, Article', 'Multi-label Neural Network'], loc='lower left')
+    plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'Multi-label Neural Network'], loc='lower left')
     # Display the Plot
     plt.show()
 
