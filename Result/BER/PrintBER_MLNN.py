@@ -9,10 +9,11 @@ article_BPSK = [0.08, 0.07, 0.057, 0.047, 0.04, 0.0305, 0.023, 0.019, # 0~3.5
                 # 0.0002, 0, 0, 0, 0
                 ]
 article_SDML = [0.08, 0.065, 0.059, 0.04, 0.029, 0.0205, 0.014, 0.008, 0.0055, # 0~4
-        0.0031, 0.00175, 8.1e-04, 3.9e-04, 1.6e-04, 5.5e-05, 1.4e-05, # 4.5~7.5
-        # 0, 0, 0, 0, 0
-        ]
-
+                0.0031, 0.00175, 8.1e-04, 3.9e-04, 1.6e-04, 5.5e-05, 1.4e-05, # 4.5~7.5
+                ]
+article_MLNN_7 = [0.08, 0.065, 0.057, 0.044, 0.03, 0.023, 0.016, 0.01, 0.007, # 0~4
+                0.0041, 0.0028, 0.0013, 0.00075, 0.000395, 0.00017, 6.0e-05, # 4.5~7.5
+                ]
 
 BER_uncoded_BPSK = [0.07864588, 0.0670532, 0.05630509, 0.046395885, 0.03750538, 0.02963852, 0.02287882, 0.01716848, # 0~3.5
                 0.012505335, 0.00879166, 0.00595442, 0.003866035, 0.00238995, 0.00140195, # 4~6.5
@@ -36,14 +37,15 @@ def nnplot():
     plt.semilogy(SNR, BER_SDML, label='Soft-decision ML', color = "black")
     # plt.semilogy(SNR, article_BPSK, marker='.', label='BPSK, Uncoded, Article')
     # plt.semilogy(SNR, article_SDML, marker='x', label='Soft-decision ML, Article')
-    plt.semilogy(SNR, BER_MLNN, marker='.', label='Multi-label Neural Network', color = "orange")
+    plt.semilogy(SNR, article_MLNN_7, marker='D', label='Multi-label Neural Network N=7, Article', color = "pink")
+    plt.semilogy(SNR, BER_MLNN, marker='D', label='Multi-label Neural Network', color = "orange")
 
     plt.xlabel('SNR')
     plt.ylabel('BER')
     plt.title('BER Estimation')
     # plt.legend(['uncoded_BPSK', 'SDML', 'MLNN'], loc='lower left')
     # plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'BPSK, Uncoded, Article', 'Soft-decision ML, Article', 'Multi-label Neural Network'], loc='lower left')
-    plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'Multi-label Neural Network'], loc='lower left')
+    plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'Multi-label Neural Network N=7, Article', 'Multi-label Neural Network'], loc='lower left')
     # Display the Plot
     plt.show()
 
