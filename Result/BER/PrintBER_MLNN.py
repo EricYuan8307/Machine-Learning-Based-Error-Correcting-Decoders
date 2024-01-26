@@ -11,7 +11,7 @@ article_BPSK = [0.08, 0.07, 0.057, 0.047, 0.04, 0.0305, 0.023, 0.019, # 0~3.5
 article_SDML = [0.08, 0.065, 0.059, 0.04, 0.029, 0.0205, 0.014, 0.008, 0.0055, # 0~4
                 0.0031, 0.00175, 8.1e-04, 3.9e-04, 1.6e-04, 5.5e-05, 1.4e-05, # 4.5~7.5
                 ]
-article_MLNN_7 = [0.08, 0.065, 0.057, 0.044, 0.03, 0.023, 0.016, 0.01, 0.007, # 0~4
+article_MLNN_100 = [0.08, 0.065, 0.057, 0.044, 0.03, 0.023, 0.016, 0.01, 0.007, # 0~4
                 0.0041, 0.0028, 0.0013, 0.00075, 0.000395, 0.00017, 6.0e-05, # 4.5~7.5
                 ]
 
@@ -37,15 +37,15 @@ def nnplot():
     plt.semilogy(SNR, BER_SDML, label='Soft-decision ML', color = "black")
     # plt.semilogy(SNR, article_BPSK, marker='.', label='BPSK, Uncoded, Article')
     # plt.semilogy(SNR, article_SDML, marker='x', label='Soft-decision ML, Article')
-    plt.semilogy(SNR, article_MLNN_7, marker='D', label='Multi-label Neural Network N=7, Article', color = "pink")
-    plt.semilogy(SNR, BER_MLNN, marker='D', label='Multi-label Neural Network', color = "orange")
+    plt.semilogy(SNR, article_MLNN_100, marker='D', label='Multi-label Neural Network N=100, Article', color = "pink")
+    plt.semilogy(SNR, BER_MLNN, marker='D', label='Multi-label Neural Network, N=100', color = "orange")
 
     plt.xlabel('SNR')
     plt.ylabel('BER')
     plt.title('BER Estimation')
     # plt.legend(['uncoded_BPSK', 'SDML', 'MLNN'], loc='lower left')
     # plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'BPSK, Uncoded, Article', 'Soft-decision ML, Article', 'Multi-label Neural Network'], loc='lower left')
-    plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'Multi-label Neural Network N=7, Article', 'Multi-label Neural Network'], loc='lower left')
+    plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'Multi-label Neural Network N=100, Article', 'Multi-label Neural Network N=100'], loc='lower left')
     # Display the Plot
     plt.show()
 
