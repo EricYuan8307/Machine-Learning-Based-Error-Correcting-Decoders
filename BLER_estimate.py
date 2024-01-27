@@ -145,16 +145,16 @@ def main():
     device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e6)
+    num = int(1e7)
     SLNN_hidden_size = 7
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))  # for SLNN article
-    SNR_opt_NN = torch.arange(0, 7.5, 0.5)
+    SNR_opt_NN = torch.arange(0, 8.5, 0.5)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for SLNN article
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
-    save_pth = "Result/Model/SLNN_7"
+    save_pth = "Result/Model/SLNN"
 
     result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, device)
     directory_path = "Result/BLER"
