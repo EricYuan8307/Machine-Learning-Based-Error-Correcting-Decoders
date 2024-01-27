@@ -209,7 +209,8 @@ def main():
     MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
 
     SLNN_hidden_size = 7
-    MLNN_hidden_size = 100
+    MLNN_hidden_size_1 = 100
+    MLNN_hidden_size_2 = 50
     batch_size = 64
     learning_rate = 1e-2
     epochs = 500
@@ -222,11 +223,11 @@ def main():
 
     # Save model
     current_time = datetime.now().strftime("%m-%d_%H-%M-%S")
-    SLNN_model_path = f"Result/Model/SLNN_{current_time}/"
-    MLNN_model_path = f"Result/Model/MLNN_{current_time}/"
+    SLNN_model_path = f"Result/Model/SLNN_hiddenlayer{SLNN_hidden_size}_{current_time}/"
+    MLNN_model_path = f"Result/Model/MLNN_hiddenlayer{MLNN_hidden_size_1}_{current_time}/"
 
     SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
-    # MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size, MLNN_model_path, MLNN_patience, delta, device)
+    # MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size_1, MLNN_model_path, MLNN_patience, delta, device)
 
 
 
