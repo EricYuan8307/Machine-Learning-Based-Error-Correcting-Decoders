@@ -70,7 +70,7 @@ def SLNNDecoder(nr_codeword, snr_dB, model, model_pth, device):
 
     return SLNN_binary, bits_info, practical_snr
 
-def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, save_pth, result, device):
+def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, model_pth, result, device):
     N = num
 
     # # De-Encoder, BPSK only
@@ -112,13 +112,10 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, save
 
     # Single-label Neural Network:
     for i in range(len(SNR_opt_NN)):
-        snr_save = i/2
+        snr_save = i / 2
         snr_dB = SNR_opt_NN[i]
         input_size = 7
         output_size = 16
-
-        model_pth = f"SLNN_model_BER{snr_save}.pth"
-        model_pth = os.path.join(save_pth, model_pth)
 
         model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
         SLNN_final, bits_info, snr_measure = SLNNDecoder(N, snr_dB, model, model_pth, device)
@@ -145,16 +142,16 @@ def main():
     device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e6)
+    num = int(1e7)
     SLNN_hidden_size = 7
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))  # for SLNN article
-    SNR_opt_NN = torch.arange(0, 6.5, 0.5)
+    SNR_opt_NN = torch.arange(0, 8.5, 0.5)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for SLNN article
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
-    save_pth = "Result/Model/SLNN_01-24_22-09-25"
+    save_pth = "Result/Model/SLNN_7/SLNN_model_BER0.0.pth"
 
     result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, device)
     directory_path = "Result/BLER"
