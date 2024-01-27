@@ -220,7 +220,7 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN
 
         else:
             print(f"MLNN: When SNR is {snr_save} and signal number is {N}, error number is {error_num_MLNN} and BER is {BER_MLNN}")
-            result[5, i] = BER_MLNN
+            result[4, i] = BER_MLNN
 
 
     return result
