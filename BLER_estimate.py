@@ -112,6 +112,7 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, mode
 
     # Single-label Neural Network:
     for i in range(len(SNR_opt_NN)):
+        snr_save = i / 2
         snr_dB = SNR_opt_NN[i]
         input_size = 7
         output_size = 16
@@ -126,7 +127,7 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, mode
             print(f"the code number is {N}")
 
         else:
-            print(f"SLNN: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
+            print(f"SLNN: When SNR is {snr_save} and signal number is {N}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
             result[4, i] = BLER_SLNN
 
 
