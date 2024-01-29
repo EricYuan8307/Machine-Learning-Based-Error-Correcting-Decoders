@@ -203,12 +203,12 @@ def main():
     device = torch.device("cuda")
 
     # Hyperparameters
-    SLNN_snr = torch.arange(0, 8.5, 0.5)
+    SLNN_snr = torch.arange(0, 0.5, 0.5)
     SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for SLNN article
     MLNN_snr = torch.arange(0, 8, 0.5)
     MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
 
-    SLNN_hidden_size = 7
+    SLNN_hidden_size = [5, 6, 8, 9]
     MLNN_hidden_size_1 = 100
     MLNN_hidden_size_2 = 50
     batch_size = 64
@@ -221,12 +221,15 @@ def main():
     MLNN_patience = 4
     delta = 0.001
 
-    # Save model
-    current_time = datetime.now().strftime("%m-%d_%H-%M-%S")
-    SLNN_model_path = f"Result/Model/SLNN_hiddenlayer{SLNN_hidden_size}_{current_time}/"
+    for i in range(len(SLNN_hidden_size)):
+        # Save model
+        current_time = datetime.now().strftime("%m-%d_%H-%M-%S")
+        SLNN_model_path = f"Result/Model/SLNN_hiddenlayer{SLNN_hidden_size[i]}_{current_time}/"
+        SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
+
+
     MLNN_model_path = f"Result/Model/MLNN_hiddenlayer{MLNN_hidden_size_1}_{current_time}/"
 
-    SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size, SLNN_model_path, SLNN_patience, delta, device)
     # MLNN_training(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size_1, MLNN_model_path, MLNN_patience, delta, device)
 
 
