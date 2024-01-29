@@ -67,7 +67,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
 
                 running_loss += loss.item()
                 if i % 1000 == 999:  # Print every 100 mini-batches
-                    print(f'SLNN: SNR{snr_save}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
+                    print(f'SLNN:Hidden Size:{hidden_size}, SNR{snr_save}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
                     running_loss = 0.0
 
             # Calculate the average training loss for this epoch
@@ -92,12 +92,12 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
             avg_test_loss = running_loss / len(SLNN_testloader)
             SLNN_test_losses.append(avg_test_loss)
 
-            print(f'SLNN Testing - SNR{snr_save} - Loss: {running_loss / len(SLNN_testloader):.9f}')
+            print(f'SLNN Testing - Hidden Size:{hidden_size} - SNR{snr_save} - Loss: {running_loss / len(SLNN_testloader):.9f}')
 
             # Early Stopping
             if early_stopping(running_loss, model, model_path):
                 print('SLNN: Early stopping')
-                print(f'SLNN: SNR={snr_save} Stop at total val_loss is {running_loss/len(SLNN_testloader)} and epoch is {epoch}')
+                print(f'SLNN: Hidden Size:{hidden_size}, SNR={snr_save} Stop at total val_loss is {running_loss/len(SLNN_testloader)} and epoch is {epoch}')
                 break
             else:
                 print(f"SLNN: Continue Training")
