@@ -43,7 +43,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
     SLNN_test_losses = []
 
     # Early Stopping
-    early_stopping = SLNN_EarlyStopping(patience, delta, snr_measure)
+    early_stopping = SLNN_EarlyStopping(patience, delta, snr_measure, hidden_size)
 
     # Single-Label Neural Network Training loop
     for epoch in range(epochs):
@@ -127,7 +127,7 @@ def MLNN_training1(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_s
     MLNN_test_losses = []
 
     # Early Stopping
-    early_stopping = MLNN_EarlyStopping(patience, delta, snr_measure)
+    early_stopping = MLNN_EarlyStopping(patience, delta, snr_measure, hidden_size)
 
     # Multi-Label Neural Network Training loop
     for epoch in range(epochs):
@@ -212,7 +212,7 @@ def MLNN_training2(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_s
     MLNN_test_losses = []
 
     # Early Stopping
-    early_stopping = MLNN_EarlyStopping(patience, delta, snr_measure)
+    early_stopping = MLNN_EarlyStopping(patience, delta, snr_measure, hidden_size)
 
     # Multi-Label Neural Network Training loop
     for epoch in range(epochs):
@@ -298,13 +298,13 @@ def main():
         # Save model
         # current_time = datetime.now().strftime("%m-%d_%H-%M-%S")
         # SLNN_model_path = f"Result/Model/SLNN_hiddenlayer{SLNN_hidden_size[i]}_{current_time}/"
-        SLNN_model_path = f"Result/Model/SLNN_hiddenlayer{SLNN_hidden_size[i]}_CPU/"
+        SLNN_model_path = f"Result/Model/SLNN_CPU/"
         SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
 
     for i in range(len(MLNN_hidden_size_2)):
         # current_time = datetime.now().strftime("%m-%d_%H-%M-%S")
         # MLNN_model_path = f"Result/Model/MLNN_hiddenlayer{MLNN_hidden_size_2[i]}_{current_time}/"
-        MLNN_model_path = f"Result/Model/MLNN_hiddenlayer{MLNN_hidden_size_2[i]}_CPU/"
+        MLNN_model_path = f"Result/Model/MLNN_CPU/"
         MLNN_training2(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i], MLNN_model_path, MLNN_patience, delta, device)
 
 
