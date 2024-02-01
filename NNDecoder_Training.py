@@ -272,8 +272,8 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.backends.cuda.is_available()
     #                 else torch.device("cpu")))
-    # device = torch.device("cpu")
-    device = torch.device("cuda")
+    device = torch.device("cpu")
+    # device = torch.device("cuda")
 
     # Hyperparameters
     SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
@@ -300,10 +300,10 @@ def main():
         SLNN_model_path = f"Result/Model/SLNN_hiddenlayer{SLNN_hidden_size[i]}_{current_time}/"
         SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
 
-    # for i in range(len(MLNN_hidden_size_2)):
-    #     current_time = datetime.now().strftime("%m-%d_%H-%M-%S")
-    #     MLNN_model_path = f"Result/Model/MLNN_hiddenlayer{MLNN_hidden_size_2[i]}_{current_time}/"
-    #     MLNN_training2(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i], MLNN_model_path, MLNN_patience, delta, device)
+    for i in range(len(MLNN_hidden_size_2)):
+        current_time = datetime.now().strftime("%m-%d_%H-%M-%S")
+        MLNN_model_path = f"Result/Model/MLNN_hiddenlayer{MLNN_hidden_size_2[i]}_{current_time}/"
+        MLNN_training2(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i], MLNN_model_path, MLNN_patience, delta, device)
 
 
 
