@@ -147,7 +147,7 @@ def main():
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
     SNR_opt_ML = torch.arange(0, 9.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))  # for SLNN article
-    SNR_opt_NN = torch.arange(0, 8.5, 0.5)
+    SNR_opt_NN = torch.tensor(0.0, dtype=torch.float, device=device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for SLNN article
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
