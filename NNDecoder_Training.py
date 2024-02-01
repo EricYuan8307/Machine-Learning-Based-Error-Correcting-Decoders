@@ -43,7 +43,7 @@ def SLNN_training(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_si
     SLNN_test_losses = []
 
     # Early Stopping
-    early_stopping = SLNN_EarlyStopping(patience, delta, snr_save)
+    early_stopping = SLNN_EarlyStopping(patience, delta, snr_measure)
 
     # Single-Label Neural Network Training loop
     for epoch in range(epochs):
@@ -212,7 +212,7 @@ def MLNN_training2(snr, nr_codeword, epochs, learning_rate, batch_size, hidden_s
     MLNN_test_losses = []
 
     # Early Stopping
-    early_stopping = MLNN_EarlyStopping(patience, delta, snr)
+    early_stopping = MLNN_EarlyStopping(patience, delta, snr_measure)
 
     # Multi-Label Neural Network Training loop
     for epoch in range(epochs):
@@ -276,9 +276,9 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    SLNN_snr = torch.arange(0, 8, 0.5)
+    SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
     SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for SLNN article
-    MLNN_snr = torch.tensor(0, dtype=torch.float, device=device)
+    MLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
     MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
 
     SLNN_hidden_size = torch.arange(0, 101, 1)
