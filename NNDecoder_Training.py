@@ -282,7 +282,7 @@ def main():
     MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
 
     SLNN_hidden_size = torch.arange(0, 101, 1)
-    MLNN_hidden_size_1 = 50
+    MLNN_hidden_size_1 = 100
     MLNN_hidden_size_2 = [[50, 50], [100, 100]]
     batch_size = 64
     learning_rate = 1e-2
@@ -294,18 +294,21 @@ def main():
     MLNN_patience = 4
     delta = 0.001
 
-    for i in range(len(SLNN_hidden_size)):
-        # Save model
-        # current_time = datetime.now().strftime("%m-%d_%H-%M-%S")
-        # SLNN_model_path = f"Result/Model/SLNN_hiddenlayer{SLNN_hidden_size[i]}_{current_time}/"
-        SLNN_model_path = f"Result/Model/SLNN_CPU/"
-        SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
+    # Train SLNN with different hidden layer neurons
+    # for i in range(len(SLNN_hidden_size)):
+    #     SLNN_model_path = f"Result/Model/SLNN_CPU/"
+    #     SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
 
-    for i in range(len(MLNN_hidden_size_2)):
-        # current_time = datetime.now().strftime("%m-%d_%H-%M-%S")
-        # MLNN_model_path = f"Result/Model/MLNN_hiddenlayer{MLNN_hidden_size_2[i]}_{current_time}/"
-        MLNN_model_path = f"Result/Model/MLNN_CPU/"
-        MLNN_training2(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i], MLNN_model_path, MLNN_patience, delta, device)
+    # Train MLNN model with only one hidden layer
+    MLNN_model_path = f"Result/Model/MLNN_CPU/"
+    MLNN_training1(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size_1, MLNN_model_path, MLNN_patience, delta, device)
+
+    # Train MLNN model with two hidden layers
+    # for i in range(len(MLNN_hidden_size_2)):
+    #     MLNN_model_path = f"Result/Model/MLNN_CPU/"
+    #     MLNN_training2(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i], MLNN_model_path, MLNN_patience, delta, device)
+
+
 
 
 
