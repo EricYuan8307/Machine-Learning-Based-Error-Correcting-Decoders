@@ -2,7 +2,7 @@ import torch
 import os
 
 class SLNN_EarlyStopping:
-    def __init__(self, patience, delta, snr_dB):
+    def __init__(self, patience, delta, snr_dB, hidden_layer):
         self.patience = patience
         self.delta = delta
         self.counter = 0
@@ -10,6 +10,7 @@ class SLNN_EarlyStopping:
         self.early_stop = False
         self.val_loss_min = float('inf')
         self.snr_dB = snr_dB
+        self.hidden_layer = hidden_layer
 
     def __call__(self, val_loss, model, path):
         score = -val_loss
@@ -31,11 +32,11 @@ class SLNN_EarlyStopping:
 
     def save_checkpoint(self, val_loss, model, model_path):
         os.makedirs(model_path, exist_ok=True)
-        torch.save(model.state_dict(), f"{model_path}SLNN_model_BER{self.snr_dB}.pth")
+        torch.save(model.state_dict(), f"{model_path}SLNN_model_hiddenlayer{self.hidden_layer}_BER{self.snr_dB}.pth")
         self.val_loss_min = val_loss
 
 class MLNN_EarlyStopping:
-    def __init__(self, patience, delta, snr_dB):
+    def __init__(self, patience, delta, snr_dB, hidden_layer):
         self.patience = patience
         self.delta = delta
         self.counter = 0
@@ -43,6 +44,7 @@ class MLNN_EarlyStopping:
         self.early_stop = False
         self.val_loss_min = float('inf')
         self.snr_dB = snr_dB
+        self.hidden_layer = hidden_layer
 
     def __call__(self, val_loss, model, path):
         score = -val_loss
@@ -64,5 +66,5 @@ class MLNN_EarlyStopping:
 
     def save_checkpoint(self, val_loss, model, model_path):
         os.makedirs(model_path, exist_ok=True)
-        torch.save(model.state_dict(), f"{model_path}MLNN_model_BER{self.snr_dB}.pth")
+        torch.save(model.state_dict(), f"{model_path}MLNN_model_hiddenlayer{self.hidden_layer}_BER{self.snr_dB}.pth")
         self.val_loss_min = val_loss
