@@ -282,7 +282,7 @@ def main():
     MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
 
     SLNN_hidden_size = torch.arange(0, 101, 1)
-    MLNN_hidden_size_1 = 50
+    MLNN_hidden_size_1 = 100
     MLNN_hidden_size_2 = [[50, 50], [100, 100]]
     batch_size = 64
     learning_rate = 1e-2
