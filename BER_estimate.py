@@ -10,7 +10,7 @@ from Encoder.Hamming74 import hamming_encoder
 from Decoder.HardDecision import hard_decision
 from Decoder.LDPC_BP import LDPCBeliefPropagation
 from Decoder.likelihood import llr
-from Decoder.NNDecoder import MultiLabelNNDecoder
+from Decoder.NNDecoder import MultiLabelNNDecoder1, MultiLabelNNDecoder2
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber
 from Decoder.HammingDecoder import Hamming74decoder
@@ -208,7 +208,8 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN
         input_size = 7
         output_size = 4
 
-        model = MultiLabelNNDecoder(input_size, MLNN_hidden_size, output_size).to(device)
+        # model = MultiLabelNNDecoder1(input_size, MLNN_hidden_size, output_size).to(device)
+        model = MultiLabelNNDecoder2(input_size, MLNN_hidden_size, output_size).to(device)
         MLNN_result, bits_info, snr_measure = MLNNDecoder(N, snr_dB, model, model_pth, device)
         MLNN_final = MLNN_decision(MLNN_result, device)
 
@@ -233,13 +234,13 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.backends.cuda.is_available()
     #                 else torch.device("cpu")))
-    # device = torch.device("cpu")
-    device = torch.device("cuda")
+    device = torch.device("cpu")
+    # device = torch.device("cuda")
 
     # Hyperparameters
     num = int(1e7)
     iter = 5
-    MLNN_hidden_size = 100
+    MLNN_hidden_size = [100, 100]
     SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
     SNR_opt_BP = torch.arange(0, 9, 0.5)
 
@@ -249,7 +250,7 @@ def main():
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
 
 
-    model_save_pth = "Result/Model/MLNN_100/MLNN_model_BER0.0.pth"
+    model_save_pth = "Result/Model/MLNN_CPU/MLNN_model_hiddenlayer[100, 100]_BER0.pth"
 
     result_save = np.zeros((7, len(SNR_opt_BPSK)))
     result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_BP, iter, SNR_opt_NN, MLNN_hidden_size, model_save_pth, result_save, device)
