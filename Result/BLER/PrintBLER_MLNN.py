@@ -1,15 +1,15 @@
 import matplotlib.pyplot as plt
 
 # Data Storage BLER:
-# article_MLNN_100 = [0.34, 0.31, 0.26, 0.23, 0.19, 0.16, 0.14, 0.105, # 0~3.5
-#                     0.079, 0.062, 0.04, 0.03, 0.021, 0.014, 0.0085, # 4.0~7.0
-#                     5e-03, 3.1e-03] # 7.5~8.0
-# article_MLNN_50_50 = [0.25, 0.21, 0.18, 0.15, 0.12, 0.089, 0.061, 0.048, # 0~3.5
-#                       0.033, 0.021, 0.014, 0.0087, 0.0047, 0.0023, 0.0014, # 4.0~7.0
-#                       6e-04, 2.7e-04] # 7.5~8.0
-# article_MLNN_100_100 = [0.19, 0.15, 0.12, 0.09, 0.065, 0.047, 0.029, # 0~3
-#                         0.0205, 0.013, 0.0072, 0.004, 0.002, 0.001, 0.00035, 0.00014, # 3.5~7.0
-#                         5.31e-05, 1.6e-05] # 7.5~8.0
+article_MLNN_100 = [0.21, 0.18, 0.16, 0.12, 0.087, 0.061, 0.043, 0.035, # 0~3.5
+                    0.021, 0.014, 0.0089, 0.0051, 0.003, 0.0014, 0.0007, # 4.0~7.0
+                    2.9e-04, 1.2e-04] # 7.5~8.0
+article_MLNN_50_50 = [0.19, 0.16, 0.13, 0.1, 0.075, 0.055, 0.04, 0.025, # 0~3.5
+                    0.016, 0.01, 0.0055, 0.0029, 0.0012, 5.6e-04, 2.2e-04, # 4.0~7.0
+                    8.0e-05, 2.3e-05] # 7.5~8.0
+article_MLNN_100_100 = [0.19, 0.16, 0.12, 0.1, 0.075, 0.055, 0.04, 0.025, # 0~3.5
+                    0.015, 0.009, 0.005, 0.0025, 0.0012, 5e-04, 1.9e-04, # 4.0~7.0
+                    6.75e-05, 2e-05] # 7.5~8.0
 
 BLER_BPSK = [2.779e-01, 2.4299e-01, 2.0673e-01, 1.7226e-01, 1.3924e-01, 1.1376e-01, 8.944e-02, # 0~3
              6.592e-02, 4.948e-02, 3.442e-02, 2.38e-02, 1.482e-02, 9.29e-03, 5.91e-03, 2.94e-03, # 3.5~7
@@ -28,25 +28,26 @@ BLER_MLNN_100_100 = [0.1965366, 0.1609105, 0.1286232, 0.0996521, 0.0744929, 0.05
 
 SNR = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8.0]
 
-plt.figure(figsize=(10, 10))
+plt.figure(figsize=(20, 10))
 plt.semilogy(SNR, BLER_SDML,  label='Soft-decision ML', color = "black")
 plt.semilogy(SNR, BLER_BPSK,  label='BPSK, Uncoded', color = "green")
-
-# plt.semilogy(SNR, article_MLNN_100, marker='D', label='N=100, Article', color = "pink", linestyle='--')
-# plt.semilogy(SNR, article_MLNN_50_50, marker='D', label='N1=50, N2=50, Article', color = "orange", linestyle='--')
-# plt.semilogy(SNR, article_MLNN_100_100, marker='D', label='N1=100, N2=100, Article', color = "red", linestyle='--')
-
 plt.semilogy(SNR, BLER_SLNN_7, label='Single-label Neural network N=7', color='blue')
+
+plt.semilogy(SNR, article_MLNN_100, marker='D', label='N=100, Article', color = "pink", linestyle='--')
+plt.semilogy(SNR, article_MLNN_50_50, marker='D', label='N1=50, N2=50, Article', color = "orange", linestyle='--')
+plt.semilogy(SNR, article_MLNN_100_100, marker='D', label='N1=100, N2=100, Article', color = "red", linestyle='--')
+
+
 plt.semilogy(SNR, BLER_MLNN_100, marker='D', label='N=100', color = "pink", linestyle='--')
 plt.semilogy(SNR, BLER_MLNN_50_50, marker='D', label='N1=50, N2=50', color = "orange", linestyle='--')
 plt.semilogy(SNR, BLER_MLNN_100_100, marker='D', label='N1=100, N2=100', color = "red", linestyle='--')
 
-plt.xlabel('SNR')
-plt.ylabel('BLER')
-plt.title('BLER Estimation')
-plt.legend(['Soft-decision ML', 'BPSK, Uncoded',
-            # 'N=100, Article', 'N1=50, N2=50, Article', 'N1=100, N2=100, Article',
-            'Single-label Neural network N=7', 'N=100', 'N1=50, N2=50', 'N1=100, N2=100'], loc='lower left')
+plt.xlabel('SNR', fontsize=20)
+plt.ylabel('BLER', fontsize=20)
+plt.title('BLER Estimation', fontsize=20)
+plt.legend(['Soft-decision ML', 'BPSK, Uncoded', 'Single-label Neural network N=7',
+            'N=100, Article', 'N1=50, N2=50, Article','N1=100, N2=100, Article',
+            'N=100', 'N1=50, N2=50', 'N1=100, N2=100'], loc='lower left')
 
 
 plt.show()
