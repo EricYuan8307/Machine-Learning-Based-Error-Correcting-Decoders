@@ -63,15 +63,3 @@ class LDPCBeliefPropagation(torch.nn.Module):
         result1 = torch.abs(result0)
         result = torch.where(self.H == 1, torch.log(result1), torch.tensor(0.0, device=self.device))
         return result
-
-
-# device = torch.device("cpu")
-#
-# llr_output = torch.tensor([[[-0.227861747916372,-0.371519925363314,-0.212513607051216,0.232155258660031,0.254121391049793,0.323201541013432,-0.094486115781860]]], dtype=torch.float,device=device)
-# # llr_output = torch.tensor([[[20.4128, -16.3902, -19.1344, -15.7405, -26.6343, 23.9271, 21.8500]]], dtype=torch.float,device=device)  # torch.Size([2, 1, 7])
-#
-# iter = 5
-# ldpc_bp = LDPCBeliefPropagation(device)
-# LDPC_result = ldpc_bp(llr_output, iter) # LDPC
-#
-# print("LDPC_result: ", LDPC_result)

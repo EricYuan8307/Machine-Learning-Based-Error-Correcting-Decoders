@@ -85,24 +85,3 @@ class SoftDecisionML(nn.Module):
         softdecision_output = self.sd_c[most_like]
 
         return softdecision_output
-
-
-
-# device = (torch.device("mps") if torch.backends.mps.is_available()
-#           else (torch.device("cuda") if torch.backends.cuda.is_available()
-#                 else torch.device("cpu")))
-#
-# llr = torch.tensor([[[1,  1,  1, -1, -1, -1, -1]],
-#                      [[1, -1, -1,  1,  1, -1, -1]]], dtype=torch.float, device=device)
-#
-# # llr = torch.randint(-2, 2, size=(2, 1, 7), dtype=torch.float, device=device)
-# print("llr:",llr)
-#
-# hddecoder = HardDecisionML(device)
-# hdcodebook = hddecoder(llr)
-#
-# sddecoder = SoftDecisionML(device)
-# sdcodebook = sddecoder(llr)
-#
-# print("hdcodebook:",hdcodebook)
-# print("sdcodebook:",sdcodebook)
