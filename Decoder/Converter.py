@@ -47,18 +47,3 @@ def BinarytoDecimal(binary_tensor, device):
     powers_of_two = 2 ** torch.arange(binary_tensor.size(-1) - 1, -1, -1, dtype=torch.float, device=binary_tensor.device)
     decimal_values = torch.sum(binary_tensor * powers_of_two, dim=-1)
     return decimal_values
-
-
-# device = torch.device("cpu")
-# transmitted_bits = torch.tensor([[[1, 0, 1, 0]], [[0, 0, 1, 0,]]], dtype=torch.int, device=device)
-# BinarytoDecimal_result = BinarytoDecimal(transmitted_bits, device)
-# print("BinarytoDecimal", BinarytoDecimal_result)
-
-
-# test = torch.tensor([[2], [1]])
-# # test = torch.randint(0,16,size=(10,1), dtype=torch.int, device=device)
-#
-# Decimal_Binary =DecimaltoBinary(device)
-# DecimalBinary_result = Decimal_Binary(test)
-# print("input", test.shape)
-# print("Decimal_Binary", DecimalBinary_result.shape)
