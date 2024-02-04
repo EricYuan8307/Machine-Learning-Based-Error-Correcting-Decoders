@@ -295,22 +295,18 @@ def main():
     delta = 0.001
 
     # Train SLNN with different hidden layer neurons
-    # for i in range(len(SLNN_hidden_size)):
-    #     SLNN_model_path = f"Result/Model/SLNN_CPU/"
-    #     SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
+    for i in range(len(SLNN_hidden_size)):
+        SLNN_model_path = f"Result/Model/SLNN_CPU/"
+        SLNN_training(SLNN_snr, nr_codeword, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
 
     # Train MLNN model with only one hidden layer
     MLNN_model_path = f"Result/Model/MLNN_CPU/"
     MLNN_training1(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size_1, MLNN_model_path, MLNN_patience, delta, device)
 
     # Train MLNN model with two hidden layers
-    # for i in range(len(MLNN_hidden_size_2)):
-    #     MLNN_model_path = f"Result/Model/MLNN_CPU/"
-    #     MLNN_training2(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i], MLNN_model_path, MLNN_patience, delta, device)
-
-
-
-
+    for i in range(len(MLNN_hidden_size_2)):
+        MLNN_model_path = f"Result/Model/MLNN_CPU/"
+        MLNN_training2(MLNN_snr, nr_codeword, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i], MLNN_model_path, MLNN_patience, delta, device)
 
 
 if __name__ == '__main__':

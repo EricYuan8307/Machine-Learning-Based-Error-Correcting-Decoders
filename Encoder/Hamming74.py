@@ -30,12 +30,3 @@ class hamming_encoder(torch.nn.Module):
         result_tensor = torch.matmul(input_data.to(torch.float), self.generator_matrix.t()) % 2
 
         return result_tensor
-
-# device = (torch.device("mps") if torch.backends.mps.is_available()
-#                                     else (torch.device("cuda") if torch.backends.cuda.is_available()
-#                                           else torch.device("cpu")))
-# bits = torch.tensor([[[1, 1, 0, 1]],
-#                          [[0, 1, 0, 0,]]], dtype=torch.int, device=device)
-#
-# encoder = hamming_encoder(device)
-# print(encoder(bits))
