@@ -7,13 +7,13 @@ from datetime import datetime
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
 from Encode.Encoder import hamming74_encoder
-from Decoder.HardDecision import hard_decision
-from Decoder.LDPC_BP import LDPCBeliefPropagation
-from Decoder.likelihood import llr
+from Decode.HardDecision import hard_decision
+from Decode.LDPC_BP import LDPCBeliefPropagation
+from Decode.likelihood import llr
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber
-from Decoder.HammingDecoder import Hamming74decoder
-from Decoder.MaximumLikelihood import HardDecisionML74, SoftDecisionML74
+from Decode.Decoder import Hamming74decoder
+from Decode.MaximumLikelihood import HardDecisionML74, SoftDecisionML74
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 
 
@@ -197,10 +197,10 @@ def estimation_BP(num, bits, SNR_opt_BP, iter, result, device):
 
 
 def main():
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
-    # device = torch.device("cpu")
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                 else torch.device("cpu")))
+    device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters
@@ -217,8 +217,8 @@ def main():
     result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
     result_SDML = estimation_SDML(num, bits, SNR_opt_ML, result_save, device)
 
-    result_BP = estimation_BP(num, bits, SNR_opt_BP, iter, result_save, device)
     result_HDML = estimation_HDML(num, bits, SNR_opt_ML, result_save, device)
+    result_BP = estimation_BP(num, bits, SNR_opt_BP, iter, result_save, device)
 
     result_all = np.vstack([result_BPSK,
                             result_SDML,

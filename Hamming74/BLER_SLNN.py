@@ -6,11 +6,11 @@ from datetime import datetime
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
 from Encode.Encoder import hamming74_encoder
-from Decoder.NNDecoder import SingleLabelNNDecoder
+from Decode.NNDecoder import SingleLabelNNDecoder
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_bler
 from Transmit.NoiseMeasure import NoiseMeasure
-from Decoder.Converter import DecimaltoBinary
+from Decode.Converter import DecimaltoBinary
 
 
 # Calculate the Error number and BLER

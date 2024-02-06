@@ -22,15 +22,15 @@ BLER_SLNN_OF = [0.06341, 0.04639, 0.03226, 0.02167, 0.01385, 0.00832, 0.00505, 0
 
 SNR = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
 
-plt.figure(figsize=(10, 10))
+plt.figure(figsize=(20, 10))
 plt.semilogy(SNR, BLER_SDML, marker='x', label='SDML')
 plt.semilogy(SNR, BLER_BPSK, marker='+', label='BPSK')
 plt.semilogy(SNR, BLER_SLNN, marker='.', label='SLNN')
 plt.semilogy(SNR, BLER_SLNN_OF, marker='.', label='overfitting SLNN')
 
-plt.xlabel('SNR')
-plt.ylabel('BLER')
-plt.title('BLER Estimation')
+plt.xlabel('SNR', fontsize=20)
+plt.ylabel('BLER', fontsize=20)
+plt.title('BLER Estimation', fontsize=20)
 # plt.legend(['SDML', 'BPSK'], loc='lower left')
 plt.legend(['SDML', 'BPSK','SLNN', 'Overfitting SLNN'], loc='lower left')
 

@@ -1,17 +1,16 @@
 import torch
 import numpy as np
-import time
 import os
 from datetime import datetime
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
 from Encode.Encoder import Parity10_5_encoder
-from Decoder.HardDecision import hard_decision
+from Decode.HardDecision import hard_decision
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber
-from Decoder.HammingDecoder import Hamming74decoder
-from Decoder.MaximumLikelihood import SoftDecisionML
+from Decode.Decoder import Parity10_5decoder
+from Decode.MaximumLikelihood import SoftDecisionML10_5
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 
 
@@ -29,8 +28,8 @@ def UncodedBPSK(nr_codeword, bits, snr_dB, device):
 
 def SoftDecisionMLP(nr_codeword, bits, snr_dB, device):
     encoder = Parity10_5_encoder(device)
-    SD_MaximumLikelihood = SoftDecisionML(device)
-    decoder = Hamming74decoder(device)
+    SD_MaximumLikelihood = SoftDecisionML10_5(device)
+    decoder = Parity10_5decoder(device)
 
     # ML:
     bits_info = generator(nr_codeword, bits, device)
@@ -94,14 +93,14 @@ def estimation_SDML(num, bits, SNR_opt_ML, result, device):
 
 
 def main():
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
-    # device = torch.device("cpu")
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                 else torch.device("cpu")))
+    device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e7)
+    num = int(1e6)
     bits = 5
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
 

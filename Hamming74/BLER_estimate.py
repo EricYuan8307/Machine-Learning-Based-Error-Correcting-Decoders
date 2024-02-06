@@ -6,11 +6,11 @@ from datetime import datetime
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
 from Encode.Encoder import hamming74_encoder
-from Decoder.HardDecision import hard_decision
+from Decode.HardDecision import hard_decision
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_bler
-from Decoder.HammingDecoder import Hamming74decoder
-from Decoder.MaximumLikelihood import SoftDecisionML74
+from Decode.Decoder import Hamming74decoder
+from Decode.MaximumLikelihood import SoftDecisionML74
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 
 
