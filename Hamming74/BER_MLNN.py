@@ -40,9 +40,8 @@ def estimation_MLNN1(num, bits, SNR_opt_NN, MLNN_hidden_size, model_pth, result,
         snr_save = i/2
         snr_dB = SNR_opt_NN[i]
         input_size = 7
-        output_size = bits
 
-        model = MultiLabelNNDecoder1(input_size, MLNN_hidden_size, output_size).to(device)
+        model = MultiLabelNNDecoder1(input_size, MLNN_hidden_size, bits).to(device)
         MLNN_result, bits_info, snr_measure = MLNNDecoder(N, bits, snr_dB, model, model_pth, device)
         MLNN_final = MLNN_decision(MLNN_result, device)
 
@@ -66,9 +65,8 @@ def estimation_MLNN2(num, bits, SNR_opt_NN, MLNN_hidden_size, model_pth, result,
         snr_save = i/2
         snr_dB = SNR_opt_NN[i]
         input_size = 7
-        output_size = bits
 
-        model = MultiLabelNNDecoder2(input_size, MLNN_hidden_size, output_size).to(device)
+        model = MultiLabelNNDecoder2(input_size, MLNN_hidden_size, bits).to(device)
         MLNN_result, bits_info, snr_measure = MLNNDecoder(N, bits, snr_dB, model, model_pth, device)
         MLNN_final = MLNN_decision(MLNN_result, device)
 
@@ -93,7 +91,6 @@ def main():
 
     # Hyperparameters
     num = int(1e7)
-    iter = 5
     bits = 4
     MLNN_hidden_size = 100
     MLNN2_hidden_size = [[50,50], [100, 100]]
