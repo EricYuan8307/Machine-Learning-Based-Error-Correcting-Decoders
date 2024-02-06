@@ -27,7 +27,7 @@ class hamming74_encoder(torch.nn.Module):
 
     def forward(self, input_data):
         # Perform matrix multiplication to encode the data
-        result_tensor = torch.matmul(input_data.to(torch.float), self.generator_matrix.t()) % 2
+        result_tensor = torch.matmul(input_data, self.generator_matrix.t()) % 2
 
         return result_tensor
 
@@ -49,20 +49,20 @@ class Parity10_5_encoder(torch.nn.Module):
 
         # Define the generator matrix for Hamming(7,4)
         self.generator_matrix = torch.tensor([
-            [1, 1, 0, 0, 1],
-            [1, 0, 0, 1, 1],
-            [1, 1, 1, 0, 0],
-            [0, 0, 1, 1, 1],
-            [0, 1, 1, 1, 0],
-            [1, 1, 0, 1, 0],
-            [1, 0, 1, 0, 1],
-            [0, 1, 0, 1, 1],
-            [0, 1, 1, 0, 1],
-            [1, 0, 1, 1, 0],], dtype=torch.float, device=device)
+            [1, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0],
+            [0, 0, 1, 0, 0],
+            [0, 0, 0, 1, 0],
+            [0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 1],
+            [1, 1, 0, 0, 0],
+            [0, 1, 1, 0, 0],
+            [0, 0, 1, 1, 0],
+            [0, 0, 0, 1, 1],], dtype=torch.float, device=device)
 
     def forward(self, input_data):
         # Perform matrix multiplication to encode the data
-        result_tensor = torch.matmul(input_data.to(torch.float), self.generator_matrix.t()) % 2
+        result_tensor = torch.matmul(input_data, self.generator_matrix.t()) % 2
 
         return result_tensor
 
@@ -70,9 +70,41 @@ class Parity10_5_encoder(torch.nn.Module):
 
 # device = torch.device("cpu")
 # encoder = Parity10_5_encoder(device)
-# 
-# from Encode.Generator import generator
-# code = generator(10, 5, device)
-# print("code", code)
+#
+# # from Encode.Generator import generator
+# code = torch.tensor([[[0, 0, 0, 0, 0]],
+#                      [[0, 0, 0, 0, 1]],
+#                      [[0, 0, 0, 1, 0]],
+#                      [[0, 0, 0, 1, 1]],
+#                      [[0, 0, 1, 0, 0]],
+#                      [[0, 0, 1, 0, 1]],
+#                      [[0, 0, 1, 1, 0]],
+#                      [[0, 0, 1, 1, 1]],
+#                      [[0, 1, 0, 0, 0]],
+#                      [[0, 1, 0, 0, 1]],
+#                      [[0, 1, 0, 1, 0]],
+#                      [[0, 1, 0, 1, 1]],
+#                      [[0, 1, 1, 0, 0]],
+#                      [[0, 1, 1, 0, 1]],
+#                      [[0, 1, 1, 1, 0]],
+#                      [[0, 1, 1, 1, 1]],
+#                      [[1, 0, 0, 0, 0]],
+#                      [[1, 0, 0, 0, 1]],
+#                      [[1, 0, 0, 1, 0]],
+#                      [[1, 0, 0, 1, 1]],
+#                      [[1, 0, 1, 0, 0]],
+#                      [[1, 0, 1, 0, 1]],
+#                      [[1, 0, 1, 1, 0]],
+#                      [[1, 0, 1, 1, 1]],
+#                      [[1, 1, 0, 0, 0]],
+#                      [[1, 1, 0, 0, 1]],
+#                      [[1, 1, 0, 1, 0]],
+#                      [[1, 1, 0, 1, 1]],
+#                      [[1, 1, 1, 0, 0]],
+#                      [[1, 1, 1, 0, 1]],
+#                      [[1, 1, 1, 1, 0]],
+#                      [[1, 1, 1, 1, 1]],], dtype=torch.int, device=device)
+#
+#
 # encoded_codeword = encoder(code)
 # print("encoded_codeword", encoded_codeword)
