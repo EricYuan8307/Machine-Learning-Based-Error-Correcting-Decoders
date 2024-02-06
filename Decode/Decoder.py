@@ -40,14 +40,15 @@ class Parity10_5decoder(torch.nn.Module):
         """
 
         super(Parity10_5decoder, self).__init__()
-        self.H = torch.tensor([[1, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-                              [1, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-                              [0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
-                              [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
-                              [0, 0, 0, 1, 1, 0, 0, 0, 0, 1]],device=mps_device, dtype=torch.float)
+        self.H = torch.tensor([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                              [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                              [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+                              [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+                              [0, 0, 0, 0, 1, 0, 0, 0, 0, 0]],device=mps_device, dtype=torch.float)
 
     def forward(self, input):
 
         result = torch.matmul(input, self.H.T)
+        result_mod2 = result % 2
 
-        return result.to(torch.int)
+        return result_mod2.to(torch.int)
