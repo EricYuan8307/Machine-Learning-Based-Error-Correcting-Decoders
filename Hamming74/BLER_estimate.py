@@ -47,29 +47,6 @@ def SoftDecisionMLP(nr_codeword, bits, snr_dB, device):
 
     return SDML_final, bits_info, practical_snr
 
-def SLNNDecoder(nr_codeword, bits, snr_dB, model, model_pth, device):
-    encoder = hamming74_encoder(device)
-
-    bits_info = generator(nr_codeword, bits, device)  # Code Generator
-    encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
-    modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
-    noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
-
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
-
-    # use SLNN model:
-    model.eval()
-    model.load_state_dict(torch.load(model_pth))
-
-    SLNN_result = model(noised_signal)
-    SLNN_decimal = torch.argmax(SLNN_result, dim=2)
-
-    Decimal_Binary =DecimaltoBinary(device)
-    SLNN_binary = Decimal_Binary(SLNN_decimal)
-
-
-    return SLNN_binary, bits_info, practical_snr
-
 def estimation_BPSK(num, bits, SNR_opt_BPSK, result, device):
     N = num
 
@@ -115,30 +92,6 @@ def estimation_SDML(num, bits, SNR_opt_ML, result, device):
 
     return result
 
-def estimation_SLNN(num, bits, SNR_opt_NN, SLNN_hidden_size, model_pth, result, device):
-    N = num
-
-    # Single-label Neural Network:
-    for i in range(len(SNR_opt_NN)):
-        snr_save = i / 2
-        input_size = 7
-        output_size = 16
-
-        model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
-        SLNN_final, bits_info, snr_measure = SLNNDecoder(N, bits, SNR_opt_NN[i], model, model_pth, device)
-
-        BLER_SLNN, error_num_SLNN = calculate_bler(SLNN_final, bits_info) # BER calculation
-
-        if error_num_SLNN < 100:
-            N += 1000000
-            print(f"the code number is {N}")
-
-        else:
-            print(f"SLNN: When SNR is {snr_save} and signal number is {N}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
-            result[0, i] = BLER_SLNN
-
-    return result
-
 
 def main():
     device = (torch.device("mps") if torch.backends.mps.is_available()
@@ -150,23 +103,16 @@ def main():
     # Hyperparameters
     num = int(1e7)
     bits = 4
-    SLNN_hidden_size = 7
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))  # for SLNN article
-    SNR_opt_NN = torch.arange(0, 8.5, 0.5).to(device)
-    SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for SLNN article
-
-    save_pth = "Result/Hamming74/Model/SLNN_CPU/SLNN_model_hiddenlayer7_BER0.pth"
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
     result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
     result_SDML = estimation_SDML(num, bits, SNR_opt_ML, result_save, device)
-    result_SLNN = estimation_SLNN(num, bits, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, device)
 
     result_all = np.vstack([result_BPSK,
                             result_SDML,
-                            result_SLNN,
                             ])
 
     directory_path = "Result/BLER"
