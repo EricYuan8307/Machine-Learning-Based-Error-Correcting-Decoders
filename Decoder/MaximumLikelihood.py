@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-class HardDecisionML(torch.nn.Module):
+class HardDecisionML74(torch.nn.Module):
     def __init__(self, mps_device):
         """
         hard-decision Maximum Likelihood Estimation
@@ -14,7 +14,7 @@ class HardDecisionML(torch.nn.Module):
         Returns:
             result: The final estimate result.
         """
-        super(HardDecisionML, self).__init__()
+        super(HardDecisionML74, self).__init__()
         self.C = torch.tensor([[0, 0, 0, 0, 0, 0, 0],
                                [1, 1, 1, 0, 0, 0, 0],
                                [1, 0, 0, 1, 1, 0, 0],
@@ -45,7 +45,7 @@ class HardDecisionML(torch.nn.Module):
         return harddecision_output
 
 
-class SoftDecisionML(nn.Module):
+class SoftDecisionML74(nn.Module):
     def __init__(self, mps_device):
         """
         soft-decision Maximum Likelihood Estimation
@@ -57,7 +57,7 @@ class SoftDecisionML(nn.Module):
         Returns:
             result: The final estimate result(closest euclidean distance).
         """
-        super(SoftDecisionML, self).__init__()
+        super(SoftDecisionML74, self).__init__()
         self.sd_c = torch.tensor([[-1, -1, -1, -1, -1, -1, -1],
                                [ 1,  1,  1, -1, -1, -1, -1],
                                [ 1, -1, -1,  1,  1, -1, -1],

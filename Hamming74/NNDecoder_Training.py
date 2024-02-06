@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
-from Encoder.Generator import generator
-from Encoder.BPSK import bpsk_modulator
-from Encoder.encoder import hamming74_encoder
+from Encode.Generator import generator
+from Encode.Modulator import bpsk_modulator
+from Encode.Encoder import hamming74_encoder
 from Transmit.noise import AWGN
 from Decoder.NNDecoder import SingleLabelNNDecoder, MultiLabelNNDecoder1, MultiLabelNNDecoder2
 from Transmit.NoiseMeasure import NoiseMeasure
