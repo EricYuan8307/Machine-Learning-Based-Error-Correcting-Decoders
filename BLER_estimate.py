@@ -17,8 +17,8 @@ from Decoder.Converter import DecimaltoBinary
 
 
 # Calculate the Error number and BLER
-def UncodedBPSK(nr_codeword, snr_dB, device):
-    bits_info = generator(nr_codeword, device)
+def UncodedBPSK(nr_codeword, bits, snr_dB, device):
+    bits_info = generator(nr_codeword, bits, device)
     modulated_signal = bpsk_modulator(bits_info)
     noised_signal = AWGN(modulated_signal, snr_dB, device)
 
@@ -28,13 +28,13 @@ def UncodedBPSK(nr_codeword, snr_dB, device):
 
     return BPSK_final, bits_info, practical_snr
 
-def SoftDecisionMLP(nr_codeword, snr_dB, device):
-    encoder = hamming_encoder(device)
+def SoftDecisionMLP(nr_codeword, bits, snr_dB, device):
+    encoder = hamming74_encoder(device)
     SD_MaximumLikelihood = SoftDecisionML(device)
     decoder = Hamming74decoder(device)
 
     # ML:
-    bits_info = generator(nr_codeword, device)
+    bits_info = generator(nr_codeword, bits, device)
     encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)
     noised_signal = AWGN(modulated_signal, snr_dB, device)
@@ -47,10 +47,10 @@ def SoftDecisionMLP(nr_codeword, snr_dB, device):
 
     return SDML_final, bits_info, practical_snr
 
-def SLNNDecoder(nr_codeword, snr_dB, model, model_pth, device):
-    encoder = hamming_encoder(device)
+def SLNNDecoder(nr_codeword, bits, snr_dB, model, model_pth, device):
+    encoder = hamming74_encoder(device)
 
-    bits_info = generator(nr_codeword, device)  # Code Generator
+    bits_info = generator(nr_codeword, bits, device)  # Code Generator
     encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
     modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
     noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
@@ -70,7 +70,7 @@ def SLNNDecoder(nr_codeword, snr_dB, model, model_pth, device):
 
     return SLNN_binary, bits_info, practical_snr
 
-def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, model_pth, result, device):
+def estimation_BPSK(num, bits, SNR_opt_BPSK, result, device):
     N = num
 
     # De-Encoder, BPSK only
@@ -78,7 +78,7 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, mode
         snr_dB =SNR_opt_BPSK[i]
 
         for _ in range(10):
-            BPSK_final, bits_info, snr_measure = UncodedBPSK(N, snr_dB, device)
+            BPSK_final, bits_info, snr_measure = UncodedBPSK(N, bits, snr_dB, device)
 
             BLER_BPSK, error_num_BPSK= calculate_bler(BPSK_final, bits_info)
             if error_num_BPSK < 100:
@@ -90,6 +90,10 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, mode
                 result[0, i] = BLER_BPSK
                 break
 
+    return result
+
+def estimation_SDML(num, bits, SNR_opt_ML, result, device):
+    N = num
 
     # Soft-Decision Maximum Likelihood
     for i in range(len(SNR_opt_ML)):
@@ -97,7 +101,7 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, mode
 
         # BLER
         for _ in range(10):
-            SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, snr_dB, device)
+            SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, bits, snr_dB, device)
 
             BLER_SDML, block_error_num_SDML = calculate_bler(SDML_final, bits_info)
             if block_error_num_SDML < 100:
@@ -106,9 +110,13 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, mode
 
             else:
                 print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {block_error_num_SDML} and BLER is {BLER_SDML}")
-                result[1, i] = BLER_SDML
+                result[0, i] = BLER_SDML
                 break
 
+    return result
+
+def estimation_SLNN(num, bits, SNR_opt_NN, SLNN_hidden_size, model_pth, result, device):
+    N = num
 
     # Single-label Neural Network:
     for i in range(len(SNR_opt_NN)):
@@ -117,7 +125,7 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, mode
         output_size = 16
 
         model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
-        SLNN_final, bits_info, snr_measure = SLNNDecoder(N, SNR_opt_NN, model, model_pth, device)
+        SLNN_final, bits_info, snr_measure = SLNNDecoder(N, bits, SNR_opt_NN[i], model, model_pth, device)
 
         BLER_SLNN, error_num_SLNN = calculate_bler(SLNN_final, bits_info) # BER calculation
 
@@ -127,32 +135,40 @@ def estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, mode
 
         else:
             print(f"SLNN: When SNR is {snr_save} and signal number is {N}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
-            result[2, i] = BLER_SLNN
-
+            result[0, i] = BLER_SLNN
 
     return result
 
 
 def main():
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
-    #                 else torch.device("cpu")))
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+              else (torch.device("cuda") if torch.backends.cuda.is_available()
+                    else torch.device("cpu")))
     # device = torch.device("cpu")
-    device = torch.device("cuda")
+    # device = torch.device("cuda")
 
     # Hyperparameters
     num = int(1e7)
+    bits = 4
     SLNN_hidden_size = 7
-    SNR_opt_BPSK = torch.arange(0, 10.5, 0.5)
-    SNR_opt_ML = torch.arange(0, 9.5, 0.5)
+    SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
+    SNR_opt_ML = torch.arange(0, 8.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))  # for SLNN article
-    SNR_opt_NN = torch.tensor(0.0, dtype=torch.float, device=device)
+    SNR_opt_NN = torch.arange(0, 8.5, 0.5).to(device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for SLNN article
 
-    result_save = np.zeros((7, len(SNR_opt_BPSK)))
-    save_pth = "Result/Model/SLNN/SLNN_7/SLNN_model_BER0.0.pth"
+    save_pth = "Result/Hamming74/Model/SLNN_CPU/SLNN_model_hiddenlayer7_BER0.pth"
 
-    result_all = estimation(num, SNR_opt_BPSK, SNR_opt_ML, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, device)
+    result_save = np.zeros((1, len(SNR_opt_BPSK)))
+    result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
+    result_SDML = estimation_SDML(num, bits, SNR_opt_ML, result_save, device)
+    result_SLNN = estimation_SLNN(num, bits, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, device)
+
+    result_all = np.vstack([result_BPSK,
+                            result_SDML,
+                            result_SLNN,
+                            ])
+
     directory_path = "Result/BLER"
 
     # Create the directory if it doesn't exist
