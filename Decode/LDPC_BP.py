@@ -1,5 +1,5 @@
 import torch
-from Decoder.HardDecision import hard_decision
+from Decode.HardDecision import hard_decision
 
 class LDPCBeliefPropagation(torch.nn.Module):
     def __init__(self, device):

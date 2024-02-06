@@ -1,17 +1,16 @@
 import torch
 import numpy as np
-import time
 import os
 from datetime import datetime
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
 from Encode.Encoder import Parity10_5_encoder
-from Decoder.HardDecision import hard_decision
+from Decode.HardDecision import hard_decision
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber
-from Decoder.HammingDecoder import Hamming74decoder
-from Decoder.MaximumLikelihood import SoftDecisionML
+# from Decode.HammingDecoder import Hamming74decoder
+# from Decode.MaximumLikelihood import SoftDecisionML
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 
 

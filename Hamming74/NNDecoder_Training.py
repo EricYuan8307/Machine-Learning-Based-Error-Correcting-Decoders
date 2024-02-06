@@ -7,9 +7,9 @@ from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
 from Encode.Encoder import hamming74_encoder
 from Transmit.noise import AWGN
-from Decoder.NNDecoder import SingleLabelNNDecoder, MultiLabelNNDecoder1, MultiLabelNNDecoder2
+from Decode.NNDecoder import SingleLabelNNDecoder, MultiLabelNNDecoder1, MultiLabelNNDecoder2
 from Transmit.NoiseMeasure import NoiseMeasure
-from Decoder.Converter import BinarytoDecimal
+from Decode.Converter import BinarytoDecimal
 from earlystopping import SLNN_EarlyStopping, MLNN_EarlyStopping
 
 def SLNN_training(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
