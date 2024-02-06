@@ -108,6 +108,7 @@ class SoftDecisionML10_5(nn.Module):
                                   [-1,  1,  1, -1, -1,  1,  1,  1,  1, -1],
                                   [ 1, -1,  1,  1, -1,  1, -1, -1, -1, -1],
                                   [ 1, -1,  1, -1,  1,  1, -1,  1,  1, -1],
+                                  [-1,  1,  1,  1,  1,  1,  1, -1, -1, -1],
                                   [ 1,  1,  1,  1, -1, -1, -1, -1,  1,  1],
                                   [-1, -1,  1, -1, -1, -1,  1,  1, -1,  1],
                                   [ 1, -1, -1,  1, -1,  1,  1,  1, -1,  1],
@@ -129,7 +130,7 @@ class SoftDecisionML10_5(nn.Module):
                                   [-1,  1,  1,  1, -1, -1, -1,  1, -1, -1],
                                   [ 1, -1,  1, -1, -1, -1,  1, -1,  1, -1],
                                   [-1, -1,  1, -1,  1,  1, -1, -1, -1,  1],
-                                  [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1],], device=mps_device, dtype=torch.float)
+                                  [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1]], device=mps_device, dtype=torch.float)
 
     def forward(self,signal):
         # Compute the distance between each input vector and each codeword(euclidean distance)
