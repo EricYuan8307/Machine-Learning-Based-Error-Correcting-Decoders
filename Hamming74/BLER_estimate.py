@@ -10,7 +10,7 @@ from Decoder.HardDecision import hard_decision
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_bler
 from Decoder.HammingDecoder import Hamming74decoder
-from Decoder.MaximumLikelihood import SoftDecisionML
+from Decoder.MaximumLikelihood import SoftDecisionML74
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 
 
@@ -28,7 +28,7 @@ def UncodedBPSK(nr_codeword, bits, snr_dB, device):
 
 def SoftDecisionMLP(nr_codeword, bits, snr_dB, device):
     encoder = hamming74_encoder(device)
-    SD_MaximumLikelihood = SoftDecisionML(device)
+    SD_MaximumLikelihood = SoftDecisionML74(device)
     decoder = Hamming74decoder(device)
 
     # ML:
