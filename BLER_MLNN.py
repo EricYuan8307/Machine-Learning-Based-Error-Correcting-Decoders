@@ -5,7 +5,7 @@ from datetime import datetime
 
 from Encoder.Generator import generator
 from Encoder.BPSK import bpsk_modulator
-from Encoder.Hamming74 import hamming_encoder
+from Encoder.encoder import hamming74_encoder
 from Decoder.NNDecoder import MultiLabelNNDecoder1, MultiLabelNNDecoder2
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_bler
