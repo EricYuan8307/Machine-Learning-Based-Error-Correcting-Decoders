@@ -75,9 +75,9 @@ class SoftDecisionML74(nn.Module):
                                [-1, -1, -1,  1,  1,  1,  1],
                                [ 1,  1,  1,  1,  1,  1,  1]], device=mps_device, dtype=torch.float)
 
-    def forward(self,llr):
+    def forward(self,signal):
         # Compute the distance between each input vector and each codeword(euclidean distance)
-        distances = torch.cdist(llr, self.sd_c.unsqueeze(0))
+        distances = torch.cdist(signal, self.sd_c.unsqueeze(0))
 
         # Calculate softmax over the negative distances
         soft_assignments = F.softmax(-distances, dim=2)
@@ -85,3 +85,59 @@ class SoftDecisionML74(nn.Module):
         softdecision_output = self.sd_c[most_like]
 
         return softdecision_output
+
+class SoftDecisionML10_5(nn.Module):
+    def __init__(self, mps_device):
+        """
+        soft-decision Maximum Likelihood Estimation
+
+        Args:
+            C: codebook after BPSK.
+            mps_device: Move Data on Specific device for computing(GPU).
+
+        Returns:
+            result: The final estimate result(closest euclidean distance).
+        """
+        super(SoftDecisionML10_5, self).__init__()
+        self.sd_c = torch.tensor([[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                                  [ 1,  1, -1,  1, -1, -1,  1,  1,  1, -1],
+                                  [-1,  1, -1,  1,  1,  1, -1,  1, -1,  1],
+                                  [ 1, -1, -1, -1,  1,  1,  1, -1,  1,  1],
+                                  [-1, -1,  1,  1,  1, -1,  1, -1,  1,  1],
+                                  [ 1,  1,  1, -1,  1, -1, -1,  1, -1,  1],
+                                  [-1,  1,  1, -1, -1,  1,  1,  1,  1, -1],
+                                  [ 1, -1,  1,  1, -1,  1, -1, -1, -1, -1],
+                                  [ 1, -1,  1, -1,  1,  1, -1,  1,  1, -1],
+                                  [ 1,  1,  1,  1, -1, -1, -1, -1,  1,  1],
+                                  [-1, -1,  1, -1, -1, -1,  1,  1, -1,  1],
+                                  [ 1, -1, -1,  1, -1,  1,  1,  1, -1,  1],
+                                  [-1,  1, -1, -1, -1,  1, -1, -1,  1,  1],
+                                  [ 1,  1, -1, -1,  1, -1,  1, -1, -1, -1],
+                                  [-1, -1, -1,  1,  1, -1, -1,  1,  1, -1],
+                                  [ 1,  1,  1, -1, -1,  1,  1, -1, -1,  1],
+                                  [-1, -1,  1,  1, -1,  1, -1,  1,  1,  1],
+                                  [ 1, -1,  1,  1,  1, -1,  1,  1, -1, -1],
+                                  [-1,  1,  1, -1,  1, -1, -1, -1,  1, -1],
+                                  [ 1,  1, -1,  1,  1,  1, -1, -1,  1, -1],
+                                  [-1, -1, -1, -1,  1,  1,  1,  1, -1, -1],
+                                  [ 1, -1, -1, -1, -1, -1, -1,  1,  1,  1],
+                                  [-1,  1, -1,  1, -1, -1,  1, -1, -1,  1],
+                                  [-1,  1, -1, -1,  1, -1,  1,  1,  1,  1],
+                                  [ 1, -1, -1,  1,  1, -1, -1, -1, -1,  1],
+                                  [-1, -1, -1,  1, -1,  1,  1, -1,  1, -1],
+                                  [ 1,  1, -1, -1, -1,  1, -1,  1, -1, -1],
+                                  [-1,  1,  1,  1, -1, -1, -1,  1, -1, -1],
+                                  [ 1, -1,  1, -1, -1, -1,  1, -1,  1, -1],
+                                  [-1, -1,  1, -1,  1,  1, -1, -1, -1,  1],
+                                  [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1],], device=mps_device, dtype=torch.float)
+
+    def forward(self,signal):
+        # Compute the distance between each input vector and each codeword(euclidean distance)
+        distances = torch.cdist(signal, self.sd_c.unsqueeze(0))
+
+        # Calculate softmax over the negative distances
+        soft_assignments = F.softmax(-distances, dim=2)
+        most_like = torch.argmax(soft_assignments, dim=2)
+        softdecision = self.sd_c[most_like]
+
+        return softdecision
