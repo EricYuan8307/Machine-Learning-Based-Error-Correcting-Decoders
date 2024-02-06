@@ -39,7 +39,7 @@ def estimation(num, bit, SNR_opt_NN, SLNN_hidden_size, model_pth, result, i, dev
     N = num
     # Single-label Neural Network:
     input_size = 7
-    output_size = 16
+    output_size = torch.pow(bit, torch.tensor(2))
 
     model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
     SLNN_final, bits_info, snr_measure = SLNNDecoder(N, bit, SNR_opt_NN, model, model_pth, device)
