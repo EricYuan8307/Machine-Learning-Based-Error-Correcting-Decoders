@@ -3,9 +3,9 @@ import numpy as np
 import os
 from datetime import datetime
 
-from Encoder.Generator import generator
-from Encoder.BPSK import bpsk_modulator
-from Encoder.encoder import hamming74_encoder
+from Encode.Generator import generator
+from Encode.Modulator import bpsk_modulator
+from Encode.Encoder import hamming74_encoder
 from Decoder.NNDecoder import SingleLabelNNDecoder
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_bler

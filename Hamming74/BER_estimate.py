@@ -4,9 +4,9 @@ import time
 import os
 from datetime import datetime
 
-from Encoder.Generator import generator
-from Encoder.BPSK import bpsk_modulator
-from Encoder.encoder import hamming74_encoder
+from Encode.Generator import generator
+from Encode.Modulator import bpsk_modulator
+from Encode.Encoder import hamming74_encoder
 from Decoder.HardDecision import hard_decision
 from Decoder.LDPC_BP import LDPCBeliefPropagation
 from Decoder.likelihood import llr
