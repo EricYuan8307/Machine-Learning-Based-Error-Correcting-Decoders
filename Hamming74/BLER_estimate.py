@@ -7,13 +7,11 @@ from Encoder.Generator import generator
 from Encoder.BPSK import bpsk_modulator
 from Encoder.encoder import hamming74_encoder
 from Decoder.HardDecision import hard_decision
-from Decoder.NNDecoder import SingleLabelNNDecoder
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_bler
 from Decoder.HammingDecoder import Hamming74decoder
 from Decoder.MaximumLikelihood import SoftDecisionML
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
-from Decoder.Converter import DecimaltoBinary
 
 
 # Calculate the Error number and BLER
