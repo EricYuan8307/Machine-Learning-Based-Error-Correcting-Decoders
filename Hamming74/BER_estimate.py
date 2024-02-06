@@ -217,8 +217,8 @@ def main():
     result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
     result_SDML = estimation_SDML(num, bits, SNR_opt_ML, result_save, device)
 
-    result_BP = estimation_BP(num, bits, SNR_opt_BP, iter, result_save, device)
     result_HDML = estimation_HDML(num, bits, SNR_opt_ML, result_save, device)
+    result_BP = estimation_BP(num, bits, SNR_opt_BP, iter, result_save, device)
 
     result_all = np.vstack([result_BPSK,
                             result_SDML,

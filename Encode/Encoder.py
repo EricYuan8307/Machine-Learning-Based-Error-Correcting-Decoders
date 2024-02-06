@@ -68,11 +68,11 @@ class Parity10_5_encoder(torch.nn.Module):
 
 
 
-device = torch.device("cpu")
-encoder = Parity10_5_encoder(device)
-
-from Encode.Generator import generator
-code = generator(10, 5, device)
-print("code", code)
-encoded_codeword = encoder(code)
-print("encoded_codeword", encoded_codeword)
+# device = torch.device("cpu")
+# encoder = Parity10_5_encoder(device)
+# 
+# from Encode.Generator import generator
+# code = generator(10, 5, device)
+# print("code", code)
+# encoded_codeword = encoder(code)
+# print("encoded_codeword", encoded_codeword)
