@@ -10,13 +10,11 @@ from Encoder.encoder import hamming74_encoder
 from Decoder.HardDecision import hard_decision
 from Decoder.LDPC_BP import LDPCBeliefPropagation
 from Decoder.likelihood import llr
-from Decoder.NNDecoder import MultiLabelNNDecoder1, MultiLabelNNDecoder2
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber
 from Decoder.HammingDecoder import Hamming74decoder
 from Decoder.MaximumLikelihood import HardDecisionML, SoftDecisionML
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
-from Decoder.Converter import MLNN_decision
 
 
 # Calculate the Error number and BER
@@ -104,24 +102,6 @@ def BeliefPropagation(nr_codeword, bits, snr_dB, iter, device):
     LDPC_final = decoder(LDPC_HD)  # Decoder
 
     return LDPC_final, bits_info, practical_snr
-
-def MLNNDecoder(nr_codeword, bits, snr_dB, model, model_pth, device):
-    encoder = hamming74_encoder(device)
-
-    bits_info = generator(nr_codeword, bits, device)  # Code Generator
-    encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
-    modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
-    noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
-
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
-
-    # use MLNN model:
-    model.eval()
-    model.load_state_dict(torch.load(model_pth))
-
-    MLNN_final = model(noised_signal)
-
-    return MLNN_final, bits_info, practical_snr
 
 
 def estimation_BPSK(num, bits, SNR_opt_BPSK, result, device):
@@ -215,33 +195,6 @@ def estimation_BP(num, bits, SNR_opt_BP, iter, result, device):
 
     return result
 
-def estimation_MLNN(num, bits, SNR_opt_NN, MLNN_hidden_size, model_pth, result, device):
-    N = num
-
-    # Multi-label Neural Network:
-    for i in range(len(SNR_opt_NN)):
-        snr_save = i/2
-        snr_dB = SNR_opt_NN[i]
-        input_size = 7
-        output_size = bits
-
-        # model = MultiLabelNNDecoder1(input_size, MLNN_hidden_size, output_size).to(device)
-        model = MultiLabelNNDecoder2(input_size, MLNN_hidden_size, output_size).to(device)
-        MLNN_result, bits_info, snr_measure = MLNNDecoder(N, bits, snr_dB, model, model_pth, device)
-        MLNN_final = MLNN_decision(MLNN_result, device)
-
-        BER_MLNN, error_num_MLNN = calculate_ber(MLNN_final, bits_info) # BER calculation
-
-        if error_num_MLNN < 100:
-            N += 1000000
-            print(f"the code number is {N}")
-
-        else:
-            print(f"MLNN: When SNR is {snr_save} and signal number is {N}, error number is {error_num_MLNN} and BER is {BER_MLNN}")
-            result[0, i] = BER_MLNN
-
-    return result
-
 
 def main():
     device = (torch.device("mps") if torch.backends.mps.is_available()
@@ -254,31 +207,23 @@ def main():
     num = int(1e7)
     iter = 5
     bits = 4
-    MLNN_hidden_size = [100, 100]
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = torch.arange(0, 9, 0.5)
 
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
-    SNR_opt_NN = torch.arange(0, 8.5, 0.5)
-    SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
-
-
-    model_save_pth = "Result/Model/MLNN_CPU/MLNN_model_hiddenlayer[100, 100]_BER0.pth"
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
     result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
     result_SDML = estimation_SDML(num, bits, SNR_opt_ML, result_save, device)
-    # result_MLNN = estimation_MLNN(num, bits, SNR_opt_NN, MLNN_hidden_size, model_save_pth, result_save, device)
 
-    # result_BP = estimation_BP(num, bits, SNR_opt_BP, iter, result_save, device)
-    # result_HDML = estimation_HDML(num, bits, SNR_opt_ML, result_save, device)
+    result_BP = estimation_BP(num, bits, SNR_opt_BP, iter, result_save, device)
+    result_HDML = estimation_HDML(num, bits, SNR_opt_ML, result_save, device)
 
     result_all = np.vstack([result_BPSK,
                             result_SDML,
-                            # result_MLNN,
-                            # result_HDML,
-                            # result_BP
+                            result_HDML,
+                            result_BP
                             ])
 
 
