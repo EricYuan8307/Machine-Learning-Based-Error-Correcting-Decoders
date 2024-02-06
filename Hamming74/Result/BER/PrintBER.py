@@ -29,16 +29,8 @@ SDML = [0.021438075, 0.014477825, 0.009354125, 0.0056875, 0.003245525, 0.0017154
         0.00016595, 5.9475e-05, 2.1025e-05, 6.275e-06, 1.3875e-06, 3.675e-07, # 4~6.5
         0, 0, 0, 0, 0, 0, 0]
 
-# MLNN = [0.0224775, 0.0158875, 0.0105725, 0.0062175, 0.0036575, 0.0018325, 0.0011075, 0.00048125, #0~3.5
-#         0.00021225, 8.8625e-05, 3.665e-05, 0, 0, 0, # 4~6.5
-#         0, 0, 0, 0, 0, 0, 0]
-#
-# MLNN_OF = [2.2355175e-02, 1.53993e-02, 1.00661e-02, 6.2342e-03, 3.6671e-03, 2.0214e-03, 1.089425e-03, 5.53425e-04,
-#         3.77725e-04, 2.33225e-04, 3.5255e-04, 4.27925e-04, 2.41525e-04, 1.60075e-04, 8.635e-05, 4.8225e-05, 2.845e-05,
-#         0, 0, 0, 0]
-
 def originalplot():
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(20, 10))
     plt.semilogy(SNR, ref_HDML, marker='*', label='ref_HDML')
     plt.semilogy(SNR, ref_SDML, marker='x', label='ref_SDML')
     plt.semilogy(SNR, ref_BP, marker='+', label='ref_BP')
@@ -47,9 +39,9 @@ def originalplot():
     plt.semilogy(SNR, SDML, marker='x', label='SDML')
     plt.semilogy(SNR, BP, marker='+', label='BP')
 
-    plt.xlabel('SNR')
-    plt.ylabel('BER')
-    plt.title('BER Estimation')
+    plt.xlabel('SNR', fontsize=20)
+    plt.ylabel('BER', fontsize=20)
+    plt.title('BER Estimation', fontsize=20)
     plt.legend(['ref_HDML', 'ref_SDML', 'ref_BP', 'uncoded_BPSK', 'HDML', 'SDML', "BP"], loc='lower left')
 
     # Display the Plot

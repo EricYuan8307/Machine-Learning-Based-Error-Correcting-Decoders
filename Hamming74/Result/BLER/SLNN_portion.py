@@ -25,11 +25,11 @@ BLER_SLNN_100 = [9.376706999999999681e-01, 7.200010999999999495e-01, 3.830969000
                1.529999999999999920e-05, 1.480000000000000060e-05, 1.399999999999999979e-05, 1.450000000000000009e-05, 1.220000000000000008e-05, 
                1.460000000000000082e-05]
 
-plt.semilogy(SLNN_hidden_size, BLER_SLNN_100, label='N = 7', color='blue', linestyle='--')
+plt.semilogy(SLNN_hidden_size, BLER_SLNN_100, marker='.', label='N=7', color='blue', linestyle='--')
 
-plt.xlabel('Number of Hidden Layer Neurons')
-plt.ylabel('BLER')
-plt.title('BLER VS number of nodes for Single-label neural decoders')
+plt.xlabel('Number of Hidden Layer Neurons', fontsize=20)
+plt.ylabel('BLER', fontsize=20)
+plt.title('BLER VS number of nodes for Single-label neural decoders', fontsize=20)
 plt.legend(['N=7'], loc='upper right')
 
 
@@ -49,11 +49,12 @@ BLER_SLNN_100 = [9.376706999999999681e-01, 7.200010999999999495e-01, 3.830969000
                1.369999999999999927e-05, 1.279999999999999942e-05, 1.419999999999999957e-05, 1.620000000000000075e-05, 1.489999999999999964e-05,
                1.329999999999999972e-05]
 
-plt.semilogy(SLNN_hidden_size, BLER_SLNN_100, label='N = 7', color='blue', linestyle='--')
+plt.figure(figsize=(20, 10))
+plt.semilogy(SLNN_hidden_size, BLER_SLNN_100, marker='.', label='N = 7', color='blue', linestyle='--')
 
-plt.xlabel('Number of Hidden Layer Neurons')
-plt.ylabel('BLER')
-plt.title('BLER VS number of nodes for Single-label neural decoders')
+plt.xlabel('Number of Hidden Layer Neurons', fontsize=20)
+plt.ylabel('BLER', fontsize=20)
+plt.title('BLER VS number of nodes for Single-label neural decoders', fontsize=20)
 plt.legend(['N=7'], loc='upper right')
 
 
