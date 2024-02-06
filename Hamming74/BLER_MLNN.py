@@ -5,7 +5,7 @@ from datetime import datetime
 
 from Encoder.Generator import generator
 from Encoder.BPSK import bpsk_modulator
-from Encoder.Hamming74 import hamming_encoder
+from Encoder.encoder import hamming74_encoder
 from Decoder.NNDecoder import MultiLabelNNDecoder1, MultiLabelNNDecoder2
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_bler
@@ -14,10 +14,10 @@ from Decoder.Converter import MLNN_decision
 
 
 # Calculate the Error number and BLER
-def MLNNDecoder(nr_codeword, snr_dB, model, model_pth, device):
-    encoder = hamming_encoder(device)
+def MLNNDecoder(nr_codeword, bits, snr_dB, model, model_pth, device):
+    encoder = hamming74_encoder(device)
 
-    bits_info = generator(nr_codeword, device)  # Code Generator
+    bits_info = generator(nr_codeword, bits, device)  # Code Generator
     encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
     modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
     noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
@@ -32,7 +32,7 @@ def MLNNDecoder(nr_codeword, snr_dB, model, model_pth, device):
 
     return MLNN_final, bits_info, practical_snr
 
-def estimation(num, SNR_opt_NN, MLNN_hidden_size, model_pth, result, device):
+def estimation1(num, bits, SNR_opt_NN, MLNN_hidden_size, model_pth, result, device):
     N = num
 
     # Multi-label Neural Network with 1 hidden layer:
@@ -40,11 +40,9 @@ def estimation(num, SNR_opt_NN, MLNN_hidden_size, model_pth, result, device):
         snr_save = i / 2
         snr_dB = SNR_opt_NN[i]
         input_size = 7
-        output_size = 4
 
-        # model = MultiLabelNNDecoder1(input_size, MLNN_hidden_size, output_size).to(device)
-        model = MultiLabelNNDecoder2(input_size, MLNN_hidden_size, output_size).to(device)
-        MLNN_result, bits_info, snr_measure = MLNNDecoder(N, snr_dB, model, model_pth, device)
+        model = MultiLabelNNDecoder1(input_size, MLNN_hidden_size, bits).to(device)
+        MLNN_result, bits_info, snr_measure = MLNNDecoder(N, bits, snr_dB, model, model_pth, device)
         MLNN_final = MLNN_decision(MLNN_result, device)
 
         BLER_MLNN, error_num_MLNN = calculate_bler(MLNN_final, bits_info)  # BER calculation
@@ -60,6 +58,31 @@ def estimation(num, SNR_opt_NN, MLNN_hidden_size, model_pth, result, device):
 
     return result
 
+def estimation2(num, bits, SNR_opt_NN, MLNN_hidden_size, model_pth, result, device):
+    N = num
+
+    # Multi-label Neural Network with 1 hidden layer:
+    for i in range(len(SNR_opt_NN)):
+        snr_save = i / 2
+        snr_dB = SNR_opt_NN[i]
+        input_size = 7
+
+        model = MultiLabelNNDecoder2(input_size, MLNN_hidden_size, bits).to(device)
+        MLNN_result, bits_info, snr_measure = MLNNDecoder(N, bits, snr_dB, model, model_pth, device)
+        MLNN_final = MLNN_decision(MLNN_result, device)
+
+        BLER_MLNN, error_num_MLNN = calculate_bler(MLNN_final, bits_info)  # BER calculation
+
+        if error_num_MLNN < 100:
+            N += 1000000
+            print(f"the code number is {N}")
+
+        else:
+            print(
+                f"MLNN :hidden layer{MLNN_hidden_size}, When SNR is {snr_save} and signal number is {N}, error number is {error_num_MLNN} and BLER is {BLER_MLNN}")
+            result[0, i] = BLER_MLNN
+
+    return result
 
 def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
@@ -70,15 +93,27 @@ def main():
 
     # Hyperparameters
     num = int(1e7)
-    # MLNN_hidden_size = 100
-    MLNN_hidden_size = [50, 50]
+    bits = 4
+    MLNN_hidden_size_1 = 100
+    MLNN_hidden_size_2 = [[50, 50], [100, 100]]
     SNR_opt_NN = torch.arange(0, 8.5, 0.5)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))  # for MLNN article
 
-    model_save_pth = f"Result/Model/MLNN_CPU/MLNN_model_hiddenlayer{MLNN_hidden_size}_BER0.pth"
+    model_save_pth100 = "Result/Model/MLNN_CPU/MLNN_model_hiddenlayer100_BER0.pth"
+    model_save_pth50_50 = "Result/Model/MLNN_CPU/MLNN_model_hiddenlayer[50, 50]_BER0.pth"
+    model_save_pth100_100 = "Result/Model/MLNN_CPU/MLNN_model_hiddenlayer[100, 100]_BER0.pth"
 
     result_save = np.zeros((1, len(SNR_opt_NN)))
-    result_all = estimation(num, SNR_opt_NN, MLNN_hidden_size, model_save_pth, result_save, device)
+    result_MLNN100 = estimation1(num, bits, SNR_opt_NN, MLNN_hidden_size_1, model_save_pth100, result_save, device)
+    result_MLNN50_50 = estimation2(num, bits, SNR_opt_NN, MLNN_hidden_size_2[0], model_save_pth50_50, result_save, device)
+    result_MLNN100_100 = estimation2(num, bits, SNR_opt_NN, MLNN_hidden_size_2[1], model_save_pth100_100, result_save, device)
+
+    result_all = np.vstack([
+        result_MLNN100,
+        result_MLNN50_50,
+        result_MLNN100_100
+    ])
+
     directory_path = "Result/BLER"
 
     # Create the directory if it doesn't exist
