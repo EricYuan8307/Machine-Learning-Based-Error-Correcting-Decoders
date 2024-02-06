@@ -13,7 +13,7 @@ from Transmit.NoiseMeasure import NoiseMeasure
 from Decoder.Converter import DecimaltoBinary
 
 def SLNNDecoder(nr_codeword, snr_dB, model, model_pth, device):
-    encoder = hamming_encoder(device)
+    encoder = hamming74_encoder(device)
 
     bits_info = generator(nr_codeword, device)  # Code Generator
     encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
@@ -73,7 +73,7 @@ def main():
     result_save = np.zeros((1, len(SLNN_hidden_size)))
 
     for i in range(0, len(SLNN_hidden_size)):
-        save_pth = f"Result/Model/SLNN_CPU/SLNN_model_hiddenlayer{i}_BER0.pth"
+        save_pth = f"Result/Hamming74/Model/SLNN_CPU/SLNN_model_hiddenlayer{i}_BER0.pth"
         result_all = estimation(num, SNR_opt_NN, SLNN_hidden_size[i], save_pth, result_save, i, device)
     directory_path = "Result/BLER"
 

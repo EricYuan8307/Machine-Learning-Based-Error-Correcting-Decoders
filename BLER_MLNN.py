@@ -15,7 +15,7 @@ from Decoder.Converter import MLNN_decision
 
 # Calculate the Error number and BLER
 def MLNNDecoder(nr_codeword, snr_dB, model, model_pth, device):
-    encoder = hamming_encoder(device)
+    encoder = hamming74_encoder(device)
 
     bits_info = generator(nr_codeword, device)  # Code Generator
     encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
@@ -75,7 +75,7 @@ def main():
     SNR_opt_NN = torch.arange(0, 8.5, 0.5)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float))  # for MLNN article
 
-    model_save_pth = f"Result/Model/MLNN_CPU/MLNN_model_hiddenlayer{MLNN_hidden_size}_BER0.pth"
+    model_save_pth = f"Result/Hamming74/Model/MLNN_CPU/MLNN_model_hiddenlayer{MLNN_hidden_size}_BER0.pth"
 
     result_save = np.zeros((1, len(SNR_opt_NN)))
     result_all = estimation(num, SNR_opt_NN, MLNN_hidden_size, model_save_pth, result_save, device)
