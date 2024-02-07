@@ -294,7 +294,7 @@ def main():
 
     # Train SLNN with different hidden layer neurons
     for i in range(len(SLNN_hidden_size)):
-        SLNN_model_path = f"Result/Model/SLNN_CPU/"
+        SLNN_model_path = f"Result/model/SLNN_CPU"
         SLNN_training(SLNN_snr, nr_codeword, bits, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
 
     # # Train MLNN model with only one hidden layer
