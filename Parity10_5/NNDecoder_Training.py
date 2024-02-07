@@ -273,11 +273,6 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for SLNN article
-    MLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
-
     SLNN_hidden_size = torch.arange(0, 101, 1)
     MLNN_hidden_size_1 = 100
     MLNN_hidden_size_2 = [[50, 50], [100, 100]]
@@ -286,6 +281,13 @@ def main():
     epochs = 500
     nr_codeword = int(1e6)
     bits = 5
+
+    SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
+    SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / 10, dtype=torch.float)) # for SLNN article
+    MLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
+    MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(bits / 10, dtype=torch.float)) # for MLNN article
+
+
 
     # Early Stopping # Guess same number of your output
     SLNN_patience = torch.pow(torch.tensor(2), bits)

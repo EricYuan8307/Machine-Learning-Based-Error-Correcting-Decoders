@@ -105,7 +105,7 @@ def main():
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
 
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
-    SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
+    SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / 10, dtype=torch.float)) # for MLNN article
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
     result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
