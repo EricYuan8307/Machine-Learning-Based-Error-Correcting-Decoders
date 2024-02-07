@@ -283,9 +283,9 @@ def main():
     bits = 5
 
     SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / 10, dtype=torch.float)) # for SLNN article
+    SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / 16, dtype=torch.float)) # for SLNN article
     MLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(bits / 10, dtype=torch.float)) # for MLNN article
+    MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(bits / 16, dtype=torch.float)) # for MLNN article
 
 
     # Early Stopping # Guess same number of your output
