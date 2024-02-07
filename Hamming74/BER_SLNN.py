@@ -44,7 +44,7 @@ def estimation_SLNN(num, bits, SNR_opt_NN, SLNN_hidden_size, model_pth, result, 
     for i in range(len(SNR_opt_NN)):
         snr_save = i / 2
         input_size = 7
-        output_size = torch.pow(bits, torch.tensor(2))
+        output_size = torch.pow(torch.tensor(2), bits)
 
         model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
         SLNN_final, bits_info, snr_measure = SLNNDecoder(N, bits, SNR_opt_NN[i], model, model_pth, device)

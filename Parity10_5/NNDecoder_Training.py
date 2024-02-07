@@ -24,7 +24,7 @@ def SLNN_training(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hid
 
     # NN structure:
     input_size = noised_signal.shape[2]
-    output_size = torch.pow(torch.tensor(2, device=device), bits_info.shape[2]) # 2^x
+    output_size = torch.pow(torch.tensor(2), bits_info.shape[2]) # 2^x
     label = BinarytoDecimal(bits_info, device).to(torch.int64)
     SLNN_trainset = TensorDataset(noised_signal, label)
     SLNN_trainloader = torch.utils.data.DataLoader(SLNN_trainset, batch_size, shuffle=True)
@@ -288,7 +288,7 @@ def main():
     bits = 5
 
     # Early Stopping # Guess same number of your output
-    SLNN_patience = torch.pow(bits, torch.tensor(2))
+    SLNN_patience = torch.pow(torch.tensor(2), bits)
     MLNN_patience = bits
     delta = 0.001
 
