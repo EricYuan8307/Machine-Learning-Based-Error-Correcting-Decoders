@@ -57,8 +57,6 @@ plt.semilogy(SNR, BLER_SLNN_9, marker='<', label='Single-label Neural network N=
 plt.xlabel('SNR', fontsize=20)
 plt.ylabel('BLER', fontsize=20)
 plt.title('BLER Estimation', fontsize=20)
-# plt.legend(['SDML', 'BPSK'], loc='lower left')
-# plt.legend(['Soft-decision ML, Article', 'BPSK, Uncoded, Article', 'Soft-decision ML', 'BPSK, Uncoded','Single-label Neural network'], loc='lower left')
 plt.legend(['Soft-decision ML', 'BPSK, Uncoded',
             'Single-label Neural network N=5, Article', 'Single-label Neural network N=6, Article', 'Single-label Neural network N=7, Article',
             'Single-label Neural network N=5', 'Single-label Neural network N=6', 'Single-label Neural network N=7', 'Single-label Neural network N=8', 'Single-label Neural network N=9', ], loc='lower left')

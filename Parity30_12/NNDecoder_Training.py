@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
-from Encode.Encoder import hamming74_encoder
+from Encode.Encoder import Parity16_5_encoder
 from Transmit.noise import AWGN
 from Decode.NNDecoder import SingleLabelNNDecoder, MultiLabelNNDecoder1, MultiLabelNNDecoder2
 from Transmit.NoiseMeasure import NoiseMeasure
@@ -14,7 +14,7 @@ from earlystopping import SLNN_EarlyStopping, MLNN_EarlyStopping
 
 def SLNN_training(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
     # Transmitter:
-    encoder = hamming74_encoder(device)
+    encoder = Parity16_5_encoder(device)
 
     bits_info = generator(nr_codeword, bits, device)
     encoded_codeword = encoder(bits_info)
@@ -98,7 +98,7 @@ def SLNN_training(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hid
 
 def MLNN_training1(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
     # Transmitter:
-    encoder = hamming74_encoder(device)
+    encoder = Parity16_5_encoder(device)
 
     bits_info = generator(nr_codeword, bits, device)
     encoded_codeword = encoder(bits_info)
@@ -182,7 +182,7 @@ def MLNN_training1(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hi
 
 def MLNN_training2(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
     # Transmitter:
-    encoder = hamming74_encoder(device)
+    encoder = Parity16_5_encoder(device)
 
     bits_info = generator(nr_codeword, bits, device)
     encoded_codeword = encoder(bits_info)
@@ -273,11 +273,6 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for SLNN article
-    MLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
-
     SLNN_hidden_size = torch.arange(0, 101, 1)
     MLNN_hidden_size_1 = 100
     MLNN_hidden_size_2 = [[50, 50], [100, 100]]
@@ -285,26 +280,32 @@ def main():
     learning_rate = 1e-2
     epochs = 500
     nr_codeword = int(1e6)
-    bits = 4
+    bits = 12
+
+    SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
+    SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / 30, dtype=torch.float)) # for SLNN article
+    MLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
+    MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(bits / 30, dtype=torch.float)) # for MLNN article
+
 
     # Early Stopping # Guess same number of your output
-    SLNN_patience = 16
-    MLNN_patience = 4
+    SLNN_patience = torch.pow(torch.tensor(2), bits)
+    MLNN_patience = bits
     delta = 0.001
 
     # Train SLNN with different hidden layer neurons
     for i in range(len(SLNN_hidden_size)):
-        SLNN_model_path = f"Result/Model/SLNN_CPU/"
+        SLNN_model_path = f"Result/model/SLNN_CPU/"
         SLNN_training(SLNN_snr, nr_codeword, bits, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
 
-    # Train MLNN model with only one hidden layer
-    MLNN_model_path = f"Result/Model/MLNN_CPU/"
-    MLNN_training1(MLNN_snr, nr_codeword, bits, epochs, learning_rate, batch_size, MLNN_hidden_size_1, MLNN_model_path, MLNN_patience, delta, device)
-
-    # Train MLNN model with two hidden layers
-    for i in range(len(MLNN_hidden_size_2)):
-        MLNN_model_path = f"Result/Model/MLNN_CPU/"
-        MLNN_training2(MLNN_snr, nr_codeword, bits, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i], MLNN_model_path, MLNN_patience, delta, device)
+    # # Train MLNN model with only one hidden layer
+    # MLNN_model_path = f"Result/Model/MLNN_CPU/"
+    # MLNN_training1(MLNN_snr, nr_codeword, bits, epochs, learning_rate, batch_size, MLNN_hidden_size_1, MLNN_model_path, MLNN_patience, delta, device)
+    #
+    # # Train MLNN model with two hidden layers
+    # for i in range(len(MLNN_hidden_size_2)):
+    #     MLNN_model_path = f"Result/Model/MLNN_CPU/"
+    #     MLNN_training2(MLNN_snr, nr_codeword, bits, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i], MLNN_model_path, MLNN_patience, delta, device)
 
 
 if __name__ == '__main__':

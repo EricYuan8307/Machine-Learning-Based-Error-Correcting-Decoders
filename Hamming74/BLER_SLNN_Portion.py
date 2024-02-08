@@ -10,7 +10,7 @@ from Decode.NNDecoder import SingleLabelNNDecoder
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_bler
 from Transmit.NoiseMeasure import NoiseMeasure
-from Decode.Converter import DecimaltoBinary
+from Decode.Converter import DecimaltoBinary4
 
 def SLNNDecoder(nr_codeword, bit, snr_dB, model, model_pth, device):
     encoder = hamming74_encoder(device)
@@ -29,7 +29,7 @@ def SLNNDecoder(nr_codeword, bit, snr_dB, model, model_pth, device):
     SLNN_result = model(noised_signal)
     SLNN_decimal = torch.argmax(SLNN_result, dim=2)
 
-    Decimal_Binary =DecimaltoBinary(device)
+    Decimal_Binary =DecimaltoBinary4(device)
     SLNN_binary = Decimal_Binary(SLNN_decimal)
 
 
@@ -39,7 +39,7 @@ def estimation(num, bit, SNR_opt_NN, SLNN_hidden_size, model_pth, result, i, dev
     N = num
     # Single-label Neural Network:
     input_size = 7
-    output_size = torch.pow(bit, torch.tensor(2))
+    output_size = torch.pow(torch.tensor(2), bit)
 
     model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
     SLNN_final, bits_info, snr_measure = SLNNDecoder(N, bit, SNR_opt_NN, model, model_pth, device)
