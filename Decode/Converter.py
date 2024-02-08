@@ -12,7 +12,7 @@ def MLNN_decision(bitcodeword, mps_device):
 
 
 # Single-label Neural Network Decoder:
-class DecimaltoBinary(nn.Module):
+class DecimaltoBinary4(nn.Module):
     def __init__(self, device):
 
         super().__init__()
@@ -41,6 +41,50 @@ class DecimaltoBinary(nn.Module):
 
         return Binary_output
 
+class DecimaltoBinary5(nn.Module):
+    def __init__(self, device):
+
+        super().__init__()
+        self.device = device
+        self.B = torch.tensor([[0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 1],
+                     [0, 0, 0, 1, 0],
+                     [0, 0, 0, 1, 1],
+                     [0, 0, 1, 0, 0],
+                     [0, 0, 1, 0, 1],
+                     [0, 0, 1, 1, 0],
+                     [0, 0, 1, 1, 1],
+                     [0, 1, 0, 0, 0],
+                     [0, 1, 0, 0, 1],
+                     [0, 1, 0, 1, 0],
+                     [0, 1, 0, 1, 1],
+                     [0, 1, 1, 0, 0],
+                     [0, 1, 1, 0, 1],
+                     [0, 1, 1, 1, 0],
+                     [0, 1, 1, 1, 1],
+                     [1, 0, 0, 0, 0],
+                     [1, 0, 0, 0, 1],
+                     [1, 0, 0, 1, 0],
+                     [1, 0, 0, 1, 1],
+                     [1, 0, 1, 0, 0],
+                     [1, 0, 1, 0, 1],
+                     [1, 0, 1, 1, 0],
+                     [1, 0, 1, 1, 1],
+                     [1, 1, 0, 0, 0],
+                     [1, 1, 0, 0, 1],
+                     [1, 1, 0, 1, 0],
+                     [1, 1, 0, 1, 1],
+                     [1, 1, 1, 0, 0],
+                     [1, 1, 1, 0, 1],
+                     [1, 1, 1, 1, 0],
+                     [1, 1, 1, 1, 1],], device=self.device, dtype=torch.float) # torch.Size([1, 16, 4])
+
+
+    def forward(self, decimal_tensor):
+        decimal_tensor = decimal_tensor
+        Binary_output = self.B[decimal_tensor]
+
+        return Binary_output
 
 def BinarytoDecimal(binary_tensor, device):
     binary_tensor = binary_tensor.squeeze()  # Remove extra dimensions
