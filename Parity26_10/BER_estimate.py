@@ -10,7 +10,7 @@ from Decode.HardDecision import hard_decision
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber
 from Decode.Decoder import Parity16_5decoder
-from Decode.MaximumLikelihood import SoftDecisionML16_5
+from Decode.MaximumLikelihood import SoftDecisionML26_10
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 
 
@@ -28,7 +28,7 @@ def UncodedBPSK(nr_codeword, bits, snr_dB, device):
 
 def SoftDecisionMLP(nr_codeword, bits, snr_dB, device):
     encoder = Parity16_5_encoder(device)
-    SD_MaximumLikelihood = SoftDecisionML16_5(device)
+    SD_MaximumLikelihood = SoftDecisionML26_10(device)
     decoder = Parity16_5decoder(device)
 
     # ML:

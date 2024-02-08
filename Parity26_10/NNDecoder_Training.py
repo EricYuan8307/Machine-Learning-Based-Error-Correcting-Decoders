@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
-from Encode.Encoder import Parity16_5_encoder
+from Encode.Encoder import Parity26_10_encoder
 from Transmit.noise import AWGN
 from Decode.NNDecoder import SingleLabelNNDecoder, MultiLabelNNDecoder1, MultiLabelNNDecoder2
 from Transmit.NoiseMeasure import NoiseMeasure
@@ -14,7 +14,7 @@ from earlystopping import SLNN_EarlyStopping, MLNN_EarlyStopping
 
 def SLNN_training(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
     # Transmitter:
-    encoder = Parity16_5_encoder(device)
+    encoder = Parity26_10_encoder(device)
 
     bits_info = generator(nr_codeword, bits, device)
     encoded_codeword = encoder(bits_info)
@@ -98,7 +98,7 @@ def SLNN_training(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hid
 
 def MLNN_training1(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
     # Transmitter:
-    encoder = Parity16_5_encoder(device)
+    encoder = Parity26_10_encoder(device)
 
     bits_info = generator(nr_codeword, bits, device)
     encoded_codeword = encoder(bits_info)
@@ -182,7 +182,7 @@ def MLNN_training1(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hi
 
 def MLNN_training2(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
     # Transmitter:
-    encoder = Parity16_5_encoder(device)
+    encoder = Parity26_10_encoder(device)
 
     bits_info = generator(nr_codeword, bits, device)
     encoded_codeword = encoder(bits_info)
