@@ -165,23 +165,33 @@ class Parity26_10_encoder(torch.nn.Module):
         super(Parity26_10_encoder, self).__init__()
 
         # Define the generator matrix for (26,10)Parity Check Code
-        # self.generator_matrix = torch.tensor([
-        #     [1, 0, 0, 0, 0],
-        #     [0, 1, 0, 0, 0],
-        #     [0, 0, 1, 0, 0],
-        #     [0, 0, 0, 1, 0],
-        #     [0, 0, 0, 0, 1],
-        #     [1, 1, 1, 1, 1],
-        #     [1, 1, 0, 1, 1],
-        #     [1, 0, 1, 1, 0],
-        #     [1, 0, 0, 1, 1],
-        #     [0, 1, 1, 0, 1],
-        #     [1, 1, 1, 0, 0],
-        #     [0, 1, 0, 1, 1],
-        #     [1, 0, 1, 0, 1],
-        #     [0, 1, 0, 1, 0],
-        #     [1, 0, 0, 1, 1],
-        #     [0, 1, 1, 0, 0],], dtype=torch.float, device=device)
+        self.generator_matrix = torch.tensor([
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 0, 0, 0, 1, 0, 0, 1],
+            [0, 1, 0, 0, 1, 1, 1, 0, 0, 0],
+            [0, 0, 1, 0, 0, 1, 1, 0, 1, 1],
+            [0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 1, 0, 1, 1, 1],
+            [0, 0, 0, 1, 0, 1, 0, 1, 0, 1],
+            [0, 0, 0, 0, 1, 1, 1, 0, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+            [1, 1, 0, 1, 0, 1, 0, 1, 1, 1],
+            [0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
+            [0, 1, 0, 1, 1, 0, 0, 0, 1, 1],
+            [0, 0, 0, 0, 1, 1, 0, 1, 1, 0],
+            [1, 0, 0, 0, 0, 1, 1, 1, 1, 0],
+            [1, 1, 1, 0, 0, 0, 0, 1, 1, 0],
+            [0, 0, 1, 1, 0, 1, 1, 1, 0, 1],], dtype=torch.float, device=device)
 
     def forward(self, input_data):
         # Perform matrix multiplication to encode the data
@@ -189,82 +199,82 @@ class Parity26_10_encoder(torch.nn.Module):
 
         return result_tensor
 
-# (30,12)Parity Check Code Encoder:
-class Parity30_12_encoder(torch.nn.Module):
-    def __init__(self, device):
-        """
-        Use (30,12)Parity Check Code to encode the data.
-
-        Args:
-            data: data received from the (30,12)Parity Check Code encoder(Tensor)
-            generator matrix: generate the parity code
-
-        Returns:
-            encoded data: 12 bits original info with 30 parity code.
-        """
-        super(Parity26_10_encoder, self).__init__()
-
-        # Define the generator matrix for (30,12)Parity Check Code
-        # self.generator_matrix = torch.tensor([
-        #     [1, 0, 0, 0, 0],
-        #     [0, 1, 0, 0, 0],
-        #     [0, 0, 1, 0, 0],
-        #     [0, 0, 0, 1, 0],
-        #     [0, 0, 0, 0, 1],
-        #     [1, 1, 1, 1, 1],
-        #     [1, 1, 0, 1, 1],
-        #     [1, 0, 1, 1, 0],
-        #     [1, 0, 0, 1, 1],
-        #     [0, 1, 1, 0, 1],
-        #     [1, 1, 1, 0, 0],
-        #     [0, 1, 0, 1, 1],
-        #     [1, 0, 1, 0, 1],
-        #     [0, 1, 0, 1, 0],
-        #     [1, 0, 0, 1, 1],
-        #     [0, 1, 1, 0, 0],], dtype=torch.float, device=device)
-
-    def forward(self, input_data):
-        # Perform matrix multiplication to encode the data
-        result_tensor = torch.matmul(input_data, self.generator_matrix.t()) % 2
-
-        return result_tensor
-
-# (34,12)Parity Check Code Encoder:
-class Parity34_12_encoder(torch.nn.Module):
-    def __init__(self, device):
-        """
-        Use (34,12)Parity Check Code to encode the data.
-
-        Args:
-            data: data received from the (34,12)Parity Check Code encoder(Tensor)
-            generator matrix: generate the parity code
-
-        Returns:
-            encoded data: 12 bits original info with 22 parity code.
-        """
-        super(Parity26_10_encoder, self).__init__()
-
-        # Define the generator matrix for (34,12)Parity Check Code
-        # self.generator_matrix = torch.tensor([
-        #     [1, 0, 0, 0, 0],
-        #     [0, 1, 0, 0, 0],
-        #     [0, 0, 1, 0, 0],
-        #     [0, 0, 0, 1, 0],
-        #     [0, 0, 0, 0, 1],
-        #     [1, 1, 1, 1, 1],
-        #     [1, 1, 0, 1, 1],
-        #     [1, 0, 1, 1, 0],
-        #     [1, 0, 0, 1, 1],
-        #     [0, 1, 1, 0, 1],
-        #     [1, 1, 1, 0, 0],
-        #     [0, 1, 0, 1, 1],
-        #     [1, 0, 1, 0, 1],
-        #     [0, 1, 0, 1, 0],
-        #     [1, 0, 0, 1, 1],
-        #     [0, 1, 1, 0, 0],], dtype=torch.float, device=device)
-
-    def forward(self, input_data):
-        # Perform matrix multiplication to encode the data
-        result_tensor = torch.matmul(input_data, self.generator_matrix.t()) % 2
-
-        return result_tensor
+# # (30,12)Parity Check Code Encoder:
+# class Parity30_12_encoder(torch.nn.Module):
+#     def __init__(self, device):
+#         """
+#         Use (30,12)Parity Check Code to encode the data.
+#
+#         Args:
+#             data: data received from the (30,12)Parity Check Code encoder(Tensor)
+#             generator matrix: generate the parity code
+#
+#         Returns:
+#             encoded data: 12 bits original info with 30 parity code.
+#         """
+#         super(Parity26_10_encoder, self).__init__()
+#
+#         # Define the generator matrix for (30,12)Parity Check Code
+#         # self.generator_matrix = torch.tensor([
+#         #     [1, 0, 0, 0, 0],
+#         #     [0, 1, 0, 0, 0],
+#         #     [0, 0, 1, 0, 0],
+#         #     [0, 0, 0, 1, 0],
+#         #     [0, 0, 0, 0, 1],
+#         #     [1, 1, 1, 1, 1],
+#         #     [1, 1, 0, 1, 1],
+#         #     [1, 0, 1, 1, 0],
+#         #     [1, 0, 0, 1, 1],
+#         #     [0, 1, 1, 0, 1],
+#         #     [1, 1, 1, 0, 0],
+#         #     [0, 1, 0, 1, 1],
+#         #     [1, 0, 1, 0, 1],
+#         #     [0, 1, 0, 1, 0],
+#         #     [1, 0, 0, 1, 1],
+#         #     [0, 1, 1, 0, 0],], dtype=torch.float, device=device)
+#
+#     def forward(self, input_data):
+#         # Perform matrix multiplication to encode the data
+#         result_tensor = torch.matmul(input_data, self.generator_matrix.t()) % 2
+#
+#         return result_tensor
+#
+# # (34,12)Parity Check Code Encoder:
+# class Parity34_12_encoder(torch.nn.Module):
+#     def __init__(self, device):
+#         """
+#         Use (34,12)Parity Check Code to encode the data.
+#
+#         Args:
+#             data: data received from the (34,12)Parity Check Code encoder(Tensor)
+#             generator matrix: generate the parity code
+#
+#         Returns:
+#             encoded data: 12 bits original info with 22 parity code.
+#         """
+#         super(Parity26_10_encoder, self).__init__()
+#
+#         # Define the generator matrix for (34,12)Parity Check Code
+#         # self.generator_matrix = torch.tensor([
+#         #     [1, 0, 0, 0, 0],
+#         #     [0, 1, 0, 0, 0],
+#         #     [0, 0, 1, 0, 0],
+#         #     [0, 0, 0, 1, 0],
+#         #     [0, 0, 0, 0, 1],
+#         #     [1, 1, 1, 1, 1],
+#         #     [1, 1, 0, 1, 1],
+#         #     [1, 0, 1, 1, 0],
+#         #     [1, 0, 0, 1, 1],
+#         #     [0, 1, 1, 0, 1],
+#         #     [1, 1, 1, 0, 0],
+#         #     [0, 1, 0, 1, 1],
+#         #     [1, 0, 1, 0, 1],
+#         #     [0, 1, 0, 1, 0],
+#         #     [1, 0, 0, 1, 1],
+#         #     [0, 1, 1, 0, 0],], dtype=torch.float, device=device)
+#
+#     def forward(self, input_data):
+#         # Perform matrix multiplication to encode the data
+#         result_tensor = torch.matmul(input_data, self.generator_matrix.t()) % 2
+#
+#         return result_tensor
