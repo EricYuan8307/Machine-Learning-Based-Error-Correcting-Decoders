@@ -86,6 +86,141 @@ class DecimaltoBinary5(nn.Module):
 
         return Binary_output
 
+class DecimaltoBinary7(nn.Module):
+    def __init__(self, device):
+
+        super().__init__()
+        self.device = device
+        self.B = torch.tensor([[0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 1],
+                     [0, 0, 0, 1, 0],
+                     [0, 0, 0, 1, 1],
+                     [0, 0, 1, 0, 0],
+                     [0, 0, 1, 0, 1],
+                     [0, 0, 1, 1, 0],
+                     [0, 0, 1, 1, 1],
+                     [0, 1, 0, 0, 0],
+                     [0, 1, 0, 0, 1],
+                     [0, 1, 0, 1, 0],
+                     [0, 1, 0, 1, 1],
+                     [0, 1, 1, 0, 0],
+                     [0, 1, 1, 0, 1],
+                     [0, 1, 1, 1, 0],
+                     [0, 1, 1, 1, 1],
+                     [1, 0, 0, 0, 0],
+                     [1, 0, 0, 0, 1],
+                     [1, 0, 0, 1, 0],
+                     [1, 0, 0, 1, 1],
+                     [1, 0, 1, 0, 0],
+                     [1, 0, 1, 0, 1],
+                     [1, 0, 1, 1, 0],
+                     [1, 0, 1, 1, 1],
+                     [1, 1, 0, 0, 0],
+                     [1, 1, 0, 0, 1],
+                     [1, 1, 0, 1, 0],
+                     [1, 1, 0, 1, 1],
+                     [1, 1, 1, 0, 0],
+                     [1, 1, 1, 0, 1],
+                     [1, 1, 1, 1, 0],
+                     [1, 1, 1, 1, 1],], device=self.device, dtype=torch.float) # torch.Size([1, 16, 4])
+
+
+    def forward(self, decimal_tensor):
+        decimal_tensor = decimal_tensor
+        Binary_output = self.B[decimal_tensor]
+
+        return Binary_output
+
+class DecimaltoBinary10(nn.Module):
+    def __init__(self, device):
+
+        super().__init__()
+        self.device = device
+        self.B = torch.tensor([[0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 1],
+                     [0, 0, 0, 1, 0],
+                     [0, 0, 0, 1, 1],
+                     [0, 0, 1, 0, 0],
+                     [0, 0, 1, 0, 1],
+                     [0, 0, 1, 1, 0],
+                     [0, 0, 1, 1, 1],
+                     [0, 1, 0, 0, 0],
+                     [0, 1, 0, 0, 1],
+                     [0, 1, 0, 1, 0],
+                     [0, 1, 0, 1, 1],
+                     [0, 1, 1, 0, 0],
+                     [0, 1, 1, 0, 1],
+                     [0, 1, 1, 1, 0],
+                     [0, 1, 1, 1, 1],
+                     [1, 0, 0, 0, 0],
+                     [1, 0, 0, 0, 1],
+                     [1, 0, 0, 1, 0],
+                     [1, 0, 0, 1, 1],
+                     [1, 0, 1, 0, 0],
+                     [1, 0, 1, 0, 1],
+                     [1, 0, 1, 1, 0],
+                     [1, 0, 1, 1, 1],
+                     [1, 1, 0, 0, 0],
+                     [1, 1, 0, 0, 1],
+                     [1, 1, 0, 1, 0],
+                     [1, 1, 0, 1, 1],
+                     [1, 1, 1, 0, 0],
+                     [1, 1, 1, 0, 1],
+                     [1, 1, 1, 1, 0],
+                     [1, 1, 1, 1, 1],], device=self.device, dtype=torch.float) # torch.Size([1, 16, 4])
+
+
+    def forward(self, decimal_tensor):
+        decimal_tensor = decimal_tensor
+        Binary_output = self.B[decimal_tensor]
+
+        return Binary_output
+
+class DecimaltoBinary12(nn.Module):
+    def __init__(self, device):
+
+        super().__init__()
+        self.device = device
+        self.B = torch.tensor([[0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 1],
+                     [0, 0, 0, 1, 0],
+                     [0, 0, 0, 1, 1],
+                     [0, 0, 1, 0, 0],
+                     [0, 0, 1, 0, 1],
+                     [0, 0, 1, 1, 0],
+                     [0, 0, 1, 1, 1],
+                     [0, 1, 0, 0, 0],
+                     [0, 1, 0, 0, 1],
+                     [0, 1, 0, 1, 0],
+                     [0, 1, 0, 1, 1],
+                     [0, 1, 1, 0, 0],
+                     [0, 1, 1, 0, 1],
+                     [0, 1, 1, 1, 0],
+                     [0, 1, 1, 1, 1],
+                     [1, 0, 0, 0, 0],
+                     [1, 0, 0, 0, 1],
+                     [1, 0, 0, 1, 0],
+                     [1, 0, 0, 1, 1],
+                     [1, 0, 1, 0, 0],
+                     [1, 0, 1, 0, 1],
+                     [1, 0, 1, 1, 0],
+                     [1, 0, 1, 1, 1],
+                     [1, 1, 0, 0, 0],
+                     [1, 1, 0, 0, 1],
+                     [1, 1, 0, 1, 0],
+                     [1, 1, 0, 1, 1],
+                     [1, 1, 1, 0, 0],
+                     [1, 1, 1, 0, 1],
+                     [1, 1, 1, 1, 0],
+                     [1, 1, 1, 1, 1],], device=self.device, dtype=torch.float) # torch.Size([1, 16, 4])
+
+
+    def forward(self, decimal_tensor):
+        decimal_tensor = decimal_tensor
+        Binary_output = self.B[decimal_tensor]
+
+        return Binary_output
+
 def BinarytoDecimal(binary_tensor, device):
     binary_tensor = binary_tensor.squeeze()  # Remove extra dimensions
     powers_of_two = 2 ** torch.arange(binary_tensor.size(-1) - 1, -1, -1, dtype=torch.float, device=binary_tensor.device)
