@@ -1,7 +1,7 @@
 import torch
 
 # Hamming(7,4) Encoder:
-class hamming74_encoder(torch.nn.Module):
+class Hamming74_encoder(torch.nn.Module):
     def __init__(self, device):
         """
         Use Hamming(7,4) to encode the data.
@@ -13,7 +13,7 @@ class hamming74_encoder(torch.nn.Module):
         Returns:
             encoded data: 4 bits original info with 3 parity code.
         """
-        super(hamming74_encoder, self).__init__()
+        super(Hamming74_encoder, self).__init__()
 
         # Define the generator matrix for Hamming(7,4)
         self.generator_matrix = torch.tensor([

@@ -6,7 +6,7 @@ from datetime import datetime
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
-from Encode.Encoder import hamming74_encoder
+from Encode.Encoder import Hamming74_encoder
 from Decode.HardDecision import hard_decision
 from Decode.LDPC_BP import LDPCBeliefPropagation
 from Decode.likelihood import llr
@@ -14,7 +14,7 @@ from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber
 from Decode.Decoder import Hamming74decoder
 from Decode.MaximumLikelihood import HardDecisionML74, SoftDecisionML74
-from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
+from Transmit.NoiseMeasure import NoiseMeasure74, NoiseMeasure_BPSK
 
 
 # Calculate the Error number and BER
@@ -30,7 +30,7 @@ def UncodedBPSK(nr_codeword, bits, snr_dB, device):
     return BPSK_final, bits_info, practical_snr
 
 def SoftDecisionMLP(nr_codeword, bits, snr_dB, device):
-    encoder = hamming74_encoder(device)
+    encoder = Hamming74_encoder(device)
     SD_MaximumLikelihood = SoftDecisionML74(device)
     decoder = Hamming74decoder(device)
 
@@ -44,12 +44,12 @@ def SoftDecisionMLP(nr_codeword, bits, snr_dB, device):
     HD_final = hard_decision(SD_ML, device)
     SDML_final = decoder(HD_final)
 
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+    practical_snr = NoiseMeasure74(noised_signal, modulated_signal)
 
     return SDML_final, bits_info, practical_snr
 
 def HardDecisionMLP(nr_codeword, bits, snr_dB, device):
-    encoder = hamming74_encoder(device)
+    encoder = Hamming74_encoder(device)
     HD_MaximumLikelihood = HardDecisionML74(device)
     decoder = Hamming74decoder(device)
 
@@ -63,14 +63,14 @@ def HardDecisionMLP(nr_codeword, bits, snr_dB, device):
     HD_ML = HD_MaximumLikelihood(HD_signal)
     HDML_final = decoder(HD_ML)
 
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+    practical_snr = NoiseMeasure74(noised_signal, modulated_signal)
 
     return HDML_final, bits_info, practical_snr
 
 def BeliefPropagation(nr_codeword, bits, snr_dB, iter, device):
     iter_start_time = time.time()
 
-    encoder = hamming74_encoder(device)
+    encoder = Hamming74_encoder(device)
     ldpc_bp = LDPCBeliefPropagation(device)
     decoder = Hamming74decoder(device)
 
@@ -82,7 +82,7 @@ def BeliefPropagation(nr_codeword, bits, snr_dB, iter, device):
     llr_output = llr(noised_signal, snr_dB)  # LLR
     BP_result = torch.zeros(llr_output.shape, device=device)
 
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+    practical_snr = NoiseMeasure74(noised_signal, modulated_signal)
 
     for k in range(llr_output.shape[0]):
         start_time = time.time()
@@ -197,10 +197,10 @@ def estimation_BP(num, bits, SNR_opt_BP, iter, result, device):
 
 
 def main():
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
-    # device = torch.device("cpu")
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                 else torch.device("cpu")))
+    device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters
@@ -214,16 +214,17 @@ def main():
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
-    result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
+    # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
     result_SDML = estimation_SDML(num, bits, SNR_opt_ML, result_save, device)
 
-    result_HDML = estimation_HDML(num, bits, SNR_opt_ML, result_save, device)
-    result_BP = estimation_BP(num, bits, SNR_opt_BP, iter, result_save, device)
+    # result_HDML = estimation_HDML(num, bits, SNR_opt_ML, result_save, device)
+    # result_BP = estimation_BP(num, bits, SNR_opt_BP, iter, result_save, device)
 
-    result_all = np.vstack([result_BPSK,
+    result_all = np.vstack([
+        # result_BPSK,
                             result_SDML,
-                            result_HDML,
-                            result_BP
+                            # result_HDML,
+                            # result_BP
                             ])
 
 
