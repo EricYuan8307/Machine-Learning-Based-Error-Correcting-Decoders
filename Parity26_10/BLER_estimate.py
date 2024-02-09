@@ -61,7 +61,7 @@ def estimation_BPSK(num, bits, SNR_opt_BPSK, result, device):
                 print(f"the code number is {N}")
 
             else:
-                print(f"BPSK: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BPSK} and BER is {BLER_BPSK}")
+                print(f"BPSK: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BPSK} and BLER is {BLER_BPSK}")
                 result[0, i] = BLER_BPSK
                 break
 
@@ -99,7 +99,7 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e4)
+    num = int(1e5)
     bits = 10
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
