@@ -9,7 +9,7 @@ from Encode.Encoder import Hamming74_encoder
 from Decode.NNDecoder import MultiLabelNNDecoder1, MultiLabelNNDecoder2
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_bler
-from Transmit.NoiseMeasure import NoiseMeasure
+from Transmit.NoiseMeasure import NoiseMeasure74
 from Decode.Converter import MLNN_decision
 
 
@@ -22,7 +22,7 @@ def MLNNDecoder(nr_codeword, bits, snr_dB, model, model_pth, device):
     modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
     noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
 
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+    practical_snr = NoiseMeasure74(noised_signal, modulated_signal)
 
     # use MLNN model:
     model.eval()

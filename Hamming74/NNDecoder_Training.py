@@ -8,7 +8,7 @@ from Encode.Modulator import bpsk_modulator
 from Encode.Encoder import Hamming74_encoder
 from Transmit.noise import AWGN
 from Decode.NNDecoder import SingleLabelNNDecoder, MultiLabelNNDecoder1, MultiLabelNNDecoder2
-from Transmit.NoiseMeasure import NoiseMeasure
+from Transmit.NoiseMeasure import NoiseMeasure74
 from Decode.Converter import BinarytoDecimal
 from earlystopping import SLNN_EarlyStopping, MLNN_EarlyStopping
 
@@ -20,7 +20,7 @@ def SLNN_training(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hid
     encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)
     noised_signal = AWGN(modulated_signal, snr, device)
-    snr_measure = NoiseMeasure(noised_signal, modulated_signal).to(torch.int)
+    snr_measure = NoiseMeasure74(noised_signal, modulated_signal).to(torch.int)
 
     # NN structure:
     input_size = noised_signal.shape[2]
@@ -104,7 +104,7 @@ def MLNN_training1(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hi
     encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)
     noised_signal = AWGN(modulated_signal, snr, device)
-    snr_measure = NoiseMeasure(noised_signal, modulated_signal).to(torch.int)
+    snr_measure = NoiseMeasure74(noised_signal, modulated_signal).to(torch.int)
 
     # NN structure:
     input_size = noised_signal.shape[2]
@@ -188,7 +188,7 @@ def MLNN_training2(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hi
     encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)
     noised_signal = AWGN(modulated_signal, snr, device)
-    snr_measure = NoiseMeasure(noised_signal, modulated_signal).to(torch.int)
+    snr_measure = NoiseMeasure74(noised_signal, modulated_signal).to(torch.int)
 
     # NN structure:
     input_size = noised_signal.shape[2]
