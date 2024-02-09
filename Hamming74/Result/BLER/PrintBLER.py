@@ -21,6 +21,7 @@ plt.semilogy(SNR, BLER_SLNN, marker='.', label='SLNN')
 plt.xlabel('SNR', fontsize=20)
 plt.ylabel('BLER', fontsize=20)
 plt.title('BLER Estimation', fontsize=20)
+# plt.legend(['SDML', 'BPSK'], loc='lower left')
 plt.legend(['SDML', 'BPSK','SLNN'], loc='lower left')
 
 plt.show()

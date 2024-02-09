@@ -5,11 +5,11 @@ from datetime import datetime
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
-from Encode.Encoder import Parity16_5_encoder
+from Encode.Encoder import Parity26_10_encoder
 from Decode.HardDecision import hard_decision
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber
-from Decode.Decoder import Parity16_5decoder
+from Decode.Decoder import Parity26_10decoder
 from Decode.MaximumLikelihood import SoftDecisionML26_10
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 
@@ -26,10 +26,10 @@ def UncodedBPSK(nr_codeword, bits, snr_dB, device):
 
     return BPSK_final, bits_info, practical_snr
 
-def SoftDecisionMLP(nr_codeword, bits, snr_dB, device):
-    encoder = Parity16_5_encoder(device)
+def SoftDecisionMLP(nr_codeword, bits, encoded, snr_dB, device):
+    encoder = Parity26_10_encoder(device)
     SD_MaximumLikelihood = SoftDecisionML26_10(device)
-    decoder = Parity16_5decoder(device)
+    decoder = Parity26_10decoder(device)
 
     # ML:
     bits_info = generator(nr_codeword, bits, device)
@@ -41,7 +41,7 @@ def SoftDecisionMLP(nr_codeword, bits, snr_dB, device):
     HD_final = hard_decision(SD_ML, device)
     SDML_final = decoder(HD_final)
 
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+    practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
 
     return SDML_final, bits_info, practical_snr
 
@@ -68,7 +68,7 @@ def estimation_BPSK(num, bits, SNR_opt_BPSK, result, device):
 
     return result
 
-def estimation_SDML(num, bits, SNR_opt_ML, result, device):
+def estimation_SDML(num, bits, encoded, SNR_opt_ML, result,  device):
     N = num
 
     # Soft-Decision Maximum Likelihood
@@ -77,11 +77,11 @@ def estimation_SDML(num, bits, SNR_opt_ML, result, device):
 
         # BER
         for _ in range(10):
-            SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, bits, snr_dB, device)
+            SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, bits, encoded, snr_dB, device)
 
             BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
             if error_num_SDML < 100:
-                N += 1000000
+                N += 100000
                 print(f"the code number is {N}")
 
             else:
@@ -100,19 +100,21 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e6)
+    num = int(1e5)
     bits = 10
+    encoded = 26
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
 
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
-    SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / 26, dtype=torch.float)) # for MLNN article
+    SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
     result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
-    result_SDML = estimation_SDML(num, bits, SNR_opt_ML, result_save, device)
+    result_SDML = estimation_SDML(num, bits, encoded, SNR_opt_ML, result_save, device)
 
-    result_all = np.vstack([result_BPSK,
-                            result_SDML,
+    result_all = np.vstack([
+        result_BPSK,
+        result_SDML,
                             ])
 
 

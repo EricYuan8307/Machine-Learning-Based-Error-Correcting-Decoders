@@ -5,13 +5,13 @@ from datetime import datetime
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
-from Encode.Encoder import hamming74_encoder
+from Encode.Encoder import Hamming74_encoder
 from Decode.HardDecision import hard_decision
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_bler
 from Decode.Decoder import Hamming74decoder
 from Decode.MaximumLikelihood import SoftDecisionML74
-from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
+from Transmit.NoiseMeasure import NoiseMeasure74, NoiseMeasure_BPSK
 
 
 # Calculate the Error number and BLER
@@ -27,7 +27,7 @@ def UncodedBPSK(nr_codeword, bits, snr_dB, device):
     return BPSK_final, bits_info, practical_snr
 
 def SoftDecisionMLP(nr_codeword, bits, snr_dB, device):
-    encoder = hamming74_encoder(device)
+    encoder = Hamming74_encoder(device)
     SD_MaximumLikelihood = SoftDecisionML74(device)
     decoder = Hamming74decoder(device)
 
@@ -41,7 +41,7 @@ def SoftDecisionMLP(nr_codeword, bits, snr_dB, device):
     HD_final = hard_decision(SD_ML, device)
     SDML_final = decoder(HD_final)
 
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal)
+    practical_snr = NoiseMeasure74(noised_signal, modulated_signal)
 
     return SDML_final, bits_info, practical_snr
 
@@ -92,24 +92,25 @@ def estimation_SDML(num, bits, SNR_opt_ML, result, device):
 
 
 def main():
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
-    # device = torch.device("cpu")
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                 else torch.device("cpu")))
+    device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e7)
+    num = int(1e4)
     bits = 4
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / 7, dtype=torch.float))  # for SLNN article
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
-    result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
+    # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
     result_SDML = estimation_SDML(num, bits, SNR_opt_ML, result_save, device)
 
-    result_all = np.vstack([result_BPSK,
+    result_all = np.vstack([
+        # result_BPSK,
                             result_SDML,
                             ])
 
