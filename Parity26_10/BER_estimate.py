@@ -100,7 +100,7 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e5)
+    num = int(5e4)
     bits = 10
     encoded = 26
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
@@ -109,11 +109,11 @@ def main():
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
-    result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
+    # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
     result_SDML = estimation_SDML(num, bits, encoded, SNR_opt_ML, result_save, device)
 
     result_all = np.vstack([
-        result_BPSK,
+        # result_BPSK,
         result_SDML,
                             ])
 
