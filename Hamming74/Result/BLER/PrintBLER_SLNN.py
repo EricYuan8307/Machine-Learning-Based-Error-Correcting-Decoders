@@ -19,11 +19,11 @@ article_SLNN_7 = [0.19, 0.15, 0.12, 0.09, 0.065, 0.047, 0.029, # 0~3
 
 
 
-BLER_BPSK = [2.779e-01, 2.4299e-01, 2.0673e-01, 1.7226e-01, 1.3924e-01, 1.1376e-01, 8.944e-02, # 0~3
-             6.592e-02, 4.948e-02, 3.442e-02, 2.38e-02, 1.482e-02, 9.29e-03, 5.91e-03, 2.94e-03, # 3.5~7
-             1.66e-03, 7.238095e-04] # 7.5~8.0
-BLER_SDML = [0.179194, 0.144548, 0.114578, 0.086722, 0.064089, 0.04507, 0.030437, 0.019683, 0.011838, 0.006678, 0.003697, # 0~5
-             0.001767, 0.000793, 0.000334, 0.000119, 4.2e-05, 1.32e-05] # 5.5~8.0
+BLER_BPSK = [2.779e-01, 2.4299e-01, 2.0673e-01, 1.7226e-01, 1.3924e-01, 1.1376e-01, 8.944e-02, 6.592e-02, # 0~3.5
+              4.948e-02, 3.442e-02, 2.38e-02, 1.482e-02, 9.29e-03, 5.91e-03, 2.94e-03, 1.66e-03, 7.238095e-04] # 4.0~8.0
+
+BLER_SDML = [0.179194, 0.144548, 0.114578, 0.086722, 0.064089, 0.04507, 0.030437, 0.019683,  # 0~3.5
+             0.011838, 0.006678, 0.003697, 0.001767, 0.000793, 0.000334, 0.000119, 4.2e-05, 1.32e-05] # 4.0~8.0
 
 BLER_SLNN_5 = [3.477188e-01, 3.093166e-01, 2.71075e-01, 2.343207e-01, 1.98604e-01, 1.64944e-01, 1.341949e-01, 1.06558e-01, # 0~3.5
                8.24865e-02, 6.20837e-02, 4.52981e-02, 3.21064e-02, 2.20062e-02, 1.45313e-02, 9.2026e-03, 5.6337e-03, 3.3177e-03] # 4.0~8.0
@@ -56,7 +56,7 @@ plt.semilogy(SNR, BLER_SLNN_9, marker='<', label='Single-label Neural network N=
 
 plt.xlabel('SNR', fontsize=20)
 plt.ylabel('BLER', fontsize=20)
-plt.title('BLER Estimation', fontsize=20)
+plt.title('Hamming(7,4) BLER Estimation', fontsize=20)
 plt.legend(['Soft-decision ML', 'BPSK, Uncoded',
             'Single-label Neural network N=5, Article', 'Single-label Neural network N=6, Article', 'Single-label Neural network N=7, Article',
             'Single-label Neural network N=5', 'Single-label Neural network N=6', 'Single-label Neural network N=7', 'Single-label Neural network N=8', 'Single-label Neural network N=9', ], loc='lower left')
