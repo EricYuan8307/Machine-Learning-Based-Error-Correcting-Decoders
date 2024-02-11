@@ -97,7 +97,7 @@ class Parity16_5_encoder(torch.nn.Module):
             [1, 0, 1, 0, 1],
             [0, 1, 0, 1, 0],
             [1, 0, 0, 1, 1],
-            [0, 1, 1, 0, 0],], dtype=torch.float, device=device)
+            [0, 1, 1, 0, 0]], dtype=torch.float, device=device)
 
     def forward(self, input_data):
         # Perform matrix multiplication to encode the data
