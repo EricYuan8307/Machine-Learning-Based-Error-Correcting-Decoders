@@ -2429,6 +2429,29 @@ class SoftDecisionML26_10(nn.Module):
         return softdecision
 
 
+class SoftDecisionML(nn.Module):
+    def __init__(self, codebook):
+        """
+        soft-decision Maximum Likelihood Estimation
 
+        Args:
+            C: codebook after BPSK.
+            mps_device: Move Data on Specific device for computing(GPU).
 
+        Returns:
+            result: The final estimate result(closest Euclidean distance).
+        """
+        super(SoftDecisionML, self).__init__()
+        self.sd_c = codebook
 
+    def forward(self, signal):
+        # Compute the distance between each input vector and each codeword(euclidean distance)
+        distances = torch.cdist(signal, self.sd_c.unsqueeze(0))
+
+        # Calculate softmax over the negative distances
+        soft_assignments = F.softmax(-distances, dim=2)
+        most_like = torch.argmax(soft_assignments, dim=2)
+        # print("most like:",most_like)
+        softdecision = self.sd_c[most_like]
+
+        return softdecision
