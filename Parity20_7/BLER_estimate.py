@@ -5,13 +5,15 @@ from datetime import datetime
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
-from Encode.Encoder import Parity20_7_encoder
 from Decode.HardDecision import hard_decision
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_bler
-from Decode.Decoder import Parity20_7decoder
-from Decode.MaximumLikelihood import SoftDecisionML20_7
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
+
+from generating import all_codebook
+from Encode.Encoder import PCC_encoders
+from Decode.MaximumLikelihood import SoftDecisionML
+from Decode.Decoder import PCC_decoder
 
 
 # Calculate the Error number and BLER
@@ -27,9 +29,11 @@ def UncodedBPSK(nr_codeword, bits, snr_dB, device):
     return BPSK_final, bits_info, practical_snr
 
 def SoftDecisionMLP(nr_codeword, bits, encoded, snr_dB, device):
-    encoder = Parity20_7_encoder(device)
-    SD_MaximumLikelihood = SoftDecisionML20_7(device)
-    decoder = Parity20_7decoder(device)
+    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+
+    encoder = PCC_encoders(encoder_matrix)
+    SD_MaximumLikelihood = SoftDecisionML(SoftDecisionMLMatrix)
+    decoder = PCC_decoder(decoder_matrix)
 
     # ML:
     bits_info = generator(nr_codeword, bits, device)
