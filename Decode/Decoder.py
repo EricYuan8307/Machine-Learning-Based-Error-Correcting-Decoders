@@ -6,7 +6,7 @@ class Hamming74decoder(torch.nn.Module):
         hard-decision Maximum Likelihood Estimation
 
         Args:
-            r: decoder matrix.
+            H: decoder matrix.
             mps_device: Move Data on Specific device for computing(GPU).
 
         Returns:
@@ -31,11 +31,11 @@ class Parity10_5decoder(torch.nn.Module):
         hard-decision Maximum Likelihood Estimation
 
         Args:
-            r: decoder matrix.
+            H: decoder matrix.
             mps_device: Move Data on Specific device for computing(GPU).
 
         Returns:
-            result: The final 4-bit codeword.
+            result: The final 5-bit codeword.
         """
 
         super(Parity10_5decoder, self).__init__()
@@ -57,11 +57,11 @@ class Parity16_5decoder(torch.nn.Module):
         hard-decision Maximum Likelihood Estimation
 
         Args:
-            r: decoder matrix.
+            H: decoder matrix.
             mps_device: Move Data on Specific device for computing(GPU).
 
         Returns:
-            result: The final 4-bit codeword.
+            result: The final 5-bit codeword.
         """
 
         super(Parity16_5decoder, self).__init__()
@@ -83,11 +83,11 @@ class Parity20_7decoder(torch.nn.Module):
         hard-decision Maximum Likelihood Estimation
 
         Args:
-            r: decoder matrix.
+            H: decoder matrix.
             mps_device: Move Data on Specific device for computing(GPU).
 
         Returns:
-            result: The final 4-bit codeword.
+            result: The final 7-bit codeword.
         """
 
         super(Parity20_7decoder, self).__init__()
@@ -112,11 +112,11 @@ class Parity26_10decoder(torch.nn.Module):
         hard-decision Maximum Likelihood Estimation
 
         Args:
-            r: decoder matrix.
+            H: decoder matrix.
             mps_device: Move Data on Specific device for computing(GPU).
 
         Returns:
-            result: The final 4-bit codeword.
+            result: The final 10-bit codeword.
         """
 
         super(Parity26_10decoder, self).__init__()
@@ -130,6 +130,76 @@ class Parity26_10decoder(torch.nn.Module):
                                [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               ],device=mps_device, dtype=torch.float)
+
+    def forward(self, input):
+
+        result = torch.matmul(input, self.H.T)
+
+        return result
+
+class Parity30_12decoder(torch.nn.Module):
+    def __init__(self, mps_device):
+        """
+        hard-decision Maximum Likelihood Estimation
+
+        Args:
+            H: decoder matrix.
+            mps_device: Move Data on Specific device for computing(GPU).
+
+        Returns:
+            result: The final 12-bit codeword.
+        """
+
+        super(Parity30_12decoder, self).__init__()
+        self.H = torch.tensor([
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                               ],device=mps_device, dtype=torch.float)
+
+    def forward(self, input):
+
+        result = torch.matmul(input, self.H.T)
+
+        return result
+
+class Parity34_12decoder(torch.nn.Module):
+    def __init__(self, mps_device):
+        """
+        hard-decision Maximum Likelihood Estimation
+
+        Args:
+            H: decoder matrix.
+            mps_device: Move Data on Specific device for computing(GPU).
+
+        Returns:
+            result: The final 12-bit codeword.
+        """
+
+        super(Parity34_12decoder, self).__init__()
+        self.H = torch.tensor([
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                ],device=mps_device, dtype=torch.float)
 
     def forward(self, input):
