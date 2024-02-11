@@ -15,7 +15,7 @@ def MLNN_decision(bitcodeword, mps_device):
 class DecimaltoBinary(nn.Module):
     def __init__(self, codebook):
 
-        super(DecimaltoBinary).__init__()
+        super().__init__()
         self.B = codebook
 
 

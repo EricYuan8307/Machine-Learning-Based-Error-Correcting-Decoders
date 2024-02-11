@@ -5,22 +5,28 @@ from datetime import datetime
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
-from Encode.Encoder import Hamming74_encoder
 from Decode.NNDecoder import SingleLabelNNDecoder
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_bler
-from Transmit.NoiseMeasure import NoiseMeasure74
-from Decode.Converter import DecimaltoBinary4
+from Transmit.NoiseMeasure import NoiseMeasure
+from Decode.Converter import DecimaltoBinary
 
-def SLNNDecoder(nr_codeword, bit, snr_dB, model, model_pth, device):
-    encoder = Hamming74_encoder(device)
+from generating import all_codebook, SLNN_D2B_matrix
+from Encode.Encoder import PCC_encoders
 
-    bits_info = generator(nr_codeword, bit, device)  # Code Generator
+def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
+    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+    SLNN_Matrix = SLNN_D2B_matrix(bits, encoded, device)
+
+    encoder = PCC_encoders(encoder_matrix)
+    convertor = DecimaltoBinary(SLNN_Matrix)
+
+    bits_info = generator(nr_codeword, bits, device)  # Code Generator
     encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
     modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
     noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
 
-    practical_snr = NoiseMeasure74(noised_signal, modulated_signal)
+    practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
 
     # use SLNN model:
     model.eval()
@@ -29,20 +35,19 @@ def SLNNDecoder(nr_codeword, bit, snr_dB, model, model_pth, device):
     SLNN_result = model(noised_signal)
     SLNN_decimal = torch.argmax(SLNN_result, dim=2)
 
-    Decimal_Binary =DecimaltoBinary4(device)
-    SLNN_binary = Decimal_Binary(SLNN_decimal)
+    SLNN_binary = convertor(SLNN_decimal)
 
 
     return SLNN_binary, bits_info, practical_snr
 
-def estimation(num, bit, SNR_opt_NN, SLNN_hidden_size, model_pth, result, i, device):
+def estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, result, i, device):
     N = num
     # Single-label Neural Network:
     input_size = 7
-    output_size = torch.pow(torch.tensor(2), bit)
+    output_size = torch.pow(torch.tensor(2), bits)
 
     model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
-    SLNN_final, bits_info, snr_measure = SLNNDecoder(N, bit, SNR_opt_NN, model, model_pth, device)
+    SLNN_final, bits_info, snr_measure = SLNNDecoder(N, bits, encoded, SNR_opt_NN, model, model_pth, device)
 
     BLER_SLNN, error_num_SLNN = calculate_bler(SLNN_final, bits_info) # BER calculation
 
@@ -66,16 +71,17 @@ def main():
 
     # Hyperparameters
     num = int(1e7)
-    bit = 4
+    bits = 4
+    encoded = 7
     SLNN_hidden_size = torch.arange(0, 101, 1)
     SNR_opt_NN = torch.tensor(8, dtype=torch.int, device=device)
-    SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for SLNN article
+    SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
     result_save = np.zeros((1, len(SLNN_hidden_size)))
 
     for i in range(0, len(SLNN_hidden_size)):
         save_pth = f"Result/Model/SLNN_CPU/SLNN_model_hiddenlayer{i}_BER0.pth"
-        result_all = estimation(num, bit, SNR_opt_NN, SLNN_hidden_size[i], save_pth, result_save, i, device)
+        result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size[i], save_pth, result_save, i, device)
     directory_path = "Result/BLER"
 
     # Create the directory if it doesn't exist

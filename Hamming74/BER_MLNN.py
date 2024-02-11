@@ -5,17 +5,19 @@ from datetime import datetime
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
-from Encode.Encoder import Hamming74_encoder
 from Decode.NNDecoder import MultiLabelNNDecoder1, MultiLabelNNDecoder2
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber
 from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import MLNN_decision
+from generating import all_codebook
+from Encode.Encoder import PCC_encoders
 
 
 # Calculate the Error number and BER
 def MLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
-    encoder = Hamming74_encoder(device)
+    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+    encoder = PCC_encoders(encoder_matrix)
 
     bits_info = generator(nr_codeword, bits, device)  # Code Generator
     encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
