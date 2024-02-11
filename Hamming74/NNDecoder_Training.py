@@ -5,22 +5,25 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
-from Encode.Encoder import Hamming74_encoder
 from Transmit.noise import AWGN
 from Decode.NNDecoder import SingleLabelNNDecoder, MultiLabelNNDecoder1, MultiLabelNNDecoder2
-from Transmit.NoiseMeasure import NoiseMeasure74
+from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import BinarytoDecimal
 from earlystopping import SLNN_EarlyStopping, MLNN_EarlyStopping
 
-def SLNN_training(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
-    # Transmitter:
-    encoder = Hamming74_encoder(device)
+from generating import all_codebook
+from Encode.Encoder import PCC_encoders
+
+def SLNN_training(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
+    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+
+    encoder = PCC_encoders(encoder_matrix)
 
     bits_info = generator(nr_codeword, bits, device)
     encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)
     noised_signal = AWGN(modulated_signal, snr, device)
-    snr_measure = NoiseMeasure74(noised_signal, modulated_signal).to(torch.int)
+    snr_measure = NoiseMeasure(noised_signal, modulated_signal, bits, encoded).to(torch.int)
 
     # NN structure:
     input_size = noised_signal.shape[2]
@@ -96,15 +99,16 @@ def SLNN_training(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hid
         else:
             print(f"SLNN: Continue Training")
 
-def MLNN_training1(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
-    # Transmitter:
-    encoder = Hamming74_encoder(device)
+def MLNN_training1(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
+    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+
+    encoder = PCC_encoders(encoder_matrix)
 
     bits_info = generator(nr_codeword, bits, device)
     encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)
     noised_signal = AWGN(modulated_signal, snr, device)
-    snr_measure = NoiseMeasure74(noised_signal, modulated_signal).to(torch.int)
+    snr_measure = NoiseMeasure(noised_signal, modulated_signal, bits, encoded).to(torch.int)
 
     # NN structure:
     input_size = noised_signal.shape[2]
@@ -180,15 +184,16 @@ def MLNN_training1(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hi
         else:
             print("MLNN: Continue Training")
 
-def MLNN_training2(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
-    # Transmitter:
-    encoder = Hamming74_encoder(device)
+def MLNN_training2(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
+    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+
+    encoder = PCC_encoders(encoder_matrix)
 
     bits_info = generator(nr_codeword, bits, device)
     encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)
     noised_signal = AWGN(modulated_signal, snr, device)
-    snr_measure = NoiseMeasure74(noised_signal, modulated_signal).to(torch.int)
+    snr_measure = NoiseMeasure(noised_signal, modulated_signal, bits, encoded).to(torch.int)
 
     # NN structure:
     input_size = noised_signal.shape[2]
@@ -273,11 +278,6 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for SLNN article
-    MLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(4 / 7, dtype=torch.float)) # for MLNN article
-
     SLNN_hidden_size = torch.arange(0, 101, 1)
     MLNN_hidden_size_1 = 100
     MLNN_hidden_size_2 = [[50, 50], [100, 100]]
@@ -286,6 +286,12 @@ def main():
     epochs = 500
     nr_codeword = int(1e6)
     bits = 4
+    encoded = 7
+
+    SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
+    SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for SLNN article
+    MLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
+    MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for MLNN article
 
     # Early Stopping # Guess same number of your output
     SLNN_patience = 16
@@ -295,16 +301,16 @@ def main():
     # Train SLNN with different hidden layer neurons
     for i in range(len(SLNN_hidden_size)):
         SLNN_model_path = f"Result/Model/SLNN_CPU/"
-        SLNN_training(SLNN_snr, nr_codeword, bits, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
+        SLNN_training(SLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
 
     # Train MLNN model with only one hidden layer
     MLNN_model_path = f"Result/Model/MLNN_CPU/"
-    MLNN_training1(MLNN_snr, nr_codeword, bits, epochs, learning_rate, batch_size, MLNN_hidden_size_1, MLNN_model_path, MLNN_patience, delta, device)
+    MLNN_training1(MLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size_1, MLNN_model_path, MLNN_patience, delta, device)
 
     # Train MLNN model with two hidden layers
     for i in range(len(MLNN_hidden_size_2)):
         MLNN_model_path = f"Result/Model/MLNN_CPU/"
-        MLNN_training2(MLNN_snr, nr_codeword, bits, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i], MLNN_model_path, MLNN_patience, delta, device)
+        MLNN_training2(MLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i], MLNN_model_path, MLNN_patience, delta, device)
 
 
 if __name__ == '__main__':

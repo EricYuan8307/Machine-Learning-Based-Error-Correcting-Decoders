@@ -5,13 +5,15 @@ from datetime import datetime
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
-from Encode.Encoder import Parity26_10_encoder
 from Decode.HardDecision import hard_decision
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber
-from Decode.Decoder import Parity26_10decoder
-from Decode.MaximumLikelihood import SoftDecisionML26_10
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
+
+from generating import all_codebook
+from Encode.Encoder import PCC_encoders
+from Decode.MaximumLikelihood import SoftDecisionML
+from Decode.Decoder import PCC_decoder
 
 
 # Calculate the Error number and BER
@@ -27,9 +29,11 @@ def UncodedBPSK(nr_codeword, bits, snr_dB, device):
     return BPSK_final, bits_info, practical_snr
 
 def SoftDecisionMLP(nr_codeword, bits, encoded, snr_dB, device):
-    encoder = Parity26_10_encoder(device)
-    SD_MaximumLikelihood = SoftDecisionML26_10(device)
-    decoder = Parity26_10decoder(device)
+    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+
+    encoder = PCC_encoders(encoder_matrix)
+    SD_MaximumLikelihood = SoftDecisionML(SoftDecisionMLMatrix)
+    decoder = PCC_decoder(decoder_matrix)
 
     # ML:
     bits_info = generator(nr_codeword, bits, device)
@@ -100,20 +104,19 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e5)
+    num = int(5e4)
     bits = 10
     encoded = 26
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
-
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
-    result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
+    # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
     result_SDML = estimation_SDML(num, bits, encoded, SNR_opt_ML, result_save, device)
 
     result_all = np.vstack([
-        result_BPSK,
+        # result_BPSK,
         result_SDML,
                             ])
 
