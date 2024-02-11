@@ -93,19 +93,19 @@ def estimation_SDML(num, bits, encoded, SNR_opt_ML, result, device):
 
 
 def main():
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
-    # device = torch.device("cpu")
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                 else torch.device("cpu")))
+    device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e5)
+    num = int(1e6)
     bits = 7
     encoded = 20
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
 
-    SNR_opt_ML = torch.arange(0, 8.5, 0.5)
+    SNR_opt_ML = torch.arange(7, 8.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
