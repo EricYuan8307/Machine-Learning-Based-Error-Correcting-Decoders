@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 
-
 # Multi-label Neural Network Decoder:
 def MLNN_decision(bitcodeword, mps_device):
     tensor_1 = torch.tensor(1, dtype=torch.float, device=mps_device)
