@@ -30,7 +30,7 @@ BER_MLNN_100_100 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 0~3.5
 plt.figure(figsize=(20, 10))
 plt.semilogy(SNR, BER_uncoded_BPSK, label='BPSK, Uncoded', color = "green")
 plt.semilogy(SNR, BER_SDML, label='Soft-decision ML', color = "black")
-plt.semilogy(SNR, article_BPSK, marker='.', label='BPSK, Uncoded, Article', color = "green")
+# plt.semilogy(SNR, article_BPSK, marker='.', label='BPSK, Uncoded, Article', color = "green")
 plt.semilogy(SNR, article_SDML, marker='x', label='Soft-decision ML, Article', color = "black")
 # plt.semilogy(SNR, article_MLNN_100, marker='D', label='N=100, Article', color = "pink", linestyle='--')
 # plt.semilogy(SNR, BER_MLNN_100, marker='D', label='N=100', color = "pink", linestyle='--')
@@ -40,7 +40,10 @@ plt.semilogy(SNR, article_SDML, marker='x', label='Soft-decision ML, Article', c
 plt.xlabel('SNR', fontsize=20)
 plt.ylabel('BER', fontsize=20)
 plt.title('Multi-label Neural Network BER Estimation', fontsize=20)
-plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'BPSK, Uncoded, Article', 'Soft-decision ML, Article'], loc='lower left')
+plt.legend(['BPSK, Uncoded',
+            'Soft-decision ML',
+            # 'BPSK, Uncoded, Article',
+            'Soft-decision ML, Article'], loc='lower left')
 # plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'N=100, Article', 'N=100', 'N1=50, N2=50', 'N1=100, N2=100'], loc='lower left')
 
 plt.show()

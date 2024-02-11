@@ -8,13 +8,13 @@ from Encode.Modulator import bpsk_modulator
 from Encode.Encoder import Parity10_5_encoder
 from Decode.HardDecision import hard_decision
 from Transmit.noise import AWGN
-from Metric.ErrorRate import calculate_ber
+from Metric.ErrorRate import calculate_bler
 from Decode.Decoder import Parity10_5decoder
 from Decode.MaximumLikelihood import SoftDecisionML10_5
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 
 
-# Calculate the Error number and BER
+# Calculate the Error number and BLER
 def UncodedBPSK(nr_codeword, bits, snr_dB, device):
     bits_info = generator(nr_codeword, bits, device)
     modulated_signal = bpsk_modulator(bits_info)
@@ -45,7 +45,6 @@ def SoftDecisionMLP(nr_codeword, bits, encoded, snr_dB, device):
 
     return SDML_final, bits_info, practical_snr
 
-
 def estimation_BPSK(num, bits, SNR_opt_BPSK, result, device):
     N = num
 
@@ -56,14 +55,14 @@ def estimation_BPSK(num, bits, SNR_opt_BPSK, result, device):
         for _ in range(10):
             BPSK_final, bits_info, snr_measure = UncodedBPSK(N, bits, snr_dB, device)
 
-            BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info)
+            BLER_BPSK, error_num_BPSK= calculate_bler(BPSK_final, bits_info)
             if error_num_BPSK < 100:
                 N += 2000000
                 print(f"the code number is {N}")
 
             else:
-                print(f"BPSK: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BPSK} and BER is {BER_BPSK}")
-                result[0, i] = BER_BPSK
+                print(f"BPSK: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BPSK} and BER is {BLER_BPSK}")
+                result[0, i] = BLER_BPSK
                 break
 
     return result
@@ -75,18 +74,18 @@ def estimation_SDML(num, bits, encoded, SNR_opt_ML, result, device):
     for i in range(len(SNR_opt_ML)):
         snr_dB = SNR_opt_ML[i]
 
-        # BER
+        # BLER
         for _ in range(10):
             SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, bits, encoded, snr_dB, device)
 
-            BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
-            if error_num_SDML < 100:
+            BLER_SDML, block_error_num_SDML = calculate_bler(SDML_final, bits_info)
+            if block_error_num_SDML < 100:
                 N += 1000000
                 print(f"the code number is {N}")
 
             else:
-                print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
-                result[0, i] = BER_SDML
+                print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {block_error_num_SDML} and BLER is {BLER_SDML}")
+                result[0, i] = BLER_SDML
                 break
 
     return result
@@ -105,7 +104,7 @@ def main():
     encoded = 10
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
-    SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
+    SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for SLNN article
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
     result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
@@ -116,15 +115,14 @@ def main():
                             result_SDML,
                             ])
 
-
-    directory_path = "Result/BER"
+    directory_path = "Result/BLER"
 
     # Create the directory if it doesn't exist
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
 
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    csv_filename = f"BER_result_{current_time}.csv"
+    csv_filename = f"BLER_result_{current_time}.csv"
     full_csv_path = os.path.join(directory_path, csv_filename)
     np.savetxt(full_csv_path, result_all, delimiter=', ')
 
