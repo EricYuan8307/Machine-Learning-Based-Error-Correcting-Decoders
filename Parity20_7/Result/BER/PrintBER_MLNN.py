@@ -42,7 +42,7 @@ def nnplot():
 
     plt.xlabel('SNR', fontsize=20)
     plt.ylabel('BER', fontsize=20)
-    plt.title('Parity(16,5) Multi-label Neural Network BER Estimation', fontsize=20)
+    plt.title('Parity(20,7) Multi-label Neural Network BER Estimation', fontsize=20)
     plt.legend([
         'BPSK, Uncoded, Article',
         'Soft-decision ML, Article',

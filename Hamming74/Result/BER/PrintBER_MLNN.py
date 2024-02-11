@@ -44,7 +44,7 @@ def nnplot():
 
     plt.xlabel('SNR', fontsize=20)
     plt.ylabel('BER', fontsize=20)
-    plt.title('Multi-label Neural Network BER Estimation', fontsize=20)
+    plt.title('Hamming(7,4) Multi-label Neural Network BER Estimation', fontsize=20)
     # plt.legend(['uncoded_BPSK', 'SDML', 'MLNN'], loc='lower left')
     # plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'BPSK, Uncoded, Article', 'Soft-decision ML, Article', 'Multi-label Neural Network'], loc='lower left')
     plt.legend(['BPSK, Uncoded', 'Soft-decision ML', 'N=100, Article', 'N=100', 'N1=50, N2=50', 'N1=100, N2=100'], loc='lower left')
