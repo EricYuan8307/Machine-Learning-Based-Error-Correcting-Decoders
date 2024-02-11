@@ -12,7 +12,7 @@ from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import BinarytoDecimal
 from earlystopping import SLNN_EarlyStopping, MLNN_EarlyStopping
 
-def SLNN_training(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
+def SLNN_training(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
     # Transmitter:
     encoder = Parity26_10_encoder(device)
 
@@ -20,7 +20,7 @@ def SLNN_training(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hid
     encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)
     noised_signal = AWGN(modulated_signal, snr, device)
-    snr_measure = NoiseMeasure(noised_signal, modulated_signal).to(torch.int)
+    snr_measure = NoiseMeasure(noised_signal, modulated_signal, bits, encoded).to(torch.int)
 
     # NN structure:
     input_size = noised_signal.shape[2]
@@ -96,7 +96,7 @@ def SLNN_training(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hid
         else:
             print(f"SLNN: Continue Training")
 
-def MLNN_training1(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
+def MLNN_training1(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
     # Transmitter:
     encoder = Parity26_10_encoder(device)
 
@@ -104,7 +104,7 @@ def MLNN_training1(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hi
     encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)
     noised_signal = AWGN(modulated_signal, snr, device)
-    snr_measure = NoiseMeasure(noised_signal, modulated_signal).to(torch.int)
+    snr_measure = NoiseMeasure(noised_signal, modulated_signal, bits, encoded).to(torch.int)
 
     # NN structure:
     input_size = noised_signal.shape[2]
@@ -180,7 +180,7 @@ def MLNN_training1(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hi
         else:
             print("MLNN: Continue Training")
 
-def MLNN_training2(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
+def MLNN_training2(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
     # Transmitter:
     encoder = Parity26_10_encoder(device)
 
@@ -188,7 +188,7 @@ def MLNN_training2(snr, nr_codeword, bits, epochs, learning_rate, batch_size, hi
     encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)
     noised_signal = AWGN(modulated_signal, snr, device)
-    snr_measure = NoiseMeasure(noised_signal, modulated_signal).to(torch.int)
+    snr_measure = NoiseMeasure(noised_signal, modulated_signal, bits, encoded).to(torch.int)
 
     # NN structure:
     input_size = noised_signal.shape[2]
