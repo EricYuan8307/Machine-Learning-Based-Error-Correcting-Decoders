@@ -17,7 +17,7 @@ class Hamming74decoder(torch.nn.Module):
         self.H = torch.tensor([[0, 0, 1, 0, 0, 0, 0],
                                 [0, 0, 0, 0, 1, 0, 0],
                                 [0, 0, 0, 0, 0, 1, 0],
-                                [0, 0, 0, 0, 0, 0, 1], ],device=mps_device, dtype=torch.float)
+                                [0, 0, 0, 0, 0, 0, 1]],device=mps_device, dtype=torch.float)
 
     def forward(self, input):
 
