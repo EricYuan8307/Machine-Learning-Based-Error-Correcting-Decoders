@@ -28,7 +28,7 @@ def SLNN_training(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_
     # NN structure:
     input_size = noised_signal.shape[2]
     output_size = torch.pow(torch.tensor(2), bits_info.shape[2]) # 2^x
-    label = BinarytoDecimal(bits_info, device).to(torch.int64)
+    label = BinarytoDecimal(bits_info).to(torch.int64)
     SLNN_trainset = TensorDataset(noised_signal, label)
     SLNN_trainloader = torch.utils.data.DataLoader(SLNN_trainset, batch_size, shuffle=True)
     SLNN_testloader = torch.utils.data.DataLoader(SLNN_trainset, batch_size, shuffle=False)
@@ -300,7 +300,7 @@ def main():
 
     # Train SLNN with different hidden layer neurons
     for i in range(len(SLNN_hidden_size)):
-        SLNN_model_path = f"Result/Model/SLNN_CPU/"
+        SLNN_model_path = f"Result/Model/SLNN_CPU_Test/"
         SLNN_training(SLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
 
     # Train MLNN model with only one hidden layer
