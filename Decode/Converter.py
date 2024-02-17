@@ -17,7 +17,6 @@ class DecimaltoBinary(nn.Module):
         super().__init__()
         self.B = codebook
 
-
     def forward(self, decimal_tensor):
         decimal_tensor = decimal_tensor
         Binary_output = self.B[decimal_tensor]

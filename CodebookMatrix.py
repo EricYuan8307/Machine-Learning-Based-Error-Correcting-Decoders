@@ -45,6 +45,17 @@ class coderMatrix(torch.nn.Module):
                                    [0, 0, 1, 1, 0],
                                    [0, 0, 0, 1, 1]], dtype=torch.float, device=self.device)
 
+            encode_matrix = torch.tensor([[1, 0, 0, 0, 0],
+                                          [0, 1, 0, 0, 0],
+                                          [0, 0, 1, 0, 0],
+                                          [0, 0, 0, 1, 0],
+                                          [0, 0, 0, 0, 1],
+                                          [1, 1, 1, 1, 0],
+                                          [1, 1, 1, 0, 1],
+                                          [1, 1, 0, 1, 1],
+                                          [1, 0, 1, 1, 1],
+                                          [0, 1, 1, 1, 1]], dtype=torch.float, device=self.device)
+
             decode_matrix = torch.tensor([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                               [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
                               [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
