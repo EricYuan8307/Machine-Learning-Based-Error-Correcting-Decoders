@@ -81,6 +81,7 @@ def main():
 
     for i in range(0, len(SLNN_hidden_size)):
         save_pth = f"Result/Model/SLNN_CPU/SLNN_model_hiddenlayer{i}_BER0.pth"
+        # save_pth = f"Result/Model/SLNN_modified_CPU/SLNN_model_modified_hiddenlayer{i}_BER0_threshold0.01.pth" # for the modified result
         result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size[i], save_pth, result_save, i, device)
     directory_path = "Result/BLER"
 
