@@ -103,9 +103,9 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e4)
+    num = int(1e5)
     bits = 5
-    encoded = 10
+    encoded = 16
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for SLNN article

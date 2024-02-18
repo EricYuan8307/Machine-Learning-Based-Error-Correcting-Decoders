@@ -205,7 +205,7 @@ class coderMatrix(torch.nn.Module):
                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], device=self.device, dtype=torch.float)
 
         # Define the 34x12 matrix
-        elif encoded == 30 and origin == 12:
+        elif encoded == 34 and origin == 12:
             encode_matrix = torch.tensor([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
