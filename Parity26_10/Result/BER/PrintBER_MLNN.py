@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 # Data Storage Reference:
 SNR = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8.0]
 
+BER_uncoded_BPSK_ref = [0.078, 0.067, 0.055, 0.0467, 0.036, 0.029, 0.024, 0.017, # 0~3.5
+                0.013, 0.0088, 0.0059, 0.004, 0.0023, 0.0014, 0.00081, 0.00039, 0.00019] # 4~8.0
+
 BER_uncoded_BPSK = [0.078508, 0.067265, 0.056491, 0.046608, 0.037289, 0.029629, 0.022689, 0.017221, # 0~3.5
                 0.012463, 0.008816, 0.006007, 0.004012, 0.002327, 0.001388, 0.000743, 0.000386, 0.0002] # 4~8.0
 
@@ -11,6 +14,12 @@ BER_SDML_ref = [0.1, 0.08, 0.055, 0.038, 0.025, 0.015, 0.0078, 0.004, # 0~3.5
 
 BER_SDML = [0.08018, 0.06289, 0.04121, 0.02806, 0.01643, 0.0099, 0.00523, 0.00218, # 0~3.5
                 0.0013, 0.0005709, 0.0002209, 7.143e-05, 0.0, 0.0, 0.0, 0.0, 0.0] # 4~8.0
+
+# BER_SDML = [0.09637, 0.07684, 0.05524, 0.03837, 0.02699, 0.0163, 0.00868, 0.00461, # 0~3.5
+#             0.00252, 0.001, 0.000431, 0.000194, 0.0, 0.0, 0.0, 0.0, 0.0] # 4~8.0
+
+# BER_SDML = [0.10524, 0.07885, 0.05839, 0.0425, 0.02708, 0.01786, 0.01015, 0.00538, # 0~3.5
+#             0.0029, 0.00102, 0.00055, 0.0002154, 0.0, 0.0, 0.0, 0.0, 0.0] # 4~8.0
 
 BER_MLNN_100 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 0~3.5
                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # 4.0~8.0
@@ -23,6 +32,7 @@ BER_MLNN_100_100 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, # 0~3.5
 
 
 plt.figure(figsize=(20, 10))
+plt.semilogy(SNR, BER_uncoded_BPSK_ref, label='BPSK, Uncoded, Article', color = "green")
 plt.semilogy(SNR, BER_uncoded_BPSK, label='BPSK, Uncoded', color = "green")
 plt.semilogy(SNR, BER_SDML, label='Soft-decision ML', color = "black")
 plt.semilogy(SNR, BER_SDML_ref, label='Soft-decision ML, Article', color = "black")
@@ -34,7 +44,8 @@ plt.semilogy(SNR, BER_SDML_ref, label='Soft-decision ML, Article', color = "blac
 plt.xlabel('SNR', fontsize=20)
 plt.ylabel('BER', fontsize=20)
 plt.title('Parity(26,10) Multi-label Neural Network BER Estimation', fontsize=20)
-plt.legend(['BPSK, Uncoded',
+plt.legend(['BPSK, Uncoded, Article',
+            'BPSK, Uncoded',
             'Soft-decision ML',
             'Soft-decision ML, Article',
             # 'N=100, Article', 'N=100', 'N1=50, N2=50', 'N1=100, N2=100',

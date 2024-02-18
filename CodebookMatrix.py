@@ -34,16 +34,16 @@ class coderMatrix(torch.nn.Module):
 
         # Define the 10x5 matrix
         elif encoded == 10 and origin == 5:
-            encode_matrix = torch.tensor([[1, 0, 0, 0, 0],
-                                   [0, 1, 0, 0, 0],
-                                   [0, 0, 1, 0, 0],
-                                   [0, 0, 0, 1, 0],
-                                   [0, 0, 0, 0, 1],
-                                   [1, 0, 0, 0, 1],
-                                   [1, 1, 0, 0, 0],
-                                   [0, 1, 1, 0, 0],
-                                   [0, 0, 1, 1, 0],
-                                   [0, 0, 0, 1, 1]], dtype=torch.float, device=self.device)
+            # encode_matrix = torch.tensor([[1, 0, 0, 0, 0],
+            #                        [0, 1, 0, 0, 0],
+            #                        [0, 0, 1, 0, 0],
+            #                        [0, 0, 0, 1, 0],
+            #                        [0, 0, 0, 0, 1],
+            #                        [1, 0, 0, 0, 1],
+            #                        [1, 1, 0, 0, 0],
+            #                        [0, 1, 1, 0, 0],
+            #                        [0, 0, 1, 1, 0],
+            #                        [0, 0, 0, 1, 1]], dtype=torch.float, device=self.device)
 
             encode_matrix = torch.tensor([[1, 0, 0, 0, 0],
                                           [0, 1, 0, 0, 0],
@@ -130,7 +130,7 @@ class coderMatrix(torch.nn.Module):
                                    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
                                    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
                                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-                                   [0, 0, 1, 0, 1, 0, 0, 0, 1, 1],
+                                   [1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
                                    [1, 0, 0, 1, 0, 1, 1, 0, 1, 0],
                                    [1, 0, 1, 0, 0, 0, 1, 0, 0, 1],
                                    [0, 1, 1, 1, 0, 1, 0, 0, 1, 1],
@@ -205,7 +205,7 @@ class coderMatrix(torch.nn.Module):
                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], device=self.device, dtype=torch.float)
 
         # Define the 34x12 matrix
-        elif encoded == 30 and origin == 12:
+        elif encoded == 34 and origin == 12:
             encode_matrix = torch.tensor([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],

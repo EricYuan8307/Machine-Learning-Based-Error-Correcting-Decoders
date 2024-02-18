@@ -84,7 +84,7 @@ def estimation_SDML(num, bits, encoded, SNR_opt_ML, result, device):
 
             BLER_SDML, block_error_num_SDML = calculate_bler(SDML_final, bits_info)
             if block_error_num_SDML < 100:
-                N += 1000000
+                N += 10000
                 print(f"the code number is {N}")
 
             else:

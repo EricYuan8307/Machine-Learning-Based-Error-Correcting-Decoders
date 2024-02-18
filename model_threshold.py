@@ -31,18 +31,19 @@ def loadpara(Model_type, neuron_number, encoder_type):
 
 # Model Check
 Model_type = "SLNN"
-neuron_number = torch.arange(0, 101, 1)
+neuron_number = torch.arange(0, 10, 1)
 encoder_type = "Hamming74"
 
+# Model modify:
+origin_size = 4
+input_size = 7
+output_size = torch.pow(torch.tensor(2), origin_size)
+threshold = 0.01
+origin_model = SingleLabelNNDecoder
+
 for i in range(len(neuron_number)):
+    print(f"{i} Neruon model Parameters:")
     model_para = loadpara(Model_type, neuron_number[i], encoder_type)
-    print(f"{neuron_number}neruons model Parameters:",model_para)
+    print("model Parameters:",model_para)
 
-    # Model modify:
-    origin_size = 4
-    input_size = 7
-    output_size = torch.pow(torch.tensor(2), origin_size)
-    threshold = 0.01
-    origin_model = SingleLabelNNDecoder
-
-    modify(origin_size, input_size, threshold, Model_type, neuron_number[i], encoder_type, origin_model)
+    # modify(origin_size, input_size, threshold, Model_type, neuron_number[i], encoder_type, origin_model)

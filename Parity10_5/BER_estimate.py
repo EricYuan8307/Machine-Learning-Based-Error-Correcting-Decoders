@@ -117,7 +117,7 @@ def main():
 
     result_all = np.vstack([
         result_BPSK,
-                            result_SDML,
+        result_SDML,
                             ])
 
 
