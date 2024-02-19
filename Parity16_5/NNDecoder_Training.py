@@ -148,7 +148,7 @@ def MLNN_training1(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch
 
             running_loss += loss.item()
             if i % 1000 == 999:  # Print every 100 mini-batches
-                print(f'MLNN: SNR{snr_measure}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
+                print(f'MLNN: Hidden Size:{hidden_size}, SNR{snr_measure}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
                 running_loss = 0.0
 
         # Calculate the average training loss for this epoch
@@ -179,14 +179,15 @@ def MLNN_training1(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch
         # Early Stopping
         if early_stopping(running_loss, model, model_path):
             print('MLNN: Early stopping')
-            print(f'MLNN: SNR={snr_measure} Stop at total val_loss is {running_loss/len(MLNN_testloader)} and epoch is {epoch}')
+            print(f'MLNN: Hidden Size:{hidden_size}, SNR={snr_measure} Stop at total val_loss is {running_loss/len(MLNN_testloader)} and epoch is {epoch}')
             break
         else:
             print("MLNN: Continue Training")
 
 def MLNN_training2(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
-    # Transmitter:
-    encoder = Parity16_5_encoder(device)
+    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+
+    encoder = PCC_encoders(encoder_matrix)
 
     bits_info = generator(nr_codeword, bits, device)
     encoded_codeword = encoder(bits_info)
@@ -300,17 +301,17 @@ def main():
 
     # Train SLNN with different hidden layer neurons
     for i in range(len(SLNN_hidden_size)):
-        SLNN_model_path = f"Result/model/SLNN_CPU/"
+        SLNN_model_path = f"Result/model/SLNN_{device}/"
         SLNN_training(SLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
 
-    # # Train MLNN model with only one hidden layer
-    # MLNN_model_path = f"Result/Model/MLNN_CPU/"
-    # MLNN_training1(MLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size_1, MLNN_model_path, MLNN_patience, delta, device)
-    #
-    # # Train MLNN model with two hidden layers
-    # for i in range(len(MLNN_hidden_size_2)):
-    #     MLNN_model_path = f"Result/Model/MLNN_CPU/"
-    #     MLNN_training2(MLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i], MLNN_model_path, MLNN_patience, delta, device)
+    # Train MLNN model with only one hidden layer
+    MLNN_model_path = f"Result/Model/MLNN_{device}/"
+    MLNN_training1(MLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size_1, MLNN_model_path, MLNN_patience, delta, device)
+
+    # Train MLNN model with two hidden layers
+    for i in range(len(MLNN_hidden_size_2)):
+        MLNN_model_path = f"Result/Model/MLNN_{device}/"
+        MLNN_training2(MLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i], MLNN_model_path, MLNN_patience, delta, device)
 
 
 if __name__ == '__main__':

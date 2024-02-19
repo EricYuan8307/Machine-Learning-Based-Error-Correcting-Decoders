@@ -57,7 +57,7 @@ plt.ylabel('BLER', fontsize=20)
 plt.title('Parity(34,12) BLER Estimation', fontsize=20)
 plt.legend([
     'Soft-decision ML, Article',
-    'BPSK, Uncoded, Article'
+    'BPSK, Uncoded, Article',
     'Soft-decision ML',
     # 'BPSK, Uncoded',
     'Parity(10,5) BPSK, Uncoded',
