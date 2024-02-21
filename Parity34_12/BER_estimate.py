@@ -104,7 +104,7 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e4)
+    num = int(1e3)
     bits = 12
     encoded = 34
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
