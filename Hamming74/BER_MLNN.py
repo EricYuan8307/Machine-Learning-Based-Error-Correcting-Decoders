@@ -95,20 +95,19 @@ def main():
     num = int(1e7)
     bits = 4
     encoded = 7
-    MLNN_hidden_size = 100
-    MLNN2_hidden_size = [[50,50], [100, 100]]
+    MLNN_hidden_size_1 = 100
+    MLNN_hidden_size_2 = [[50,50], [100, 100]]
     SNR_opt_NN = torch.arange(0, 8.5, 0.5)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
 
-
-    model_save_pth100 = "Result/Model/MLNN_CPU/MLNN_model_hiddenlayer100_BER0.pth"
-    model_save_pth50_50 = "Result/Model/MLNN_CPU/MLNN_model_hiddenlayer[50, 50]_BER0.pth"
-    model_save_pth100_100 = "Result/Model/MLNN_CPU/MLNN_model_hiddenlayer[100, 100]_BER0.pth"
+    model_save_pth100 = f"Result/Model/MLNN_{device}/MLNN_model_hiddenlayer{MLNN_hidden_size_1}_BER0.pth"
+    model_save_pth50_50 = f"Result/Model/MLNN_{device}/MLNN_model_hiddenlayer{MLNN_hidden_size_2[0]}_BER0.pth"
+    model_save_pth100_100 = f"Result/Model/MLNN_{device}/MLNN_model_hiddenlayer{MLNN_hidden_size_2[1]}_BER0.pth"
 
     result_save = np.zeros((1, len(SNR_opt_NN)))
-    result_MLNN100 = estimation_MLNN1(num, bits, encoded, SNR_opt_NN, MLNN_hidden_size, model_save_pth100, result_save, device)
-    result_MLNN50_50 = estimation_MLNN2(num, bits, encoded, SNR_opt_NN, MLNN2_hidden_size[0], model_save_pth50_50, result_save, device)
-    result_MLNN100_100 = estimation_MLNN2(num, bits, encoded, SNR_opt_NN, MLNN2_hidden_size[1], model_save_pth100_100, result_save, device)
+    result_MLNN100 = estimation_MLNN1(num, bits, encoded, SNR_opt_NN, MLNN_hidden_size_1, model_save_pth100, result_save, device)
+    result_MLNN50_50 = estimation_MLNN2(num, bits, encoded, SNR_opt_NN, MLNN_hidden_size_2[0], model_save_pth50_50, result_save, device)
+    result_MLNN100_100 = estimation_MLNN2(num, bits, encoded, SNR_opt_NN, MLNN_hidden_size_2[1], model_save_pth100_100, result_save, device)
 
 
     result_all = np.vstack([

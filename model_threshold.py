@@ -64,6 +64,6 @@ model_para = loadpara(origin_size, input_size, Model_type, neuron_number, encode
 threshold = 0.1 # normalized
 parameter = "hidden.weight"
 
-# # # modified result
-# model_modified = modify(origin_size, input_size, threshold, Model_type, neuron_number, encoder_type, origin_model, parameter, device)
-# # print("modified model:", model_modified)
+# modified result
+model_modified = modify(origin_size, input_size, threshold, Model_type, neuron_number, encoder_type, origin_model, parameter, device)
+print("modified model:", model_modified)
