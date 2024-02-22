@@ -13,7 +13,7 @@
 #
 # SNR = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
 #
-# plt.figure(figsize=(20, 10))
+# plt.figure(figsize=(16, 9))
 # plt.semilogy(SNR, BLER_SDML, marker='x', label='SDML')
 # plt.semilogy(SNR, BLER_BPSK, marker='+', label='BPSK')
 # plt.semilogy(SNR, BLER_SLNN, marker='.', label='SLNN')

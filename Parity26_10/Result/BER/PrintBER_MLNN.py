@@ -28,7 +28,7 @@ BER_SDML = [0.0981, 0.07707, 0.05463, 0.03947, 0.02377, 0.01382, 0.00697, 0.0043
 #                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # 4.0~8.0
 
 
-plt.figure(figsize=(20, 10))
+plt.figure(figsize=(16, 9))
 plt.semilogy(SNR, BER_uncoded_BPSK_ref, label='BPSK, Uncoded, Article', color = "green")
 plt.semilogy(SNR, BER_uncoded_BPSK, label='BPSK, Uncoded', color = "green")
 plt.semilogy(SNR, BER_SDML, label='Soft-decision ML', color = "black")

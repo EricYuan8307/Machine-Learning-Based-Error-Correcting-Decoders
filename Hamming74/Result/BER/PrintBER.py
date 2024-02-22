@@ -30,7 +30,7 @@
 #         0, 0, 0, 0, 0, 0, 0]
 #
 # def originalplot():
-#     plt.figure(figsize=(20, 10))
+#     plt.figure(figsize=(16, 9))
 #     plt.semilogy(SNR, ref_HDML, marker='*', label='ref_HDML')
 #     plt.semilogy(SNR, ref_SDML, marker='x', label='ref_SDML')
 #     plt.semilogy(SNR, ref_BP, marker='+', label='ref_BP')

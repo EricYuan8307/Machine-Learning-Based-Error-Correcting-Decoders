@@ -38,7 +38,7 @@ BLER_SLNN_9 = [1.818465e-01, 1.477253e-01, 1.165583e-01, 8.91116e-02, 6.56956e-0
 
 SNR = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8.0]
 
-plt.figure(figsize=(20, 10))
+plt.figure(figsize=(16, 9))
 # plt.semilogy(SNR, article_SDML, marker='x', label='Soft-decision ML, Article')
 # plt.semilogy(SNR, article_BPSK, marker='+', label='BPSK, Uncoded, Article')
 plt.semilogy(SNR, BLER_SDML,  label='Soft-decision ML', color = "black")
