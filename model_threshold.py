@@ -38,7 +38,7 @@ def loadpara(origin_size, input_size, Model_type, neuron_number, encoder_type, o
 
     origin_model_pth = f"{encoder_type}/Result/Model/{Model_type}_{device}/{Model_type}_model_hiddenlayer{neuron_number}_BER0.pth"
     model = torch.load(origin_model_pth)
-    # print("model parameters:",model)
+    print("model parameters:",model)
 
     # Assuming you have the model class defined somewhere
     model = origin_model(input_size, neuron_number, output_size)
