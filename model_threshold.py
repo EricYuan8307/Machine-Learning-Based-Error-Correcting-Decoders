@@ -10,7 +10,7 @@ def modify(origin_size, input_size, threshold, Model_type, neuron_number, encode
     output_size = torch.pow(torch.tensor(2), origin_size)
 
     origin_model_pth = f"{encoder_type}/Result/Model/{Model_type}_{device}/{Model_type}_model_hiddenlayer{neuron_number}_BER0.pth"
-    save_pth = f"{encoder_type}/Result/Model/{Model_type}_modified_threshold{threshold}_{device}/" # for all SLNN model
+    # save_pth = f"{encoder_type}/Result/Model/{Model_type}_modified_threshold{threshold}_{device}/" # for all SLNN model
     save_pth = f"{encoder_type}/Result/Model/{Model_type}_modified_neuron{neuron_number}_{device}_{parameter}/" # exclusive for Neuron=7
 
     # Assuming you have the model class defined somewhere
