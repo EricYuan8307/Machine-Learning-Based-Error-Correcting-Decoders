@@ -21,7 +21,7 @@ SLNN_hidden_size = torch.arange(0, 41, 1)
 
 BLER_SLNN_100 = [ ]
 
-plt.figure(figsize=(20, 10))
+plt.figure(figsize=(16, 9))
 plt.semilogy(SLNN_hidden_size, BLER_SLNN_100, marker='.', label='N = 7', color='blue', linestyle='--')
 
 plt.xlabel('Number of Hidden Layer Neurons', fontsize=20)

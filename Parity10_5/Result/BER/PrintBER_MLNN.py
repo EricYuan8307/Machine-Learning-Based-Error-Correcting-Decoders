@@ -21,7 +21,7 @@ BER_SDML = [0.08216, 0.06296, 0.0492, 0.03682, 0.02502, 0.01782, 0.01056, 0.0064
 
 
 def nnplot():
-    plt.figure(figsize=(20, 10))
+    plt.figure(figsize=(16, 9))
     plt.semilogy(SNR, BER_uncoded_BPSK, label='BPSK, Uncoded', color = "green")
     plt.semilogy(SNR, BER_SDML, label='Soft-decision ML', color = "black")
     # plt.semilogy(SNR, BER_MLNN_100, marker='D', label='N=100', color = "pink", linestyle='--')

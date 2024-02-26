@@ -28,7 +28,7 @@ BLER_MLNN_100_100 = [0.1965366, 0.1609105, 0.1286232, 0.0996521, 0.0744929, 0.05
 
 SNR = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8.0]
 
-plt.figure(figsize=(20, 10))
+plt.figure(figsize=(16, 9))
 plt.semilogy(SNR, BLER_SDML,  label='Soft-decision ML', color = "black")
 plt.semilogy(SNR, BLER_BPSK,  label='BPSK, Uncoded', color = "green")
 plt.semilogy(SNR, BLER_SLNN_7, label='Single-label Neural network N=7', color='blue')

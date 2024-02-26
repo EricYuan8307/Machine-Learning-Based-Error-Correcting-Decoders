@@ -104,9 +104,9 @@ def main():
     SNR_opt_NN = torch.arange(0, 8.5, 0.5)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for MLNN article
 
-    model_save_pth100 = "Result/Model/MLNN_CPU/MLNN_model_hiddenlayer100_BER0.pth"
-    model_save_pth50_50 = "Result/Model/MLNN_CPU/MLNN_model_hiddenlayer[50, 50]_BER0.pth"
-    model_save_pth100_100 = "Result/Model/MLNN_CPU/MLNN_model_hiddenlayer[100, 100]_BER0.pth"
+    model_save_pth100 = f"Result/Model/MLNN_{device}/MLNN_model_hiddenlayer{MLNN_hidden_size_1}_BER0.pth"
+    model_save_pth50_50 = f"Result/Model/MLNN_{device}/MLNN_model_hiddenlayer{MLNN_hidden_size_2[0]}_BER0.pth"
+    model_save_pth100_100 = f"Result/Model/MLNN_{device}/MLNN_model_hiddenlayer{MLNN_hidden_size_2[1]}_BER0.pth"
 
     result_save = np.zeros((1, len(SNR_opt_NN)))
     result_MLNN100 = estimation1(num, bits, encoded, SNR_opt_NN, MLNN_hidden_size_1, model_save_pth100, result_save, device)
