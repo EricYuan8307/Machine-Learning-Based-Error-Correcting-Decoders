@@ -115,14 +115,14 @@ def main():
 
     # Hyperparameters
     SLNN_hidden_size = 7
-    batch_size = 64
+    batch_size = 32
     learning_rate = 1e-2
     epochs = 500
     nr_codeword = int(1e6)
     bits = 4
     encoded = 7
-    edge_delete = [9, 14, 19, 24, 29, 34] # Edge delete
-    # edge_delete = [19, 24, 29, 34] # Edge delete
+    # edge_delete = [9, 14, 19, 24, 29, 34, 39] # Edge delete
+    edge_delete = [9, 14] # Edge delete
     masks = MaskMatrix(device)
 
 
@@ -130,8 +130,8 @@ def main():
     SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for SLNN article
 
     # Early Stopping
-    SLNN_patience = 16
-    delta = 0.001
+    SLNN_patience = 32
+    delta = 0.0001
 
     for i in range(len(edge_delete)):
         mask = masks(edge_delete[i], encoded, SLNN_hidden_size)

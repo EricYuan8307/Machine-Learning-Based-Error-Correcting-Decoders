@@ -86,16 +86,16 @@ def main():
         mask = masks(edge_delete[i], encoded, SLNN_hidden_size)
         load_pth = f"Result/Model/SLNN_decrease_{parameter}_{device}/SLNN_model_hiddenlayer{edge_delete[i]}_BER0.pth"
         result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, load_pth, mask, edge_delete[i], device)
-    directory_path = "Result/BLER"
-
-    # Create the directory if it doesn't exist
-    if not os.path.exists(directory_path):
-        os.makedirs(directory_path)
-
-    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    csv_filename = f"BLER_result_{current_time}.csv"
-    full_csv_path = os.path.join(directory_path, csv_filename)
-    np.savetxt(full_csv_path, result_all, delimiter=', ')
+    # directory_path = "Result/BLER"
+    #
+    # # Create the directory if it doesn't exist
+    # if not os.path.exists(directory_path):
+    #     os.makedirs(directory_path)
+    #
+    # current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    # csv_filename = f"BLER_result_{current_time}.csv"
+    # full_csv_path = os.path.join(directory_path, csv_filename)
+    # np.savetxt(full_csv_path, result_all, delimiter=', ')
 
 
 if __name__ == "__main__":
