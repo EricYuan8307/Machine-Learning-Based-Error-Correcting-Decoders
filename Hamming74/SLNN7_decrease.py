@@ -121,8 +121,8 @@ def main():
     nr_codeword = int(1e6)
     bits = 4
     encoded = 7
-    # edge_delete = [9, 14, 19, 24, 29, 34] # Edge delete
-    edge_delete = [19, 24, 29, 34] # Edge delete
+    edge_delete = [9, 14, 19, 24, 29, 34] # Edge delete
+    # edge_delete = [19, 24, 29, 34] # Edge delete
     masks = MaskMatrix(device)
 
 
