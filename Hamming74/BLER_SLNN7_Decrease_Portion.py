@@ -68,7 +68,7 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters for SLNN neuron=7
-    num = int(1e7)
+    num = int(2e7)
     bits = 4
     encoded = 7
     SLNN_hidden_size = 7
