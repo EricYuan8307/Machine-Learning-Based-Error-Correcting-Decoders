@@ -22,7 +22,7 @@ def all_codebook(original, encoded, device):
 
     return encoder_matrix, decoder_matrix, SDMLMatrix
 
-def SLNN_D2B_matrix(original, encoded, device):
+def SLNN_D2B_matrix(original, device):
     codebook_formatted = [list(map(int, format(i, f'0{original}b'))) for i in range(2 ** original)]
     SLNN_DecimaltoBinary = torch.tensor(codebook_formatted, dtype=torch.float, device=device)
 
