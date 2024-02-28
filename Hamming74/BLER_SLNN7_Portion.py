@@ -40,7 +40,7 @@ def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
 
     return SLNN_binary, bits_info, practical_snr
 
-def estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, result, i, device):
+def estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, result, threshold, device):
     # Single-label Neural Network:
     output_size = torch.pow(torch.tensor(2), bits)
 
@@ -54,8 +54,7 @@ def estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, resu
         print(f"the code number is {num}")
 
     else:
-        print(f"SLNN Hidden layer{i}: When SNR is {snr_measure} and signal number is {num}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
-        result[0, i] = BLER_SLNN
+        print(f"SLNN Hidden layer{threshold}: When SNR is {snr_measure} and signal number is {num}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
 
     return result
 
@@ -68,7 +67,7 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters for SLNN neuron=7
-    num = int(1)
+    num = int(1e6)
     bits = 4
     encoded = 7
     SLNN_hidden_size = 7
@@ -82,7 +81,7 @@ def main():
 
     for i in range(0, len(threshold)):
         save_pth = f"Result/Model/SLNN_modified_neuron7_{device}_{parameter}/SLNN_model_modified_hiddenlayer{SLNN_hidden_size}_threshold{threshold[i]}_BER0.pth" # for the modified result
-        result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, i, device)
+        result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, threshold[i], device)
     directory_path = "Result/BLER"
 
     # Create the directory if it doesn't exist
