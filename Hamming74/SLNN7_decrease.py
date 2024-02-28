@@ -11,15 +11,14 @@ from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import BinarytoDecimal
 from earlystopping import SLNN_EarlyStopping
 
-from generating import all_codebook, SLNN_D2B_matrix
+from generating import all_codebook
 from Encode.Encoder import PCC_encoders
-from Metric.ErrorRate import calculate_bler
-from Decode.Converter import DecimaltoBinary
+from Hamming74.reduce_mask import MaskMatrix
 
 
 
 def SLNN_training(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, edge_delete,
-                  model_load_pth, model_save_path, patience, delta, mask,device):
+                  model_load_pth, model_save_path, patience, delta, mask, device):
     encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
@@ -51,7 +50,7 @@ def SLNN_training(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_
     SLNN_test_losses = []
 
     # Early Stopping
-    early_stopping = SLNN_EarlyStopping(patience, delta, snr_measure, hidden_size)
+    early_stopping = SLNN_EarlyStopping(patience, delta, snr_measure, edge_delete)
 
     # Single-Label Neural Network Training loop
     for epoch in range(epochs):
@@ -105,55 +104,6 @@ def SLNN_training(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_
         else:
             print("SLNN: Continue Training")
 
-# Calculate the Error number and BLER
-def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
-    SLNN_Matrix = SLNN_D2B_matrix(bits, encoded, device)
-
-    encoder = PCC_encoders(encoder_matrix)
-    convertor = DecimaltoBinary(SLNN_Matrix)
-
-    bits_info = generator(nr_codeword, bits, device)  # Code Generator
-    encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
-    modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
-    noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
-
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
-
-    # use SLNN model:
-    model.eval()
-    model.load_state_dict(torch.load(model_pth))
-
-    SLNN_result = model(noised_signal)
-    SLNN_decimal = torch.argmax(SLNN_result, dim=2)
-
-    SLNN_binary = convertor(SLNN_decimal)
-
-
-    return SLNN_binary, bits_info, practical_snr
-
-def estimation_SLNN(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, result, device):
-    N = num
-
-    # Single-label Neural Network:
-
-    input_size = 7
-    output_size = torch.pow(torch.tensor(2), bits)
-
-    model = SingleLabelNNDecoder_nonfully(input_size, hidden_size, output_size, mask).to(device)
-    SLNN_final, bits_info, snr_measure = SLNNDecoder(N, bits, encoded, SNR_opt_NN, model, model_pth, device)
-
-    BLER_SLNN, error_num_SLNN = calculate_bler(SLNN_final, bits_info) # BER calculation
-
-    if error_num_SLNN < 100:
-        N += 1000000
-        print(f"the code number is {N}")
-
-    else:
-        print(f"SLNN: When SNR is {snr_save} and signal number is {N}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
-        result[0, 1] = BLER_SLNN
-
-    return result
 
 def main():
     # Device Setting
@@ -171,31 +121,27 @@ def main():
     nr_codeword = int(1e6)
     bits = 4
     encoded = 7
-    mask = torch.tensor([[1, 0, 1, 1, 1, 1, 1], # the first neuron in hidden layer
-                        [1, 0, 1, 1, 1, 1, 1],
-                        [1, 1, 1, 1, 1, 1, 1],
-                        [1, 0, 1, 0, 1, 1, 1],
-                        [0, 1, 1, 1, 1, 1, 1],
-                        [1, 0, 1, 1, 1, 1, 1],
-                        [1, 1, 1, 1, 1, 1, 1]], device=device, dtype=torch.float)
+    # edge_delete = [9, 14, 19, 24, 29, 34] # Edge delete
+    edge_delete = [19, 24, 29, 34] # Edge delete
+    masks = MaskMatrix(device)
 
-    SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
+
+    SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device) # SLNN training
     SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for SLNN article
 
-    # Edge delete
-    edge_delete = (mask == 0).sum().item()
-
-    # Early Stopping # Guess same number of your output
+    # Early Stopping
     SLNN_patience = 16
     delta = 0.001
 
-    # model Path:
-    Load_path = f"Result/Model/SLNN_modified_neuron7_cpu_hidden.weight/SLNN_model_modified_hiddenlayer7_threshold{edge_delete}_BER0.pth"
-    SLNN_reduce_save_path = f"Result/Model/SLNN_decrease_hidden.weight_{device}/"
+    for i in range(len(edge_delete)):
+        mask = masks(edge_delete[i], encoded, SLNN_hidden_size)
+        # model Path:
+        Load_path = f"Result/Model/SLNN_modified_neuron7_cpu_hidden.weight/SLNN_model_modified_hiddenlayer7_threshold{edge_delete[i]}_BER0.pth"
+        SLNN_reduce_save_path = f"Result/Model/SLNN_decrease_hidden.weight_{device}/"
 
-    # Train SLNN with different hidden layer neurons
-    SLNN_training(SLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size, edge_delete,
-                  Load_path, SLNN_reduce_save_path, SLNN_patience, delta, mask, device)
+        # Train SLNN with different hidden layer neurons
+        SLNN_training(SLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size, edge_delete[i],
+                      Load_path, SLNN_reduce_save_path, SLNN_patience, delta, mask, device)
 
 
 if __name__ == '__main__':
