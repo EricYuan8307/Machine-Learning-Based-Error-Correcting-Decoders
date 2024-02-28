@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import torch
 
 SLNN_hidden_size = torch.arange(0, 49, 1)
-SLNN_N7 = SLNN_N7_tensor = torch.full((49,), 1.66e-05)
+SLNN_N7_SNR8 = torch.full((49,), 1.66e-05)
 
-hidden_weight = [
+hidden_weight_SNR8 = [
     1.679999999999999839e-05, 1.509999999999999942e-05, 1.480000000000000060e-05, 1.830000000000000097e-05,
     1.529999999999999920e-05,
     1.590000000000000023e-05, 1.520000000000000016e-05, 1.800000000000000046e-05, 1.930000000000000156e-05,
@@ -25,7 +25,7 @@ hidden_weight = [
     4.296435000000000115e-01,
     4.691335999999999840e-01, 7.522522000000000375e-01, 7.525304999999999911e-01, 9.375620000000000065e-01]
 
-hidden_output_weight = [
+hidden_output_weight_SNR8 = [
     1.669999999999999935e-05, 1.439999999999999935e-05, 1.739999999999999942e-05, 1.580000000000000119e-05,
     1.639999999999999883e-05, 1.639999999999999883e-05, 1.569999999999999876e-05, 1.679999999999999839e-05,
     2.029999999999999876e-05, 2.320000000000000149e-05, 2.400000000000000061e-05, 2.279999999999999854e-05,
@@ -41,7 +41,7 @@ hidden_output_weight = [
     9.183080000000000409e-02,
     ]
 
-output_weight = [
+output_weight_SNR8 = [
     1.569999999999999876e-05, 1.720000000000000134e-05, 1.419999999999999957e-05, 1.410000000000000053e-05,
     1.940000000000000060e-05,
     2.099999999999999884e-05, 2.510000000000000024e-05, 5.970000000000000100e-05, 5.879999999999999946e-05,
@@ -64,11 +64,11 @@ output_weight = [
     ]
 
 plt.figure(figsize=(16, 9))
-plt.semilogy(SLNN_hidden_size, hidden_output_weight, marker='.', label='modified, hidden weight + output weight',
+plt.semilogy(SLNN_hidden_size, hidden_output_weight_SNR8, marker='.', label='modified, hidden weight + output weight',
              color='green', linestyle='--')
-plt.semilogy(SLNN_hidden_size, output_weight, marker='.', label='modified, output weight', color='blue', linestyle='--')
-plt.semilogy(SLNN_hidden_size, hidden_weight, marker='.', label='modified, hidden weight', color='red', linestyle='--')
-plt.semilogy(SLNN_hidden_size, SLNN_N7, label='SLNN N=7, SNR=8', color='black')
+plt.semilogy(SLNN_hidden_size, output_weight_SNR8, marker='.', label='modified, output weight', color='blue', linestyle='--')
+plt.semilogy(SLNN_hidden_size, hidden_weight_SNR8, marker='.', label='modified, hidden weight', color='red', linestyle='--')
+plt.semilogy(SLNN_hidden_size, SLNN_N7_SNR8, label='SLNN N=7, SNR=8', color='black')
 
 plt.xlabel('Proportion of edges Deleted', fontsize=20)
 plt.ylabel('BLER', fontsize=20)

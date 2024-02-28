@@ -115,14 +115,14 @@ def main():
 
     # Hyperparameters
     SLNN_hidden_size = 7
-    batch_size = 64
+    batch_size = 32
     learning_rate = 1e-2
     epochs = 500
     nr_codeword = int(1e6)
     bits = 4
     encoded = 7
-    edge_delete = [9, 14, 19, 24, 29, 34, 39] # Edge delete
-    # edge_delete = [43] # Edge delete
+    # edge_delete = [9, 14, 19, 24, 29, 34, 39, 40, 41, 42] # Edge delete
+    edge_delete = [41, 42] # Edge delete
     masks = MaskMatrix(device)
 
 
