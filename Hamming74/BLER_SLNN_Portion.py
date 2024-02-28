@@ -16,7 +16,7 @@ from Encode.Encoder import PCC_encoders
 
 def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
     encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
-    SLNN_Matrix = SLNN_D2B_matrix(bits, encoded, device)
+    SLNN_Matrix = SLNN_D2B_matrix(bits, device)
 
     encoder = PCC_encoders(encoder_matrix)
     convertor = DecimaltoBinary(SLNN_Matrix)
@@ -67,49 +67,20 @@ def main():
     device = torch.device("cpu")
     # device = torch.device("cuda")
 
-    # # Hyperparameters
-    # num = int(1e7)
-    # bits = 4
-    # encoded = 7
-    # SLNN_hidden_size = torch.arange(0, 101, 1)
-    # SNR_opt_NN = torch.tensor(8, dtype=torch.int, device=device)
-    # SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
-    #
-    # result_save = np.zeros((1, len(SLNN_hidden_size)))
-    #
-    # for i in range(0, len(SLNN_hidden_size)):
-    #     # save_pth = f"Result/Model/SLNN_{device}/SLNN_model_hiddenlayer{i}_BER0.pth"
-    #     save_pth = f"Result/Model/SLNN_modified_threshold0.05_{device}/SLNN_model_modified_hiddenlayer{i}_BER0.pth" # for the modified result
-    #     result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size[i], save_pth, result_save, i, device)
-    # directory_path = "Result/BLER"
-
-    # Hyperparameters for SLNN neuron=7
+    # Hyperparameters
     num = int(1e7)
     bits = 4
     encoded = 7
-    SLNN_hidden_size = 7
+    SLNN_hidden_size = torch.arange(0, 101, 1)
     SNR_opt_NN = torch.tensor(8, dtype=torch.int, device=device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
-    threshold = torch.arange(0, 161, 1)
 
-    result_save = np.zeros((1, len(threshold)))
+    result_save = np.zeros((1, len(SLNN_hidden_size)))
 
-    parameter = "hidden.weight", "output.weight"
-
-    for i in range(0, len(threshold)):
-        # save_pth = f"Result/Model/SLNN_{device}/SLNN_model_hiddenlayer{i}_BER0.pth"
-        save_pth = f"Result/Model/SLNN_modified_neuron7_{device}_{parameter}/SLNN_model_modified_hiddenlayer{SLNN_hidden_size}_threshold{threshold[i]}_BER0.pth" # for the modified result
-        result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, i, device)
+    for i in range(0, len(SLNN_hidden_size)):
+        save_pth = f"Result/Model/SLNN_{device}/SLNN_model_hiddenlayer{i}_BER0.pth"
+        result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size[i], save_pth, result_save, i, device)
     directory_path = "Result/BLER"
-
-    # Create the directory if it doesn't exist
-    if not os.path.exists(directory_path):
-        os.makedirs(directory_path)
-
-    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    csv_filename = f"BLER_result_{current_time}.csv"
-    full_csv_path = os.path.join(directory_path, csv_filename)
-    np.savetxt(full_csv_path, result_all, delimiter=', ')
 
 
 if __name__ == "__main__":

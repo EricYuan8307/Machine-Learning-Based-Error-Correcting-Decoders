@@ -17,7 +17,7 @@ from Encode.Encoder import PCC_encoders
 # Calculate the Error number and BLER
 def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
     encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
-    SLNN_Matrix = SLNN_D2B_matrix(bits, encoded, device)
+    SLNN_Matrix = SLNN_D2B_matrix(bits, device)
 
 
     encoder = PCC_encoders(encoder_matrix)
