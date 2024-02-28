@@ -72,7 +72,7 @@ def main():
     bits = 4
     encoded = 7
     SLNN_hidden_size = 7
-    edge_delete = [9, 14, 19, 24, 29, 34]
+    edge_delete = [9, 14, 19, 24, 29, 34, 39, 43]
 
     masks = MaskMatrix(device)
 
