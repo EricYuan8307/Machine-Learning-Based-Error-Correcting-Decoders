@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 
@@ -10,6 +11,32 @@ class SingleLabelNNDecoder(nn.Module):
         self.relu = nn.ReLU()
         self.output = nn.Linear(hidden_size, output_size)
         self.softmax = nn.LogSoftmax(dim=2)
+
+    def forward(self, x):
+        x = self.hidden(x)
+        x = self.relu(x)
+        x = self.output(x)
+        x = self.softmax(x)
+
+        return x
+
+class SingleLabelNNDecoder_nonfully(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size, mask):
+
+        super().__init__()
+        self.input_size = input_size
+        self.hidden = nn.Linear(input_size, hidden_size)
+        self.relu = nn.ReLU()
+        self.output = nn.Linear(hidden_size, output_size)
+        self.softmax = nn.LogSoftmax(dim=2)
+        self.apply_mask(mask)
+
+    def apply_mask(self, mask):
+        # ensure mask's shape is same as hidden weight shape
+        assert mask.shape == self.hidden.weight.shape
+
+        with torch.no_grad():
+            self.hidden.weight *= mask
 
     def forward(self, x):
         x = self.hidden(x)
