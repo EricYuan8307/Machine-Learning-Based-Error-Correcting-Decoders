@@ -1,19 +1,11 @@
 import matplotlib.pyplot as plt
 import torch
 
-SLNN_hidden_size = [0, 9, 14, 19, 24, 29]
-SLNN_N7 = SLNN_N7_tensor = torch.full((6,), 1.66e-05)
-
-output_weight = [
-
-    ]
+SLNN_hidden_size = [9, 14, 19, 24, 29, 34, 39, 40, 41, 42, 43]
+SLNN_N7 = SLNN_N7_tensor = torch.full((11,), 1.66e-05)
 
 hidden_weight = [
-
-    ]
-
-hidden_output_weight = [
-
+    1.73e-05, 1.51e-05, 1.61e-05, 1.585e-05, 1.535e-05, 1.275e-05, 1.27e-05, 0.00030795, 0.00449175, 0.0043446, 0.00431055
     ]
 
 plt.figure(figsize=(16, 9))

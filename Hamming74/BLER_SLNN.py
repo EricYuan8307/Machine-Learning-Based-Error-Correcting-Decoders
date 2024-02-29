@@ -67,10 +67,10 @@ def estimation_SLNN(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth,
 
 
 def main():
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
-    # device = torch.device("cpu")
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                 else torch.device("cpu")))
+    device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters
@@ -81,7 +81,7 @@ def main():
     SNR_opt_NN = torch.arange(0, 8.5, 0.5).to(device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
-    save_pth = "Result/Model/SLNN_{device}/SLNN_model_hiddenlayer7_BER0.pth"
+    save_pth = f"Result/Model/SLNN_{device}/SLNN_model_hiddenlayer{SLNN_hidden_size}_BER0.pth"
 
     result_save = np.zeros((1, len(SNR_opt_NN)))
     result_SLNN = estimation_SLNN(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, device)
