@@ -6,12 +6,8 @@ def normalize_abs(data):
     normalized = torch.div(torch.abs(data), torch.sum(torch.abs(data), dim=1).unsqueeze(1))
     return normalized
 
-def modify(origin_size, input_size, threshold, Model_type, neuron_number, encoder_type, origin_model, parameter, i, device):
+def modify(origin_size, input_size, threshold, Model_type, neuron_number, origin_model, parameter, origin_model_pth, save_pth, edge_delete):
     output_size = torch.pow(torch.tensor(2), origin_size)
-
-    origin_model_pth = f"{encoder_type}/Result/Model/{Model_type}_{device}/{Model_type}_model_hiddenlayer{neuron_number}_BER0.pth"
-    # save_pth = f"{encoder_type}/Result/Model/{Model_type}_modified_threshold{threshold}_{device}/" # for all SLNN model
-    save_pth = f"{encoder_type}/Result/Model/{Model_type}_modified_neuron{neuron_number}_{device}_{parameter}/" # exclusive for Neuron=7
 
     # Assuming you have the model class defined somewhere
     model = origin_model(input_size, neuron_number, output_size)
@@ -26,17 +22,15 @@ def modify(origin_size, input_size, threshold, Model_type, neuron_number, encode
 
     # Create the directory if it doesn't exist
     os.makedirs(save_pth, exist_ok=True)
-    # torch.save(model.state_dict(), f"{save_pth}{Model_type}_model_modified_hiddenlayer{neuron_number}_BER0.pth") # for normal model
-    torch.save(model.state_dict(), f"{save_pth}{Model_type}_model_modified_hiddenlayer{neuron_number}_threshold{i}_BER0.pth") # exclusive for neuron=7
+    torch.save(model.state_dict(), f"{save_pth}{Model_type}_model_deleted{edge_delete}_BER0.pth") # exclusive for neuron=7
 
     # model_modified = torch.load(f'{save_pth}{Model_type}_model_modified_hiddenlayer{neuron_number}_BER0.pth')
     # return model_modified
 
 
-def loadpara(origin_size, input_size, Model_type, neuron_number, encoder_type, origin_model, device):
+def loadpara(origin_size, input_size, neuron_number, origin_model, origin_model_pth):
     output_size = torch.pow(torch.tensor(2), origin_size)
 
-    origin_model_pth = f"{encoder_type}/Result/Model/{Model_type}_{device}/{Model_type}_model_hiddenlayer{neuron_number}_BER0.pth"
     model = torch.load(origin_model_pth)
     print("model parameters:",model)
 
@@ -59,18 +53,25 @@ encoder_type = "Hamming74"
 device = "cpu"
 neuron_number = 7
 origin_model = SingleLabelNNDecoder
+parameter = "hidden.weight"
+edge_delete = 9
+
+origin_model_pth = f"{encoder_type}/Result/Model/{Model_type}_decrease_con_{device}_{parameter}/{Model_type}_model_deleted{edge_delete}_BER0.pth"
 
 # Check original model:
-model_para = loadpara(origin_size, input_size, Model_type, neuron_number, encoder_type, origin_model, device)
+model_para = loadpara(origin_size, input_size, neuron_number, origin_model, origin_model_pth)
 
 # # Model modify:
 # threshold = 0.05 # normalized
-threshold_hidden = [0.0110, 0.0122, 0.0160, 0.0163, 0.0180, 0.0217, 0.0232, 0.0324, 0.0329,
-        0.0336, 0.0356, 0.0372, 0.0377, 0.0408, 0.0456, 0.0517, 0.0550, 0.0606,
-        0.0653, 0.0725, 0.0755, 0.0762, 0.0909, 0.1027, 0.1136, 0.1321, 0.1345,
-        0.1369, 0.1485, 0.1579, 0.1773, 0.1801, 0.1893, 0.1897, 0.2013, 0.2057,
-        0.2090, 0.2181, 0.2282, 0.2293, 0.2440, 0.2451, 0.2479, 0.2494, 0.2768,
-        0.2949, 0.3784, 0.4752, 0.6724] # Proportion for hidden weight
+threshold_hidden = [0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+                    0.0000e+00, 0.0000e+00, 0.0000e+00, 2.1629e-04, 7.8333e-03, 1.8974e-02,
+                    2.0154e-02, 2.1156e-02, 2.5344e-02, 2.6341e-02, 3.3531e-02, 3.3845e-02,
+                    3.4220e-02, 3.9235e-02, 4.2089e-02, 4.2153e-02, 5.5994e-02, 5.7328e-02,
+                    1.5423e-01, 1.6127e-01, 1.7117e-01, 1.8220e-01, 1.9343e-01, 1.9478e-01,
+                    2.0990e-01, 2.1766e-01, 2.2345e-01, 2.2347e-01, 2.3885e-01, 2.3975e-01,
+                    2.4509e-01, 2.4717e-01, 2.4962e-01, 2.5171e-01, 2.5360e-01, 2.5416e-01,
+                    2.6077e-01, 2.7130e-01, 2.7892e-01, 2.9003e-01, 2.9127e-01, 3.7997e-01,
+                    8.5781e-01] # Proportion for hidden weight
 
 # threshold_output = [0.0005, 0.0008, 0.0034, 0.0167, 0.0174, 0.0194, 0.0415, 0.0474, 0.0501,
 #         0.0502, 0.0533, 0.0643, 0.0695, 0.0896, 0.0908, 0.0936, 0.0947, 0.0982,
@@ -116,13 +117,14 @@ threshold_hidden = [0.0110, 0.0122, 0.0160, 0.0163, 0.0180, 0.0217, 0.0232, 0.03
 #     2.7680e-01, 2.9490e-01, 3.7840e-01, 4.7520e-01, 6.7240e-01] # threshold for hidden and output weights
 
 
-parameter = "hidden.weight", "output.weight"
 # parameter = "hidden.weight", "output.weight"
 # neuron_number_modify = torch.arange(0, 101, 1)
-neuron_number_modify = 7
+neuron_number_modify = 14
+save_pth = f"{encoder_type}/Result/Model/{Model_type}_decrease_con_{device}_{parameter}/"  # exclusive for Neuron=7
+#
+#
 
-for i in range(len(threshold_hidden)):
-    model_modified = modify(origin_size, input_size, threshold_hidden[i], Model_type, neuron_number_modify, encoder_type, origin_model, parameter, i, device)
+model_modified = modify(origin_size, input_size, threshold_hidden[neuron_number_modify], Model_type, neuron_number, origin_model, parameter, origin_model_pth, save_pth, neuron_number_modify)
 print("Model Modify Finished")
 
 # model inspect:

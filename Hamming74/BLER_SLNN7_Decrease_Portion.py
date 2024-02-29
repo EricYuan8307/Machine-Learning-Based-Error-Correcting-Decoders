@@ -68,24 +68,25 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters for SLNN neuron=7
-    num = int(1.5e8)
+    num = int(1e7)
     bits = 4
     encoded = 7
     SLNN_hidden_size = 7
-    # edge_delete = [9, 14, 19, 24, 29, 34, 39, 40, 41, 42, 43]
-    edge_delete = [40, 41, 42, 43]
+    edge_delete = [9, 14, 19, 24, 29, 34, 39, 40, 41, 42, 43]
+    # edge_delete = [40, 41, 42, 43]
 
     masks = MaskMatrix(device)
 
 
-    SNR_opt_NN = torch.tensor(9, dtype=torch.int, device=device)
+    SNR_opt_NN = torch.tensor(8, dtype=torch.int, device=device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
     parameter = "hidden.weight"
 
     for i in range(len(edge_delete)):
         mask = masks(edge_delete[i], encoded, SLNN_hidden_size)
-        load_pth = f"Result/Model/SLNN_decrease_{parameter}_{device}/SLNN_model_hiddenlayer{edge_delete[i]}_BER0.pth"
+        # load_pth = f"Result/Model/SLNN_decrease_{parameter}_{device}/SLNN_model_hiddenlayer{edge_delete[i]}_BER0.pth"
+        load_pth = f"Result/Model/SLNN_decrease_con_{device}_{parameter}/SLNN_model_deleted{edge_delete[i]}_BER0.pth"
         result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, load_pth, mask, edge_delete[i], device)
     # directory_path = "Result/BLER"
     #
