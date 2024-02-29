@@ -68,16 +68,17 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters for SLNN neuron=7
-    num = int(2e7)
+    num = int(1.5e8)
     bits = 4
     encoded = 7
     SLNN_hidden_size = 7
-    edge_delete = [9, 14, 19, 24, 29, 34, 39, 40, 41, 42, 43]
+    # edge_delete = [9, 14, 19, 24, 29, 34, 39, 40, 41, 42, 43]
+    edge_delete = [40, 41, 42, 43]
 
     masks = MaskMatrix(device)
 
 
-    SNR_opt_NN = torch.tensor(8, dtype=torch.int, device=device)
+    SNR_opt_NN = torch.tensor(9, dtype=torch.int, device=device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
     parameter = "hidden.weight"
