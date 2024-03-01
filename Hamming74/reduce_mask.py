@@ -81,13 +81,14 @@ class MaskMatrix(torch.nn.Module):
                                 [1, 0, 0, 0, 0, 0, 1]], dtype=torch.float, device=self.device)
 
         elif edge_delete == 39 and encoded == 7 and hidden_size == 7:
-            mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
-                                [0, 0, 0, 1, 0, 1, 0],
-                                [0, 0, 0, 0, 1, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 1],
-                                [0, 1, 0, 0, 0, 0, 0],
-                                [1, 0, 1, 0, 0, 0, 0],
-                                [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=self.device)
+            mask = torch.tensor([
+                [0, 0, 1, 0, 0, 1, 0],
+                [0, 0, 0, 1, 0, 1, 0],
+                [0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 0, 0, 1],
+                [0, 1, 0, 0, 0, 0, 0],
+                [1, 0, 1, 0, 0, 0, 0],
+                [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=self.device)
 
         elif edge_delete == 40 and encoded == 7 and hidden_size == 7:
             mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
