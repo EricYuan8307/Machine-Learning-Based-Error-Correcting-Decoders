@@ -216,9 +216,8 @@ def main():
     edge_delete = 40
     order = torch.range(1,11,1).to(torch.int)
 
-
-
-    SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device) # SLNN training
+    snr = 0
+    SLNN_snr = torch.tensor(snr, dtype=torch.float, device=device) # SLNN training
     SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for SLNN article
 
     # Early Stopping
@@ -228,8 +227,8 @@ def main():
     for i in range(len(order)):
         mask = Mask(order[i], device)
         Load_path = f"Result/Model/SLNN_edgedeleted40_hidden.weight_cpu/SLNN7_edgedeleted{edge_delete}_order{order[i]}_cpu.pth"
-        model_save_path = f"Result/Model/SLNN_edgedeleted{edge_delete}_trained_hidden.weight_{device}/"
-        model_name = f"SLNN_edgedeleted{edge_delete}_order{order[i]}_BER0.pth"
+        model_save_path = f"Result/Model/SLNN_edgedeleted{edge_delete}_trained_hidden.weight_{device}_BER{snr}/"
+        model_name = f"SLNN_edgedeleted{edge_delete}_order{order[i]}"
 
         # Train SLNN with different hidden layer neurons
         SLNN_training(SLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size, edge_delete,
