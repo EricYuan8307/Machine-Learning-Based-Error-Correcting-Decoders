@@ -20,12 +20,12 @@ class coderMatrix(torch.nn.Module):
         # Define the 7x4 matrix
         if encoded == 7 and origin == 4:
             encode_matrix = torch.tensor([[1, 1, 0, 1],
-                                   [1, 0, 1, 1],
-                                   [1, 0, 0, 0],
-                                   [0, 1, 1, 1],
-                                   [0, 1, 0, 0],
-                                   [0, 0, 1, 0],
-                                   [0, 0, 0, 1]], dtype=torch.float, device=self.device)
+                                          [1, 0, 1, 1],
+                                          [1, 0, 0, 0],
+                                          [0, 1, 1, 1],
+                                          [0, 1, 0, 0],
+                                          [0, 0, 1, 0],
+                                          [0, 0, 0, 1]], dtype=torch.float, device=self.device)
 
             decode_matrix = torch.tensor([[0, 0, 1, 0, 0, 0, 0],
                                 [0, 0, 0, 0, 1, 0, 0],
