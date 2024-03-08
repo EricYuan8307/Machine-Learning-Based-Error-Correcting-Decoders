@@ -11,8 +11,4 @@ C. T. Leung, R. V. Bhat and M. Motani, "Low Latency Energy-Efficient Neural Deco
 
 For faster training the model, I used early stopping.
 
-### Error Correction Code Transformer:
-Error Correction Code Transformer Reference: <br>
-Yoni Choukroun and Lior Wolf, "Error Correction Code Transformer," 2022. [Online]. Available: arXiv:2203.14966 [cs.LG].
-
 ### Addition: In Good First Issue, I mentioned some common bugs and solutions in Belief Pragation, BER and BLER.
