@@ -310,7 +310,7 @@ def main():
 
             # Train SLNN with different hidden layer neurons
             SLNN_training(SLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size, edge_delete,
-                          Load_path, model_save_path, model_name, SLNN_patience, delta, mask, order[i], device)
+                          Load_path, model_save_path, model_name, SLNN_patience, delta, mask, order[j], device)
 
 
 if __name__ == '__main__':
