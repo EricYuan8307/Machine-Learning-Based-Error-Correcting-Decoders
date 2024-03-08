@@ -291,7 +291,7 @@ def main():
     bits = 4
     encoded = 7
     edge_delete = 43
-    order = torch.range(1,8,1).to(torch.int)
+    order = torch.arange(1, 8, 1).to(torch.int)
 
     snr = 0
     SLNN_snr = torch.tensor(snr, dtype=torch.float, device=device) # SLNN training
