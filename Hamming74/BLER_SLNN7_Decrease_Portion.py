@@ -14,100 +14,100 @@ from Decode.Converter import DecimaltoBinary
 from generating import all_codebook, SLNN_D2B_matrix
 from Encode.Encoder import PCC_encoders
 
-# def Mask(order, device):
-#     if order == 1:
-#         mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
-#                              [0, 0, 0, 1, 0, 1, 0],
-#                              [0, 0, 0, 0, 1, 0, 0],
-#                              [0, 0, 0, 0, 0, 0, 1],
-#                              [0, 1, 0, 0, 0, 0, 0],
-#                              [1, 0, 1, 0, 0, 0, 0],
-#                              [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
-#
-#     if order == 2:
-#         mask = torch.tensor([[0, 0, 1, 0, 0, 0, 0],
-#                              [0, 0, 0, 1, 0, 1, 0],
-#                              [0, 0, 0, 0, 1, 0, 0],
-#                              [0, 0, 0, 0, 0, 0, 1],
-#                              [0, 1, 0, 0, 0, 0, 0],
-#                              [1, 0, 1, 0, 0, 0, 0],
-#                              [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
-#
-#     if order == 3:
-#         mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
-#                              [0, 0, 0, 0, 0, 1, 0],
-#                              [0, 0, 0, 0, 1, 0, 0],
-#                              [0, 0, 0, 0, 0, 0, 1],
-#                              [0, 1, 0, 0, 0, 0, 0],
-#                              [1, 0, 1, 0, 0, 0, 0],
-#                              [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
-#
-#     if order == 4:
-#         mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
-#                              [0, 0, 0, 1, 0, 0, 0],
-#                              [0, 0, 0, 0, 1, 0, 0],
-#                              [0, 0, 0, 0, 0, 0, 1],
-#                              [0, 1, 0, 0, 0, 0, 0],
-#                              [1, 0, 1, 0, 0, 0, 0],
-#                              [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
-#
-#     if order == 5:
-#         mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
-#                              [0, 0, 0, 1, 0, 1, 0],
-#                              [0, 0, 0, 0, 0, 0, 0],
-#                              [0, 0, 0, 0, 0, 0, 1],
-#                              [0, 1, 0, 0, 0, 0, 0],
-#                              [1, 0, 1, 0, 0, 0, 0],
-#                              [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
-#
-#     if order == 6:
-#         mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
-#                              [0, 0, 0, 1, 0, 1, 0],
-#                              [0, 0, 0, 0, 1, 0, 0],
-#                              [0, 0, 0, 0, 0, 0, 0],
-#                              [0, 1, 0, 0, 0, 0, 0],
-#                              [1, 0, 1, 0, 0, 0, 0],
-#                              [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
-#
-#     if order == 7:
-#         mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
-#                              [0, 0, 0, 1, 0, 1, 0],
-#                              [0, 0, 0, 0, 1, 0, 0],
-#                              [0, 0, 0, 0, 0, 0, 1],
-#                              [0, 0, 0, 0, 0, 0, 0],
-#                              [1, 0, 1, 0, 0, 0, 0],
-#                              [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
-#
-#     if order == 8:
-#         mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
-#                              [0, 0, 0, 1, 0, 1, 0],
-#                              [0, 0, 0, 0, 1, 0, 0],
-#                              [0, 0, 0, 0, 0, 0, 1],
-#                              [0, 1, 0, 0, 0, 0, 0],
-#                              [0, 0, 1, 0, 0, 0, 0],
-#                              [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
-#
-#     if order == 9:
-#         mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
-#                              [0, 0, 0, 1, 0, 1, 0],
-#                              [0, 0, 0, 0, 1, 0, 0],
-#                              [0, 0, 0, 0, 0, 0, 1],
-#                              [0, 1, 0, 0, 0, 0, 0],
-#                              [1, 0, 0, 0, 0, 0, 0],
-#                              [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
-#
-#     if order == 10:
-#         mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
-#                              [0, 0, 0, 1, 0, 1, 0],
-#                              [0, 0, 0, 0, 1, 0, 0],
-#                              [0, 0, 0, 0, 0, 0, 1],
-#                              [0, 1, 0, 0, 0, 0, 0],
-#                              [1, 0, 1, 0, 0, 0, 0],
-#                              [0, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
-#
-#     return mask
+def Mask40(order, device):
+    if order == 1:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 1, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [1, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
 
-def Mask(order, device):
+    if order == 2:
+        mask = torch.tensor([[0, 0, 1, 0, 0, 0, 0],
+                             [0, 0, 0, 1, 0, 1, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [1, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 3:
+        mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
+                             [0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [1, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 4:
+        mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [1, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 5:
+        mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 1, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [1, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 6:
+        mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 1, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [1, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 7:
+        mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 1, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [1, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 8:
+        mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 1, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 9:
+        mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 1, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 10:
+        mask = torch.tensor([[0, 0, 1, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 1, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [1, 0, 1, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    return mask
+
+def Mask43(order, device):
     if order == 1:
         mask = torch.tensor([[0, 0, 0, 0, 0, 0, 0],
                              [0, 0, 0, 1, 0, 0, 0],
@@ -249,9 +249,9 @@ def main():
     # result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, load_pth, mask, edge_delete, device)
 
     for i in range(len(order)):
-        mask = Mask(order[i], device)
+        mask = Mask43(order[i], device)
         load_pth = f"Result/Model/SLNN_edgedeleted{edge_delete}_{parameter}_{device}/SLNN7_edgedeleted{edge_delete}_order{order[i]}_{device}.pth" # The model untrained
-        # load_pth = f"Result/Model/SLNN_edgedeleted{edge_delete}_trained_{parameter}_{device}/SLNN_edgedeleted{edge_delete}_order{order[i]}_BER0.pth" # The model trained
+        # load_pth = f"Result/Model/SLNN_edgedeleted{edge_delete}_trained_{parameter}_{device}_BER0/SLNN_edgedeleted{edge_delete}_order{order[i]}.pth" # The model trained
         result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, load_pth, mask, edge_delete, device)
     # directory_path = "Result/BLER"
     #
