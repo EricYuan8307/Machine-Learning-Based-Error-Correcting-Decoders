@@ -2,7 +2,7 @@ import torch
 import os
 from Decode.NNDecoder import SingleLabelNNDecoder
 
-def Mask(order, device):
+def Mask40(order, device):
     if order == 1:
         mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
                              [0, 0, 0, 1, 0, 1, 0],
@@ -95,6 +95,83 @@ def Mask(order, device):
 
     return mask
 
+def Mask42(device):
+    mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                         [0, 0, 0, 1, 0, 0, 0],
+                         [0, 0, 0, 0, 1, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 1],
+                         [0, 1, 0, 0, 0, 0, 0],
+                         [0, 0, 1, 0, 0, 0, 0],
+                         [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    return mask
+
+def Mask43(order, device):
+    if order == 1:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 2:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 3:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 4:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 5:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 6:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 7:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    return mask
+
 def normalize_abs(data):
     normalized = torch.div(torch.abs(data), torch.sum(torch.abs(data), dim=1).unsqueeze(1))
     return normalized
@@ -161,15 +238,14 @@ device = "cpu"
 neuron_number = 7
 origin_model = SingleLabelNNDecoder
 parameter = "hidden.weight"
-edge_delete = 39
-order = 10
-model_name = f"{Model_type}{neuron_number}_edgedeleted40_order{order}_{device}"
-mask = Mask(order, device)
+edge_delete = 43
+order = 1
+mask = Mask43(order, device) # for edge deleted
+model_name = f"{Model_type}{neuron_number}_edgedeleted{edge_delete}_order{order}_{device}"
 
 origin_model_pth = f"{encoder_type}/Result/Model/{Model_type}_decrease_{parameter}_{device}/{Model_type}_model_hiddenlayer39_BER0.pth"
-
-neuron_number_modify = 14
-save_pth = f"{encoder_type}/Result/Model/{Model_type}_edgedeleted40_{parameter}_{device}/"  # exclusive for Neuron=7
+# origin_model_pth = "Hamming74/Result/Model/SLNN_edgedeleted42_hidden.weight_cpu/SLNN7_edgedeleted42_cpu.pth" # To modify the 43 edges.
+save_pth = f"{encoder_type}/Result/Model/{Model_type}_edgedeleted{edge_delete}_{parameter}_{device}/"  # exclusive for Neuron=7
 
 model_modified = modify_mask(origin_size, input_size, model_name, neuron_number, origin_model, parameter, origin_model_pth, save_pth, mask)
 print("Model Modify Finished")
