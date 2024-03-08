@@ -302,11 +302,11 @@ def main():
         SLNN_patience = 16
         delta = 0.001
 
-        for i in range(len(order)):
-            mask = Mask43(order[i], device)
-            Load_path = f"Result/Model/SLNN_edgedeleted{edge_delete}_hidden.weight_cpu/SLNN7_edgedeleted{edge_delete}_order{order[i]}_cpu.pth"
+        for j in range(len(order)):
+            mask = Mask43(order[j], device)
+            Load_path = f"Result/Model/SLNN_edgedeleted{edge_delete}_hidden.weight_cpu/SLNN7_edgedeleted{edge_delete}_order{order[j]}_cpu.pth"
             model_save_path = f"Result/Model/SLNN_edgedeleted{edge_delete}_trained_hidden.weight_{device}_BER{snr[i]}/"
-            model_name = f"SLNN_edgedeleted{edge_delete}_order{order[i]}"
+            model_name = f"SLNN_edgedeleted{edge_delete}_order{order[j]}"
 
             # Train SLNN with different hidden layer neurons
             SLNN_training(SLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size, edge_delete,
