@@ -291,26 +291,26 @@ def main():
     bits = 4
     encoded = 7
     edge_delete = 43
-    order = torch.arange(1, 8, 1).to(torch.int)
+    order = torch.arange(1, 113, 1).to(torch.int)
 
-    snr = [0, 8]
-    for i in range(len(snr)):
-        SLNN_snr = torch.tensor(snr[i], dtype=torch.float, device=device) # SLNN training
-        SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for SLNN article
+    snr = 0
 
-        # Early Stopping
-        SLNN_patience = 16
-        delta = 0.001
+    SLNN_snr = torch.tensor(snr, dtype=torch.float, device=device) # SLNN training
+    SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for SLNN article
 
-        for j in range(len(order)):
-            mask = Mask43(order[j], device)
-            Load_path = f"Result/Model/SLNN_edgedeleted{edge_delete}_hidden.weight_cpu/SLNN7_edgedeleted{edge_delete}_order{order[j]}_cpu.pth"
-            model_save_path = f"Result/Model/SLNN_edgedeleted{edge_delete}_trained_hidden.weight_{device}_BER{snr[i]}/"
-            model_name = f"SLNN_edgedeleted{edge_delete}_order{order[j]}"
+    # Early Stopping
+    SLNN_patience = 16
+    delta = 0.001
 
-            # Train SLNN with different hidden layer neurons
-            SLNN_training(SLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size, edge_delete,
-                          Load_path, model_save_path, model_name, SLNN_patience, delta, mask, order[j], device)
+    for j in range(len(order)):
+        mask = Mask42(device)
+        Load_path = f"Result/Model/SLNN_edgedeleted{edge_delete}_output.weight_cpu/SLNN7_edgedeleted{edge_delete}_order{order[j]}.pth"
+        model_save_path = f"Result/Model/SLNN_edgedeleted{edge_delete}_trained_output.weight_{device}_BER{snr}/"
+        model_name = f"SLNN_edgedeleted{edge_delete}_order{order[j]}"
+
+        # Train SLNN with different hidden layer neurons
+        SLNN_training(SLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size, edge_delete,
+                      Load_path, model_save_path, model_name, SLNN_patience, delta, mask, order[j], device)
 
 
 if __name__ == '__main__':
