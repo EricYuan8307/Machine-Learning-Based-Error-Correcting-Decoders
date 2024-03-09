@@ -3,7 +3,6 @@ import numpy as np
 import os
 from datetime import datetime
 
-from Hamming74.reduce_mask import MaskMatrix
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
 from Decode.NNDecoder import SingleLabelNNDecoder_nonfully
@@ -15,7 +14,7 @@ from Decode.Converter import DecimaltoBinary
 from generating import all_codebook, SLNN_D2B_matrix
 from Encode.Encoder import PCC_encoders
 
-def Mask(order, device):
+def Mask40(order, device):
     if order == 1:
         mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
                              [0, 0, 0, 1, 0, 1, 0],
@@ -108,6 +107,72 @@ def Mask(order, device):
 
     return mask
 
+def Mask43(order, device):
+    if order == 1:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 2:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 3:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 4:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 5:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 6:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 7:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    return mask
+
 def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
     encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
     SLNN_Matrix = SLNN_D2B_matrix(bits, device)
@@ -134,7 +199,7 @@ def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
 
     return SLNN_binary, bits_info, practical_snr
 
-def estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, mask, edge_delete, device):
+def estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, mask, edge_delete, order, device):
     # Single-label Neural Network:
     output_size = torch.pow(torch.tensor(2), bits)
 
@@ -148,7 +213,7 @@ def estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, mask
         print(f"the code number is {num}")
 
     else:
-        print(f"SLNN edge deleted{edge_delete}: When SNR is {snr_measure} and signal number is {num}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
+        print(f"SLNN edge deleted{edge_delete}, order{order}: When SNR is {snr_measure} and signal number is {num}, error number is {error_num_SLNN} and BLER is {BLER_SLNN}")
 
     return BLER_SLNN
 
@@ -165,23 +230,29 @@ def main():
     bits = 4
     encoded = 7
     SLNN_hidden_size = 7
-    edge_delete = 40
-    parameter = "hidden.weight"
-    order = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-    masks = MaskMatrix(device)
+    edge_delete = 43
+    parameter = "output.weight"
+    order = torch.arange(0, 112, 1)
+    mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                                 [0, 0, 0, 1, 0, 0, 0],
+                                 [0, 0, 0, 0, 1, 0, 0],
+                                 [0, 0, 0, 0, 0, 0, 1],
+                                 [0, 1, 0, 0, 0, 0, 0],
+                                 [0, 0, 1, 0, 0, 0, 0],
+                                 [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device) # To delete 42 edges
 
 
     SNR_opt_NN = torch.tensor(8, dtype=torch.int, device=device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
-
+    # load_pth = f"Result/Model/SLNN_edgedeleted{edge_delete}_{parameter}_{device}/SLNN7_edgedeleted{edge_delete}_{device}.pth"  # The model untrained
+    # result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, load_pth, mask, edge_delete, device)
 
     for i in range(len(order)):
-        mask = Mask(order[i], device)
-        # load_pth = f"Result/Model/SLNN_edgedeleted{edge_delete}_{parameter}_{device}/SLNN7_edgedeleted{edge_delete}_order{order[i]}.pth" # The model untrained
-        load_pth = f"Result/Model/SLNN_edgedeleted{edge_delete}_trained_{parameter}_{device}/SLNN_edgedeleted{edge_delete}_order{order[i]}_BER0.pth" # The model trained
-        result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, load_pth, mask, edge_delete, device)
+        # mask = Mask43(order[i], device)
+        load_pth = f"Result/Model/SLNN_edgedeleted{edge_delete}_{parameter}_{device}/SLNN7_edgedeleted{edge_delete}_order{order[i]}.pth" # The model untrained
+        # load_pth = f"Result/Model/SLNN_edgedeleted{edge_delete}_trained_{parameter}_{device}_BER8/SLNN_edgedeleted{edge_delete}_order{order[i]}.pth" # The model trained
+        result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, load_pth, mask, edge_delete, order[i], device)
     # directory_path = "Result/BLER"
     #
     # # Create the directory if it doesn't exist

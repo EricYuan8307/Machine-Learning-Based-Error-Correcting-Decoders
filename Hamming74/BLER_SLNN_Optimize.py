@@ -103,7 +103,7 @@ def SLNN_training(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_
             print("SLNN: Continue Training")
 
 
-def Mask(order, device):
+def Mask40(order, device):
     if order == 1:
         mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
                              [0, 0, 0, 1, 0, 1, 0],
@@ -196,6 +196,83 @@ def Mask(order, device):
 
     return mask
 
+def Mask42(device):
+    mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                         [0, 0, 0, 1, 0, 0, 0],
+                         [0, 0, 0, 0, 1, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 1],
+                         [0, 1, 0, 0, 0, 0, 0],
+                         [0, 0, 1, 0, 0, 0, 0],
+                         [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    return mask
+
+def Mask43(order, device):
+    if order == 1:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 2:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 3:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 4:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 5:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 6:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    if order == 7:
+        mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
+                             [0, 0, 0, 1, 0, 0, 0],
+                             [0, 0, 0, 0, 1, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1],
+                             [0, 1, 0, 0, 0, 0, 0],
+                             [0, 0, 1, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
+
+    return mask
+
 
 def main():
     # Device Setting
@@ -213,10 +290,11 @@ def main():
     nr_codeword = int(1e6)
     bits = 4
     encoded = 7
-    edge_delete = 40
-    order = torch.range(1,11,1).to(torch.int)
+    edge_delete = 43
+    order = torch.arange(1, 113, 1).to(torch.int)
 
     snr = 0
+
     SLNN_snr = torch.tensor(snr, dtype=torch.float, device=device) # SLNN training
     SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for SLNN article
 
@@ -224,15 +302,15 @@ def main():
     SLNN_patience = 16
     delta = 0.001
 
-    for i in range(len(order)):
-        mask = Mask(order[i], device)
-        Load_path = f"Result/Model/SLNN_edgedeleted40_hidden.weight_cpu/SLNN7_edgedeleted{edge_delete}_order{order[i]}_cpu.pth"
-        model_save_path = f"Result/Model/SLNN_edgedeleted{edge_delete}_trained_hidden.weight_{device}_BER{snr}/"
-        model_name = f"SLNN_edgedeleted{edge_delete}_order{order[i]}"
+    for j in range(len(order)):
+        mask = Mask42(device)
+        Load_path = f"Result/Model/SLNN_edgedeleted{edge_delete}_output.weight_cpu/SLNN7_edgedeleted{edge_delete}_order{order[j]}.pth"
+        model_save_path = f"Result/Model/SLNN_edgedeleted{edge_delete}_trained_output.weight_{device}_BER{snr}/"
+        model_name = f"SLNN_edgedeleted{edge_delete}_order{order[j]}"
 
         # Train SLNN with different hidden layer neurons
         SLNN_training(SLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size, edge_delete,
-                      Load_path, model_save_path, model_name, SLNN_patience, delta, mask, order[i], device)
+                      Load_path, model_save_path, model_name, SLNN_patience, delta, mask, order[j], device)
 
 
 if __name__ == '__main__':
