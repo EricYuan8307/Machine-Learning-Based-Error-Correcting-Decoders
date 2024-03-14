@@ -2,3 +2,4 @@ python~=3.9.18
 pytorch~=2.1.1
 numpy~=1.26
 matplotlib~=3.8.2
+matlabengine
