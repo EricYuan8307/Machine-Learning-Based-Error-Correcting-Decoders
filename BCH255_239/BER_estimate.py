@@ -14,12 +14,23 @@ from Metric.ErrorRate import calculate_ber, calculate_bler
 from Decode.MaximumLikelihood import HardDecisionML74
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 
-from generating import all_codebook
 from Encode.Encoder import PCC_encoders
 from Decode.MaximumLikelihood import SoftDecisionML
 from Decode.Decoder import PCC_decoder
 
 # Calculate the Error number and BER
+
+def all_codebook(original, encoded, device):
+    codebook_formatted = [list(map(int, format(i, f'0{original}b'))) for i in range(2 ** original)]
+    bits_info_G = torch.tensor(codebook_formatted, dtype=torch.float, device=device) # Decimal to Binary
+
+    encoded_info_G = encoder(bits_info_G)
+
+    SDMLMatrix = bpsk_modulator(encoded_info_G)
+
+
+    return encoded_info_G, SDMLMatrix
+
 def estimation_BPSK(num, bits, SNR_opt_BPSK, result, device):
     N = num
 
@@ -79,51 +90,51 @@ def estimation_HDML(num, bits, encoded, SNR_opt_ML, result, device):
 
     return result
 
-def estimation_BP(num, bits, encoded, SNR_opt_BP, iter, result, device):
-    N = num
-
-    # Belief Propagation
-    for i in range(len(SNR_opt_BP)):
-        snr_dB = SNR_opt_BP[i]
-
-        for _ in range(10):
-            LDPC_final, bits_info, snr_measure = BeliefPropagation(N, bits, encoded, snr_dB, iter, device)
-
-            BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
-
-            if error_num_LDPC < 100:
-                N += 1000000
-                print(f"the code number is {N}")
-
-            else:
-                print(f"LDPC: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
-                result[0, i] = BER_LDPC
-                break
-
-    return result
-
-def estimation_SDML(num, bits, encoded, SNR_opt_ML, result, device):
-    N = num
-
-    # Soft-Decision Maximum Likelihood
-    for i in range(len(SNR_opt_ML)):
-        snr_dB = SNR_opt_ML[i]
-
-        # BER
-        for _ in range(10):
-            SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, bits, encoded, snr_dB, device)
-
-            BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
-            if error_num_SDML < 100:
-                N += 1000000
-                print(f"the code number is {N}")
-
-            else:
-                print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
-                result[0, i] = BER_SDML
-                break
-
-    return result
+# def estimation_BP(num, bits, encoded, SNR_opt_BP, iter, result, device):
+#     N = num
+#
+#     # Belief Propagation
+#     for i in range(len(SNR_opt_BP)):
+#         snr_dB = SNR_opt_BP[i]
+#
+#         for _ in range(10):
+#             LDPC_final, bits_info, snr_measure = BeliefPropagation(N, bits, encoded, snr_dB, iter, device)
+#
+#             BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
+#
+#             if error_num_LDPC < 100:
+#                 N += 1000000
+#                 print(f"the code number is {N}")
+#
+#             else:
+#                 print(f"BP: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
+#                 result[0, i] = BER_LDPC
+#                 break
+#
+#     return result
+#
+# def estimation_SDML(num, bits, encoded, SNR_opt_ML, result, device):
+#     N = num
+#
+#     # Soft-Decision Maximum Likelihood
+#     for i in range(len(SNR_opt_ML)):
+#         snr_dB = SNR_opt_ML[i]
+#
+#         # BER
+#         for _ in range(10):
+#             SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, bits, encoded, snr_dB, device)
+#
+#             BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
+#             if error_num_SDML < 100:
+#                 N += 1000000
+#                 print(f"the code number is {N}")
+#
+#             else:
+#                 print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and BER is {BER_SDML}")
+#                 result[0, i] = BER_SDML
+#                 break
+#
+#     return result
 
 def HardDecisionMLP(nr_codeword, bits, encoded, snr_dB, device):
     encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
@@ -146,72 +157,70 @@ def HardDecisionMLP(nr_codeword, bits, encoded, snr_dB, device):
 
     return HDML_final, bits_info, practical_snr
 
-def BeliefPropagation(nr_codeword, bits, encoded, snr_dB, iter, device):
-    iter_start_time = time.time()
-
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
-
-    encoder = PCC_encoders(encoder_matrix)
-    ldpc_bp = LDPCBeliefPropagation(device)
-    decoder = PCC_decoder(decoder_matrix)
-
-    bits_info = generator(nr_codeword, bits, device)  # Code Generator
-    encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
-    modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
-    noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
-
-    llr_output = llr(noised_signal, snr_dB)  # LLR
-    BP_result = torch.zeros(llr_output.shape, device=device)
-
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
-
-    for k in range(llr_output.shape[0]):
-        start_time = time.time()
-
-        BP = ldpc_bp(llr_output[k], iter)  # LDPC
-        BP_result[k] = BP
-        end_time = time.time()
-
-        if k % 10000 == 0 and k > 0:
-            elapsed_time = end_time - start_time
-            print(f"Processed {k} iterations in {elapsed_time * 10000} seconds")
-
-    iter_end_time = time.time()
-    print(f"For {practical_snr}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
-
-    LDPC_HD = hard_decision(BP_result, device)  # Hard Decision
-    LDPC_final = decoder(LDPC_HD)  # Decoder
-
-    return LDPC_final, bits_info, practical_snr
-
-def SoftDecisionMLP(nr_codeword, bits, encoded, snr_dB, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
-
-    encoder = PCC_encoders(encoder_matrix)
-    SD_MaximumLikelihood = SoftDecisionML(SoftDecisionMLMatrix)
-    decoder = PCC_decoder(decoder_matrix)
-
-    # ML:
-    bits_info = generator(nr_codeword, bits, device)
-    encoded_codeword = encoder(bits_info)
-    modulated_signal = bpsk_modulator(encoded_codeword)
-    noised_signal = AWGN(modulated_signal, snr_dB, device)
-
-    SD_ML = SD_MaximumLikelihood(noised_signal)
-    HD_final = hard_decision(SD_ML, device)
-    SDML_final = decoder(HD_final)
-
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
-
-    return SDML_final, bits_info, practical_snr
+# def BeliefPropagation(nr_codeword, bits, encoded, snr_dB, iter, device):
+#     iter_start_time = time.time()
+#
+#     # encoder = PCC_encoders(encoder_matrix)
+#     ldpc_bp = LDPCBeliefPropagation(device)
+#     # decoder = PCC_decoder(decoder_matrix)
+#
+#     bits_info = generator(nr_codeword, bits, device)  # Code Generator
+#     encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
+#     modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
+#     noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
+#
+#     llr_output = llr(noised_signal, snr_dB)  # LLR
+#     BP_result = torch.zeros(llr_output.shape, device=device)
+#
+#     practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
+#
+#     for k in range(llr_output.shape[0]):
+#         start_time = time.time()
+#
+#         BP = ldpc_bp(llr_output[k], iter)  # LDPC
+#         BP_result[k] = BP
+#         end_time = time.time()
+#
+#         if k % 10000 == 0 and k > 0:
+#             elapsed_time = end_time - start_time
+#             print(f"Processed {k} iterations in {elapsed_time * 10000} seconds")
+#
+#     iter_end_time = time.time()
+#     print(f"For {practical_snr}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
+#
+#     LDPC_HD = hard_decision(BP_result, device)  # Hard Decision
+#     BCH_final = decoder(LDPC_HD)  # Decoder
+#
+#     return BCH_final, bits_info, practical_snr
+#
+# def SoftDecisionMLP(nr_codeword, bits, encoded, snr_dB, device):
+#     # encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+#
+#     # encoder = PCC_encoders(encoder_matrix)
+#     SD_MaximumLikelihood = SoftDecisionML(SoftDecisionMLMatrix)
+#     # decoder = PCC_decoder(decoder_matrix)
+#
+#     # ML:
+#     bits_info = generator(nr_codeword, bits, device)
+#     encoded_codeword = encoder(bits_info)
+#     modulated_signal = bpsk_modulator(encoded_codeword)
+#     noised_signal = AWGN(modulated_signal, snr_dB, device)
+#
+#     SD_ML = SD_MaximumLikelihood(noised_signal)
+#     HD_final = hard_decision(SD_ML, device)
+#     SDML_final = decoder(HD_final)
+#
+#     practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
+#
+#     return SDML_final, bits_info, practical_snr
 
 
 
 def main():
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
-    # device = torch.device("cpu")
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                 else torch.device("cpu")))
+    device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters
@@ -227,16 +236,16 @@ def main():
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
     # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
-    result_SDML = estimation_SDML(num, bits, encoded, SNR_opt_ML, result_save, device)
+    # result_SDML = estimation_SDML(num, bits, encoded, SNR_opt_ML, result_save, device)
 
     result_HDML = estimation_HDML(num, bits, encoded, SNR_opt_ML, result_save, device)
-    result_BP = estimation_BP(num, bits, encoded, SNR_opt_BP, iter, result_save, device)
+    # result_BP = estimation_BP(num, bits, encoded, SNR_opt_BP, iter, result_save, device)
 
     result_all = np.vstack([
         # result_BPSK,
-        result_SDML,
+        # result_SDML,
         result_HDML,
-        result_BP
+        # result_BP
     ])
 
 

@@ -208,11 +208,11 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.backends.cuda.is_available()
     #                 else torch.device("cpu")))
-    # device = torch.device("cpu")
-    device = torch.device("cuda")
+    device = torch.device("cpu")
+    # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e7)
+    num = int(7)
     iter = 5
     bits = 4
     encoded = 7
@@ -223,14 +223,14 @@ def main():
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
-    result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
+    # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
     result_SDML = estimation_SDML(num, bits, encoded, SNR_opt_ML, result_save, device)
 
     result_HDML = estimation_HDML(num, bits, encoded, SNR_opt_ML, result_save, device)
     result_BP = estimation_BP(num, bits, encoded, SNR_opt_BP, iter, result_save, device)
 
     result_all = np.vstack([
-        result_BPSK,
+        # result_BPSK,
         result_SDML,
         result_HDML,
         result_BP
