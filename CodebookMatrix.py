@@ -432,7 +432,7 @@ class coderMatrix(torch.nn.Module):
             encode_matrix = torch.tensor(bch.G).clone().t().to(dtype = torch.float, device=self.device)
 
             decode_matrix = self.decoder_matrix(encoded, origin)
-            decode_matrix = torch.tensor(decode_matrix).clone().to(dtype = torch.float, device=self.device)
+            decode_matrix = decode_matrix.clone().detach().to(dtype=torch.float, device=self.device)
             decode_matrix = decode_matrix.T
 
         return encode_matrix, decode_matrix

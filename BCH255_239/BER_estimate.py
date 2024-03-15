@@ -207,7 +207,7 @@ def estimation_SDML(num, method, bits, encoded, SNR_opt_ML, result, device):
 
 def main():
     device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
+              else (torch.device("cuda") if torch.cuda.is_available()
                     else torch.device("cpu")))
     # device = torch.device("cpu")
     # device = torch.device("cuda")
