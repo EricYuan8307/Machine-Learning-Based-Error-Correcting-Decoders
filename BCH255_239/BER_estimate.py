@@ -55,7 +55,7 @@ def HardDecisionMLP(nr_codeword, method, bits, encoded, snr_dB, device):
 def BeliefPropagation(nr_codeword, method, bits, encoded, snr_dB, iter, device):
     iter_start_time = time.time()
 
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(method, bits, encoded, device)
+    encoder_matrix, decoder_matrix, _ = all_codebook(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
     ldpc_bp = LDPCBeliefPropagation(device)
