@@ -11,11 +11,11 @@ from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import BinarytoDecimal
 from earlystopping import SLNN_EarlyStopping, MLNN_EarlyStopping
 
-from generating import all_codebook
+from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 
-def SLNN_training(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
+    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
@@ -99,8 +99,8 @@ def SLNN_training(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_
         else:
             print(f"SLNN: Continue Training")
 
-def MLNN_training2(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
+    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
@@ -184,8 +184,8 @@ def MLNN_training2(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch
         else:
             print("MLNN: Continue Training")
 
-def MLNN_training3(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
+    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
@@ -272,10 +272,10 @@ def MLNN_training3(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch
 
 def main():
     # Device Setting
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
-    #                 else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+              else (torch.device("cuda") if torch.cuda.is_available()
+                    else torch.device("cpu")))
+    # device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters
@@ -288,6 +288,7 @@ def main():
     nr_codeword = int(1e6)
     bits = 10
     encoded = 26
+    encoding_method = "parity"
 
     SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
     SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
@@ -307,16 +308,16 @@ def main():
 
     # Train SLNN with different hidden layer neurons
     for i in range(len(SLNN_hidden_size)):
-        SLNN_training(SLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
+        SLNN_training(SLNN_snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
 
     # Train MLNN model with two hidden layer
     for i in range(len(MLNN_hidden_size_2)):
-        MLNN_training2(MLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i],
+        MLNN_training2(MLNN_snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i],
                        MLNN_model_path2, MLNN_patience, delta, device)
 
     # Train MLNN model with three hidden layers
     for i in range(len(MLNN_hidden_size_3)):
-        MLNN_training3(MLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size_3[i],
+        MLNN_training3(MLNN_snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size_3[i],
                        MLNN_model_path3, MLNN_patience, delta, device)
 
 

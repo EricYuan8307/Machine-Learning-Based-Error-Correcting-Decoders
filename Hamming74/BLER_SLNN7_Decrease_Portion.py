@@ -11,7 +11,7 @@ from Metric.ErrorRate import calculate_bler
 from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import DecimaltoBinary
 
-from generating import all_codebook, SLNN_D2B_matrix
+from generating import all_codebook_NonML, SLNN_D2B_matrix
 from Encode.Encoder import PCC_encoders
 
 def Mask40(order, device):
@@ -173,8 +173,8 @@ def Mask43(order, device):
 
     return mask
 
-def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+def SLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, device):
+    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
     SLNN_Matrix = SLNN_D2B_matrix(bits, device)
 
     encoder = PCC_encoders(encoder_matrix)
@@ -199,12 +199,12 @@ def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
 
     return SLNN_binary, bits_info, practical_snr
 
-def estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, mask, edge_delete, order, device):
+def estimation(num, method, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, mask, edge_delete, order, device):
     # Single-label Neural Network:
     output_size = torch.pow(torch.tensor(2), bits)
 
     model = SingleLabelNNDecoder_nonfully(encoded, SLNN_hidden_size, output_size, mask).to(device)
-    SLNN_final, bits_info, snr_measure = SLNNDecoder(num, bits, encoded, SNR_opt_NN, model, model_pth, device)
+    SLNN_final, bits_info, snr_measure = SLNNDecoder(num, method, bits, encoded, SNR_opt_NN, model, model_pth, device)
 
     BLER_SLNN, error_num_SLNN = calculate_bler(SLNN_final, bits_info) # BER calculation
 
@@ -219,16 +219,17 @@ def estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, mask
 
 
 def main():
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
-    #                 else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+              else (torch.device("cuda") if torch.cuda.is_available()
+                    else torch.device("cpu")))
+    # device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters for SLNN neuron=7
     num = int(1e7)
     bits = 4
     encoded = 7
+    encoding_method = "Hamming"
     SLNN_hidden_size = 7
     edge_delete = 43
     parameter = "output.weight"
@@ -252,7 +253,7 @@ def main():
         # mask = Mask43(order[i], device)
         load_pth = f"Result/Model/SLNN_edgedeleted{edge_delete}_{parameter}_{device}/SLNN7_edgedeleted{edge_delete}_order{order[i]}.pth" # The model untrained
         # load_pth = f"Result/Model/SLNN_edgedeleted{edge_delete}_trained_{parameter}_{device}_BER8/SLNN_edgedeleted{edge_delete}_order{order[i]}.pth" # The model trained
-        result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, load_pth, mask, edge_delete, order[i], device)
+        result_all = estimation(num, encoding_method, bits, encoded, SNR_opt_NN, SLNN_hidden_size, load_pth, mask, edge_delete, order[i], device)
     # directory_path = "Result/BLER"
     #
     # # Create the directory if it doesn't exist

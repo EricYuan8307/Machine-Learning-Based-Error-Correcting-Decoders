@@ -11,11 +11,11 @@ from Metric.ErrorRate import calculate_bler
 from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import DecimaltoBinary
 
-from generating import all_codebook, SLNN_D2B_matrix
+from generating import all_codebook_NonML, SLNN_D2B_matrix
 from Encode.Encoder import PCC_encoders
 
-def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+def SLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, device):
+    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
     SLNN_Matrix = SLNN_D2B_matrix(bits, device)
 
     encoder = PCC_encoders(encoder_matrix)
@@ -40,12 +40,12 @@ def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
 
     return SLNN_binary, bits_info, practical_snr
 
-def estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, result, i, device):
+def estimation(num, method, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, result, i, device):
     # Single-label Neural Network:
     output_size = torch.pow(torch.tensor(2), bits)
 
     model = SingleLabelNNDecoder(encoded, SLNN_hidden_size, output_size).to(device)
-    SLNN_final, bits_info, snr_measure = SLNNDecoder(num, bits, encoded, SNR_opt_NN, model, model_pth, device)
+    SLNN_final, bits_info, snr_measure = SLNNDecoder(num, method, bits, encoded, SNR_opt_NN, model, model_pth, device)
 
     BLER_SLNN, error_num_SLNN = calculate_bler(SLNN_final, bits_info) # BER calculation
 
@@ -61,16 +61,17 @@ def estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, resu
 
 
 def main():
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
-    #                 else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+              else (torch.device("cuda") if torch.cuda.is_available()
+                    else torch.device("cpu")))
+    # device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters
     num = int(1e7)
     bits = 4
     encoded = 7
+    encoding_method = "Hamming"
     SLNN_hidden_size = torch.arange(0, 101, 1)
     SNR_opt_NN = torch.tensor(8, dtype=torch.int, device=device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
@@ -79,7 +80,7 @@ def main():
 
     for i in range(0, len(SLNN_hidden_size)):
         save_pth = f"Result/Model/SLNN_{device}/SLNN_model_hiddenlayer{i}_BER0.pth"
-        result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size[i], save_pth, result_save, i, device)
+        result_all = estimation(num, encoding_method, bits, encoded, SNR_opt_NN, SLNN_hidden_size[i], save_pth, result_save, i, device)
     directory_path = "Result/BLER"
 
 
