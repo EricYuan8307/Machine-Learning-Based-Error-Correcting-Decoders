@@ -69,7 +69,7 @@ def BeliefPropagation(nr_codeword, bits, encoded, snr_dB, iter, device):
     llr_output = llr(noised_signal, snr_dB)  # LLR
     BP_result = torch.zeros(llr_output.shape, device=device)
 
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
+    # practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
 
     for k in range(llr_output.shape[0]):
         start_time = time.time()
@@ -83,12 +83,12 @@ def BeliefPropagation(nr_codeword, bits, encoded, snr_dB, iter, device):
             print(f"Processed {k} iterations in {elapsed_time * 10000} seconds")
 
     iter_end_time = time.time()
-    print(f"For {practical_snr}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
+    print(f"For {snr_dB}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
 
     LDPC_HD = hard_decision(BP_result, device)  # Hard Decision
     LDPC_final = decoder(LDPC_HD)  # Decoder
 
-    return LDPC_final, bits_info, practical_snr
+    return LDPC_final, bits_info
 
 def SoftDecisionMLP(nr_codeword, bits, encoded, snr_dB, device):
     encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
@@ -165,7 +165,7 @@ def estimation_BP(num, bits, encoded, SNR_opt_BP, iter, result, device):
         snr_dB = SNR_opt_BP[i]
 
         for _ in range(10):
-            LDPC_final, bits_info, snr_measure = BeliefPropagation(N, bits, encoded, snr_dB, iter, device)
+            LDPC_final, bits_info = BeliefPropagation(N, bits, encoded, snr_dB, iter, device)
 
             BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
 
@@ -174,7 +174,7 @@ def estimation_BP(num, bits, encoded, SNR_opt_BP, iter, result, device):
                 print(f"the code number is {N}")
 
             else:
-                print(f"LDPC: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
+                print(f"LDPC: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
                 result[0, i] = BER_LDPC
                 break
 
@@ -212,7 +212,7 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(7)
+    num = int(1e4)
     iter = 5
     bits = 4
     encoded = 7
@@ -224,15 +224,14 @@ def main():
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
     # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
-    result_SDML = estimation_SDML(num, bits, encoded, SNR_opt_ML, result_save, device)
-
-    result_HDML = estimation_HDML(num, bits, encoded, SNR_opt_ML, result_save, device)
+    # result_SDML = estimation_SDML(num, bits, encoded, SNR_opt_ML, result_save, device)
+    # result_HDML = estimation_HDML(num, bits, encoded, SNR_opt_ML, result_save, device)
     result_BP = estimation_BP(num, bits, encoded, SNR_opt_BP, iter, result_save, device)
 
     result_all = np.vstack([
         # result_BPSK,
-        result_SDML,
-        result_HDML,
+        # result_SDML,
+        # result_HDML,
         result_BP
     ])
 

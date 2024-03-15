@@ -61,7 +61,7 @@ def estimation_SLNN(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth,
             print(f"the code number is {N}")
 
         else:
-            print(f"SLNN: When SNR is {snr_save} and signal number is {N}, error number is {error_num_SLNN} and BLER is {BER_SLNN}")
+            print(f"SLNN: When SNR is {snr_save} and signal number is {N}, error number is {error_num_SLNN} and BER is {BER_SLNN}")
             result[0, i] = BER_SLNN
 
     return result
@@ -87,14 +87,14 @@ def main():
     result_save = np.zeros((1, len(SNR_opt_NN)))
     result_SLNN = estimation_SLNN(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, device)
 
-    directory_path = "Result/BLER"
+    directory_path = "Result/BER"
 
     # Create the directory if it doesn't exist
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
 
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    csv_filename = f"BLER_result_{current_time}.csv"
+    csv_filename = f"BER_result_{current_time}.csv"
     full_csv_path = os.path.join(directory_path, csv_filename)
     np.savetxt(full_csv_path, result_SLNN, delimiter=', ')
 
