@@ -11,13 +11,13 @@ from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import BinarytoDecimal
 from earlystopping import EarlyStopping
 
-from generating import all_codebook
+from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 
 
-def SLNN_training(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, edge_delete,
+def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, edge_delete,
                   model_load_pth, model_save_path, model_name, patience, delta, mask, order, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
@@ -276,10 +276,10 @@ def Mask43(order, device):
 
 def main():
     # Device Setting
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.cuda.is_available()
-                    else torch.device("cpu")))
-    # device = torch.device("cpu")
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.cuda.is_available()
+    #                 else torch.device("cpu")))
+    device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters
@@ -290,6 +290,7 @@ def main():
     nr_codeword = int(1e6)
     bits = 4
     encoded = 7
+    encoding_method = "Hamming"
     edge_delete = 43
     order = torch.arange(1, 113, 1).to(torch.int)
 
@@ -309,7 +310,7 @@ def main():
         model_name = f"SLNN_edgedeleted{edge_delete}_order{order[j]}"
 
         # Train SLNN with different hidden layer neurons
-        SLNN_training(SLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size, edge_delete,
+        SLNN_training(SLNN_snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size, edge_delete,
                       Load_path, model_save_path, model_name, SLNN_patience, delta, mask, order[j], device)
 
 

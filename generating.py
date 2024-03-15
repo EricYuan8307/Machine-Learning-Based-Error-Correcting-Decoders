@@ -4,7 +4,7 @@ from Encode.Encoder import PCC_encoders
 from CodebookMatrix import coderMatrix
 from Encode.Modulator import bpsk_modulator
 
-def all_codebook_BP(method, original, encoded, device):
+def all_codebook_NonML(method, original, encoded, device):
     # select encoder matrix and decoder matrix
     matrix = coderMatrix(device)
     encoder_matrix, decoder_matrix = matrix(method, encoded, original)

@@ -28,8 +28,8 @@ def UncodedBPSK(nr_codeword, bits, snr_dB, device):
 
     return BPSK_final, bits_info, practical_snr
 
-def SoftDecisionMLP(nr_codeword, bits, encoded, snr_dB, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+def SoftDecisionMLP(nr_codeword, method, bits, encoded, snr_dB, device):
+    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
     SD_MaximumLikelihood = SoftDecisionML(SoftDecisionMLMatrix)
@@ -72,7 +72,7 @@ def estimation_BPSK(num, bits, SNR_opt_BPSK, result, device):
 
     return result
 
-def estimation_SDML(num, bits, encoded, SNR_opt_ML, result,  device):
+def estimation_SDML(num, method, bits, encoded, SNR_opt_ML, result, device):
     N = num
 
     # Soft-Decision Maximum Likelihood
@@ -81,11 +81,11 @@ def estimation_SDML(num, bits, encoded, SNR_opt_ML, result,  device):
 
         # BER
         for _ in range(10):
-            SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, bits, encoded, snr_dB, device)
+            SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, method, bits, encoded, snr_dB, device)
 
             BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
             if error_num_SDML < 100:
-                N += 100000
+                N += 1000000
                 print(f"the code number is {N}")
 
             else:
@@ -107,16 +107,14 @@ def main():
     num = int(1e4)
     bits = 10
     encoded = 26
+    encoding_method = "Parity"
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
-    # SNR_opt_ML = (SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) - 1*torch.tensor(bits / encoded, dtype=torch.float))
-
-
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
     result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
-    result_SDML = estimation_SDML(num, bits, encoded, SNR_opt_ML, result_save, device)
+    result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, result_save, device)
 
     result_all = np.vstack([
         result_BPSK,

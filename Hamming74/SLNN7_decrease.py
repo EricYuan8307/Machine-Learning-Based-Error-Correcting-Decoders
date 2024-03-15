@@ -11,15 +11,15 @@ from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import BinarytoDecimal
 from earlystopping import SLNN_EarlyStopping
 
-from generating import all_codebook
+from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 from Hamming74.reduce_mask import MaskMatrix
 
 
 
-def SLNN_training(snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, edge_delete,
+def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, edge_delete,
                   model_load_pth, model_save_path, patience, delta, mask, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
@@ -121,6 +121,7 @@ def main():
     nr_codeword = int(1e6)
     bits = 4
     encoded = 7
+    encoding_method = "Hamming"
     # edge_delete = [9, 14, 19, 24, 29, 34, 39, 40, 41, 42] # Edge delete
     edge_delete = [41, 42] # Edge delete
     masks = MaskMatrix(device)
@@ -140,7 +141,7 @@ def main():
         SLNN_reduce_save_path = f"Result/Model/SLNN_decrease_hidden.weight_{device}/"
 
         # Train SLNN with different hidden layer neurons
-        SLNN_training(SLNN_snr, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size, edge_delete[i],
+        SLNN_training(SLNN_snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size, edge_delete[i],
                       Load_path, SLNN_reduce_save_path, SLNN_patience, delta, mask, device)
 
 

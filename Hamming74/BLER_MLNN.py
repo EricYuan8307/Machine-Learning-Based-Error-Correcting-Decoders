@@ -11,13 +11,13 @@ from Metric.ErrorRate import calculate_bler
 from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import MLNN_decision
 
-from generating import all_codebook
+from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 
 
 # Calculate the Error number and BLER
-def MLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+def MLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, device):
+    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
@@ -36,7 +36,7 @@ def MLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
 
     return MLNN_final, bits_info, practical_snr
 
-def estimation1(num, bits, encoded, SNR_opt_NN, MLNN_hidden_size, model_pth, result, device):
+def estimation1(num, method, bits, encoded, SNR_opt_NN, MLNN_hidden_size, model_pth, result, device):
     N = num
 
     # Multi-label Neural Network with 1 hidden layer:
@@ -46,7 +46,7 @@ def estimation1(num, bits, encoded, SNR_opt_NN, MLNN_hidden_size, model_pth, res
         input_size = 7
 
         model = MultiLabelNNDecoder1(input_size, MLNN_hidden_size, bits).to(device)
-        MLNN_result, bits_info, snr_measure = MLNNDecoder(N, bits, encoded, snr_dB, model, model_pth, device)
+        MLNN_result, bits_info, snr_measure = MLNNDecoder(N, method, bits, encoded, snr_dB, model, model_pth, device)
         MLNN_final = MLNN_decision(MLNN_result, device)
 
         BLER_MLNN, error_num_MLNN = calculate_bler(MLNN_final, bits_info)  # BER calculation
@@ -62,7 +62,7 @@ def estimation1(num, bits, encoded, SNR_opt_NN, MLNN_hidden_size, model_pth, res
 
     return result
 
-def estimation2(num, bits, encoded, SNR_opt_NN, MLNN_hidden_size, model_pth, result, device):
+def estimation2(num, method, bits, encoded, SNR_opt_NN, MLNN_hidden_size, model_pth, result, device):
     N = num
 
     # Multi-label Neural Network with 1 hidden layer:
@@ -72,7 +72,7 @@ def estimation2(num, bits, encoded, SNR_opt_NN, MLNN_hidden_size, model_pth, res
         input_size = 7
 
         model = MultiLabelNNDecoder2(input_size, MLNN_hidden_size, bits).to(device)
-        MLNN_result, bits_info, snr_measure = MLNNDecoder(N, bits, encoded, snr_dB, model, model_pth, device)
+        MLNN_result, bits_info, snr_measure = MLNNDecoder(N, method, bits, encoded, snr_dB, model, model_pth, device)
         MLNN_final = MLNN_decision(MLNN_result, device)
 
         BLER_MLNN, error_num_MLNN = calculate_bler(MLNN_final, bits_info)  # BER calculation
@@ -99,6 +99,7 @@ def main():
     num = int(1e7)
     bits = 4
     encoded = 7
+    encoding_method = "Hamming"
     MLNN_hidden_size_1 = 100
     MLNN_hidden_size_2 = [[50, 50], [100, 100]]
     SNR_opt_NN = torch.arange(0, 8.5, 0.5)
@@ -109,9 +110,9 @@ def main():
     model_save_pth100_100 = f"Result/Model/MLNN_{device}/MLNN_model_hiddenlayer{MLNN_hidden_size_2[1]}_BER0.pth"
 
     result_save = np.zeros((1, len(SNR_opt_NN)))
-    result_MLNN100 = estimation1(num, bits, encoded, SNR_opt_NN, MLNN_hidden_size_1, model_save_pth100, result_save, device)
-    result_MLNN50_50 = estimation2(num, bits, encoded, SNR_opt_NN, MLNN_hidden_size_2[0], model_save_pth50_50, result_save, device)
-    result_MLNN100_100 = estimation2(num, bits, encoded, SNR_opt_NN, MLNN_hidden_size_2[1], model_save_pth100_100, result_save, device)
+    result_MLNN100 = estimation1(num, encoding_method, bits, encoded, SNR_opt_NN, MLNN_hidden_size_1, model_save_pth100, result_save, device)
+    result_MLNN50_50 = estimation2(num, encoding_method, bits, encoded, SNR_opt_NN, MLNN_hidden_size_2[0], model_save_pth50_50, result_save, device)
+    result_MLNN100_100 = estimation2(num, encoding_method, bits, encoded, SNR_opt_NN, MLNN_hidden_size_2[1], model_save_pth100_100, result_save, device)
 
     result_all = np.vstack([
         result_MLNN100,

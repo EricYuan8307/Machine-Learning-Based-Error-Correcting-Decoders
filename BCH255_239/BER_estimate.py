@@ -15,7 +15,7 @@ from Metric.ErrorRate import calculate_ber
 from Decode.MaximumLikelihood import HardDecisionML74
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 
-from generating import all_codebook, all_codebook_BP
+from generating import all_codebook, all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 from Decode.MaximumLikelihood import SoftDecisionML
 from Decode.Decoder import PCC_decoder
@@ -56,7 +56,7 @@ def HardDecisionMLP(nr_codeword, method, bits, encoded, snr_dB, device):
 def BeliefPropagation(nr_codeword, method, bits, encoded, snr_dB, iter, H, device):
     iter_start_time = time.time()
 
-    encoder_matrix, decoder_matrix = all_codebook_BP(method, bits, encoded, device)
+    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
     ldpc_bp = LDPCBeliefPropagation(H, device)
@@ -125,7 +125,7 @@ def estimation_HDML(num, method, bits, encoded, SNR_opt_ML, result, device):
 
             BER_HDML, error_num_HDML = calculate_ber(HDML_final, bits_info)
             if error_num_HDML < 100:
-                N += 1000000
+                N += 100
                 print(f"the code number is {N}")
 
             else:
@@ -171,7 +171,7 @@ def estimation_BP(num, method, bits, encoded, SNR_opt_BP, iter, H, result, devic
             BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
 
             if error_num_LDPC < 100:
-                N += 1000000
+                N += 100
                 print(f"the code number is {N}")
 
             else:
@@ -194,7 +194,7 @@ def estimation_SDML(num, method, bits, encoded, SNR_opt_ML, result, device):
 
             BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
             if error_num_SDML < 100:
-                N += 1000000
+                N += 100
                 print(f"the code number is {N}")
 
             else:
@@ -213,11 +213,12 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e4)
+    num = int(10)
     iter = 5
     bits = 239
     encoded = 255
     encoding_method = "BCH" # "BCH", "parity", "Hamming"
+
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = torch.arange(0, 8.5, 0.5)
 

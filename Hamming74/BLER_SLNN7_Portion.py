@@ -11,11 +11,11 @@ from Metric.ErrorRate import calculate_bler
 from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import DecimaltoBinary
 
-from generating import all_codebook, SLNN_D2B_matrix
+from generating import all_codebook_NonML, SLNN_D2B_matrix
 from Encode.Encoder import PCC_encoders
 
-def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+def SLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, device):
+    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
     SLNN_Matrix = SLNN_D2B_matrix(bits, device)
 
     encoder = PCC_encoders(encoder_matrix)
@@ -40,12 +40,12 @@ def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
 
     return SLNN_binary, bits_info, practical_snr
 
-def estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, result, threshold, device):
+def estimation(num, method, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, result, threshold, device):
     # Single-label Neural Network:
     output_size = torch.pow(torch.tensor(2), bits)
 
     model = SingleLabelNNDecoder(encoded, SLNN_hidden_size, output_size).to(device)
-    SLNN_final, bits_info, snr_measure = SLNNDecoder(num, bits, encoded, SNR_opt_NN, model, model_pth, device)
+    SLNN_final, bits_info, snr_measure = SLNNDecoder(num, method, bits, encoded, SNR_opt_NN, model, model_pth, device)
 
     BLER_SLNN, error_num_SLNN = calculate_bler(SLNN_final, bits_info) # BER calculation
 
@@ -70,6 +70,7 @@ def main():
     num = int(1e6)
     bits = 4
     encoded = 7
+    encoiding_method = "Hamming"
     SLNN_hidden_size = 7
     SNR_opt_NN = torch.tensor(8, dtype=torch.int, device=device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
@@ -81,7 +82,7 @@ def main():
 
     for i in range(0, len(threshold)):
         save_pth = f"Result/Model/SLNN_modified_neuron7_{device}_{parameter}/SLNN_model_modified_hiddenlayer{SLNN_hidden_size}_threshold{threshold[i]}_BER0.pth" # for the modified result
-        result_all = estimation(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, threshold[i], device)
+        result_all = estimation(num, encoiding_method, bits, encoded, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, threshold[i], device)
     directory_path = "Result/BLER"
 
     # Create the directory if it doesn't exist
