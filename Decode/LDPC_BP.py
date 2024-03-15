@@ -2,7 +2,7 @@ import torch
 from Decode.HardDecision import hard_decision
 
 class LDPCBeliefPropagation(torch.nn.Module):
-    def __init__(self, device):
+    def __init__(self, H, device):
         """
         LDPC Belief Propagation.
 
@@ -15,9 +15,10 @@ class LDPCBeliefPropagation(torch.nn.Module):
         """
 
         super(LDPCBeliefPropagation, self).__init__()
-        self.H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
-                               [0, 1, 1, 0, 0, 1, 1],
-                               [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float, device=device)
+        self.H = H
+        # self.H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
+        #                        [0, 1, 1, 0, 0, 1, 1],
+        #                        [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float, device=device)
         self.num_check_nodes = self.H.shape[1]
         self.num_variable_nodes = self.H.shape[2]
         self.device = device

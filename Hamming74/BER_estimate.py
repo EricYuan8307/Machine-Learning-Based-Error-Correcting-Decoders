@@ -14,7 +14,7 @@ from Metric.ErrorRate import calculate_ber
 from Decode.MaximumLikelihood import HardDecisionML74
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 
-from generating import all_codebook
+from generating import all_codebook, all_codebook_BP
 from Encode.Encoder import PCC_encoders
 from Decode.MaximumLikelihood import SoftDecisionML
 from Decode.Decoder import PCC_decoder
@@ -52,13 +52,13 @@ def HardDecisionMLP(nr_codeword, method, bits, encoded, snr_dB, device):
 
     return HDML_final, bits_info, practical_snr
 
-def BeliefPropagation(nr_codeword, method, bits, encoded, snr_dB, iter, device):
+def BeliefPropagation(nr_codeword, method, bits, encoded, snr_dB, iter, H, device):
     iter_start_time = time.time()
 
-    encoder_matrix, decoder_matrix, _ = all_codebook(method, bits, encoded, device)
+    encoder_matrix, decoder_matrix = all_codebook_BP(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
-    ldpc_bp = LDPCBeliefPropagation(device)
+    ldpc_bp = LDPCBeliefPropagation(H, device)
     decoder = PCC_decoder(decoder_matrix)
 
     bits_info = generator(nr_codeword, bits, device)  # Code Generator
@@ -157,7 +157,7 @@ def estimation_BPSK(num, bits, SNR_opt_BPSK, result, device):
 
     return result
 
-def estimation_BP(num, method, bits, encoded, SNR_opt_BP, iter, result, device):
+def estimation_BP(num, method, bits, encoded, SNR_opt_BP, iter, H, result, device):
     N = num
 
     # Belief Propagation
@@ -165,7 +165,7 @@ def estimation_BP(num, method, bits, encoded, SNR_opt_BP, iter, result, device):
         snr_dB = SNR_opt_BP[i]
 
         for _ in range(10):
-            LDPC_final, bits_info = BeliefPropagation(N, method, bits, encoded, snr_dB, iter, device)
+            LDPC_final, bits_info = BeliefPropagation(N, method, bits, encoded, snr_dB, iter, H, device)
 
             BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
 
@@ -223,11 +223,15 @@ def main():
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
 
+    H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
+                            [0, 1, 1, 0, 0, 1, 1],
+                            [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float, device=device)
+
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
     # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
     # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, result_save, device)
     # result_HDML = estimation_HDML(num, method, bits, encoded, SNR_opt_ML, result_save, device)
-    result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, result_save, device)
+    result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, result_save, device)
 
     result_all = np.vstack([
         # result_BPSK,

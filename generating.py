@@ -4,7 +4,12 @@ from Encode.Encoder import PCC_encoders
 from CodebookMatrix import coderMatrix
 from Encode.Modulator import bpsk_modulator
 
+def all_codebook_BP(method, original, encoded, device):
+    # select encoder matrix and decoder matrix
+    matrix = coderMatrix(device)
+    encoder_matrix, decoder_matrix = matrix(method, encoded, original)
 
+    return encoder_matrix, decoder_matrix
 
 def all_codebook(method, original, encoded, device):
     codebook_formatted = [list(map(int, format(i, f'0{original}b'))) for i in range(2 ** original)]
