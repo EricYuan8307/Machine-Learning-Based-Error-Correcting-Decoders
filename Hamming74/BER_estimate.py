@@ -224,7 +224,7 @@ def main():
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
     # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
-    # result_SDML = estimation_SDML(num, bits, encoded, SNR_opt_ML, result_save, device)
+    result_SDML = estimation_SDML(num, bits, encoded, SNR_opt_ML, result_save, device)
     # result_HDML = estimation_HDML(num, bits, encoded, SNR_opt_ML, result_save, device)
     result_BP = estimation_BP(num, bits, encoded, SNR_opt_BP, iter, result_save, device)
 

@@ -6,13 +6,13 @@ from Encode.Modulator import bpsk_modulator
 
 
 
-def all_codebook(original, encoded, device):
+def all_codebook(method, original, encoded, device):
     codebook_formatted = [list(map(int, format(i, f'0{original}b'))) for i in range(2 ** original)]
     bits_info_G = torch.tensor(codebook_formatted, dtype=torch.float, device=device) # SLNN_DecimaltoBinary
 
     # select encoder matrix and decoder matrix
     matrix = coderMatrix(device)
-    encoder_matrix, decoder_matrix = matrix(encoded, original)
+    encoder_matrix, decoder_matrix = matrix(method, encoded, original)
 
     encoder = PCC_encoders(encoder_matrix)
     encoded_info_G = encoder(bits_info_G)
