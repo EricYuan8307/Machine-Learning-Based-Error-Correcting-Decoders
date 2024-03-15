@@ -84,7 +84,7 @@ def estimation_SDML(num, bits, encoded, SNR_opt_ML, result, device):
 
             BLER_SDML, block_error_num_SDML = calculate_bler(SDML_final, bits_info)
             if block_error_num_SDML < 100:
-                N += 1000000
+                N += 10000000
                 print(f"the code number is {N}")
 
             else:
@@ -96,14 +96,14 @@ def estimation_SDML(num, bits, encoded, SNR_opt_ML, result, device):
 
 
 def main():
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.backends.cuda.is_available()
-                    else torch.device("cpu")))
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
+    #                 else torch.device("cpu")))
     # device = torch.device("cpu")
-    # device = torch.device("cuda")
+    device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e5)
+    num = int(1e7)
     bits = 4
     encoded = 7
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
