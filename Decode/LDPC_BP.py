@@ -18,14 +18,14 @@ class LDPCBeliefPropagation(torch.nn.Module):
         self.H = H
         # self.H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
         #                        [0, 1, 1, 0, 0, 1, 1],
-        #                        [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float64, device=device)
+        #                        [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float, device=device)
         self.num_check_nodes = self.H.shape[1]
         self.num_variable_nodes = self.H.shape[2]
         self.device = device
 
     def forward(self, llr, max_iters):
         # Initial values
-        messages_v_to_c = torch.zeros(llr.shape, dtype=torch.float64, device=self.device)
+        messages_v_to_c = torch.zeros(llr.shape, dtype=torch.float, device=self.device)
 
         for iteration in range(max_iters):
             #  From variable nodes to check nodes
@@ -49,7 +49,7 @@ class LDPCBeliefPropagation(torch.nn.Module):
             sum_messages_c_to_v = torch.sum(messages_c_to_v,dim=1)
             llr_total = llr + sum_messages_c_to_v
 
-            est = hard_decision(llr_total, self.device).to(torch.float64) # torch.Size([1, 1, 7])
+            est = hard_decision(llr_total, self.device).to(torch.float) # torch.Size([1, 1, 7])
             mult = torch.matmul(est, self.H.transpose(1, 2))%2
 
             if torch.all(mult == torch.zeros(mult.shape, device=self.device)):

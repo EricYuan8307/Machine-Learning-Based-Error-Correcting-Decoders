@@ -3,6 +3,7 @@ import numpy as np
 import time
 import os
 from datetime import datetime
+import galois
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
@@ -52,7 +53,6 @@ def HardDecisionMLP(nr_codeword, method, bits, encoded, snr_dB, device):
 
     return HDML_final, bits_info, practical_snr
 
-
 def BeliefPropagation(nr_codeword, method, bits, encoded, snr_dB, iter, H, device):
     iter_start_time = time.time()
 
@@ -63,7 +63,7 @@ def BeliefPropagation(nr_codeword, method, bits, encoded, snr_dB, iter, H, devic
     decoder = PCC_decoder(decoder_matrix)
 
     bits_info = generator(nr_codeword, bits, device)  # Code Generator
-    encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
+    encoded_codeword = encoder(bits_info)  # Encoder
     modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
     noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
 
@@ -125,7 +125,7 @@ def estimation_HDML(num, method, bits, encoded, SNR_opt_ML, result, device):
 
             BER_HDML, error_num_HDML = calculate_ber(HDML_final, bits_info)
             if error_num_HDML < 100:
-                N += 1000000
+                N += 100
                 print(f"the code number is {N}")
 
             else:
@@ -148,7 +148,7 @@ def estimation_BPSK(num, bits, SNR_opt_BPSK, result, device):
 
             BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info)
             if error_num_BPSK < 100:
-                N += 2000000
+                N += 200
                 print(f"the code number is {N}")
 
             else:
@@ -166,17 +166,17 @@ def estimation_BP(num, method, bits, encoded, SNR_opt_BP, iter, H, result, devic
         snr_dB = SNR_opt_BP[i]
 
         for _ in range(10):
-            BP_final, bits_info = BeliefPropagation(N, method, bits, encoded, snr_dB, iter, H, device)
+            LDPC_final, bits_info = BeliefPropagation(N, method, bits, encoded, snr_dB, iter, H, device)
 
-            BER_BP, error_num_BP = calculate_ber(BP_final, bits_info) # BER calculation
+            BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
 
-            if error_num_BP < 100:
-                N += 1000000
+            if error_num_LDPC < 100:
+                N += 100
                 print(f"the code number is {N}")
 
             else:
-                print(f"{method}: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_BP} and BER is {BER_BP}")
-                result[0, i] = BER_BP
+                print(f"LDPC: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
+                result[0, i] = BER_LDPC
                 break
 
     return result
@@ -194,7 +194,7 @@ def estimation_SDML(num, method, bits, encoded, SNR_opt_ML, result, device):
 
             BER_SDML, error_num_SDML = calculate_ber(SDML_final, bits_info)
             if error_num_SDML < 100:
-                N += 1000000
+                N += 100
                 print(f"the code number is {N}")
 
             else:
@@ -213,20 +213,23 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e3)
+    num = int(10)
     iter = 5
-    bits = 4
-    encoded = 7
-    encoding_method = "Hamming"
-    SNR_opt_BPSK = torch.arange(0, 7, 0.5)
-    SNR_opt_BP = torch.arange(0, 7, 0.5)
+    bits = 239
+    encoded = 255
+    encoding_method = "BCH" # "BCH", "parity", "Hamming"
 
-    SNR_opt_ML = torch.arange(0, 7, 0.5)
-    SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
+    SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
+    SNR_opt_BP = torch.arange(0, 8.5, 0.5)
 
-    H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
-                            [0, 1, 1, 0, 0, 1, 1],
-                            [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float, device=device)
+    SNR_opt_ML = torch.arange(0, 8.5, 0.5)
+    # SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
+
+    # H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
+    #                    [0, 1, 1, 0, 0, 1, 1],
+    #                    [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float, device=device)
+    bch = galois.BCH(encoded, bits)
+    H = torch.tensor(bch.H).clone().to(dtype=torch.float, device=device).unsqueeze(0)
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
     # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)

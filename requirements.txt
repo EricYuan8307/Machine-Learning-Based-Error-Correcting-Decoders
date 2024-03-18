@@ -1,0 +1,6 @@
+python
+torch
+numpy
+matplotlib
+matlabengine
+galois

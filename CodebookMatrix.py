@@ -1,4 +1,5 @@
 import torch
+import galois
 
 class coderMatrix(torch.nn.Module):
     def __init__(self, device):
@@ -16,9 +17,21 @@ class coderMatrix(torch.nn.Module):
         # Define the device
         self.device = device
 
-    def forward(self, encoded, origin):
-        # Define the 7x4 matrix
-        if encoded == 7 and origin == 4:
+    def decoder_matrix(self, encoded_nr, origin_nr):
+        # Create an identity matrix of shape (239, 239)
+        identity_matrix = torch.eye(origin_nr)
+
+        # Create a zero matrix of shape (255, 239)
+        full_matrix = torch.zeros(encoded_nr, origin_nr)
+
+        # Place the identity matrix in the upper part of the full matrix
+        full_matrix[:origin_nr, :origin_nr] = identity_matrix
+
+        return full_matrix
+
+    def forward(self, method, encoded, origin):
+        # Define Hamming 7x4 matrix
+        if method == "Hamming" and encoded == 7 and origin == 4:
             encode_matrix = torch.tensor([[1, 1, 0, 1],
                                           [1, 0, 1, 1],
                                           [1, 0, 0, 0],
@@ -32,8 +45,8 @@ class coderMatrix(torch.nn.Module):
                                 [0, 0, 0, 0, 0, 1, 0],
                                 [0, 0, 0, 0, 0, 0, 1]],device=self.device, dtype=torch.float)
 
-        # Define the 10x5 matrix
-        elif encoded == 10 and origin == 5:
+        # Define parity 10x5 matrix
+        elif method == "parity" and encoded == 10 and origin == 5:
             # encode_matrix = torch.tensor([[1, 0, 0, 0, 0],
             #                        [0, 1, 0, 0, 0],
             #                        [0, 0, 1, 0, 0],
@@ -62,8 +75,8 @@ class coderMatrix(torch.nn.Module):
                               [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
                               [0, 0, 0, 0, 1, 0, 0, 0, 0, 0]], device=self.device, dtype=torch.float)
 
-        # Define the 16x5 matrix
-        elif encoded == 16 and origin == 5:
+        # Define parity 16x5 matrix
+        elif method == "parity" and encoded == 16 and origin == 5:
             encode_matrix = torch.tensor([[1, 0, 0, 0, 0],
                                    [0, 1, 0, 0, 0],
                                    [0, 0, 1, 0, 0],
@@ -104,8 +117,8 @@ class coderMatrix(torch.nn.Module):
                               [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                               [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], device=self.device, dtype=torch.float)
 
-        # Define the 20x7 matrix
-        elif encoded == 20 and origin == 7:
+        # Define parity 20x7 matrix
+        elif method == "parity" and encoded == 20 and origin == 7:
             encode_matrix = torch.tensor([[1, 0, 0, 0, 0, 0, 0],
                                [0, 1, 0, 0, 0, 0, 0],
                                [0, 0, 1, 0, 0, 0, 0],
@@ -135,8 +148,8 @@ class coderMatrix(torch.nn.Module):
                                [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], device=self.device, dtype=torch.float)
 
-        # Define the 20x10 matrix
-        elif encoded == 20 and origin == 10:
+        # Define parity 20x10 matrix
+        elif method == "parity" and encoded == 20 and origin == 10:
             encode_matrix = torch.tensor([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                           [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
                                           [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -170,8 +183,8 @@ class coderMatrix(torch.nn.Module):
                                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                           ], device=self.device, dtype=torch.float)
 
-        # Define the 26x10 matrix
-        elif encoded == 26 and origin == 10:
+        # Define parity 26x10 matrix
+        elif method == "parity" and encoded == 26 and origin == 10:
             encode_matrix = torch.tensor([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                           [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
                                           [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -237,8 +250,8 @@ class coderMatrix(torch.nn.Module):
                                [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], device=self.device, dtype=torch.float)
 
-        # Define the 30x12 matrix
-        elif encoded == 30 and origin == 12:
+        # Define parity 30x12 matrix
+        elif method == "parity" and encoded == 30 and origin == 12:
             encode_matrix = torch.tensor([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                           [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                           [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -328,8 +341,8 @@ class coderMatrix(torch.nn.Module):
                  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], device=self.device, dtype=torch.float) # decoder matrix for author
 
-        # Define the 34x12 matrix
-        elif encoded == 34 and origin == 12:
+        # Define parity 34x12 matrix
+        elif method == "parity" and encoded == 34 and origin == 12:
             # encode_matrix = torch.tensor([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             #                        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             #                        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -414,4 +427,13 @@ class coderMatrix(torch.nn.Module):
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], device=self.device, dtype=torch.float)
 
+        if method == "BCH" and encoded == 255 and origin == 239:
+            bch = galois.BCH(encoded, origin)
+            encode_matrix = torch.tensor(bch.G).clone().t().to(dtype = torch.float, device=self.device)
+
+            decode_matrix = self.decoder_matrix(encoded, origin)
+            decode_matrix = decode_matrix.clone().detach().to(dtype=torch.float, device=self.device)
+            decode_matrix = decode_matrix.T
+
         return encode_matrix, decode_matrix
+

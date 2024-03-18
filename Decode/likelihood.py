@@ -14,7 +14,7 @@ def llr(signal, snr):
     """
 
     # Calculate channel noise standard deviation
-    ch_noise_sigma = torch.sqrt(torch.tensor(1 / (10 ** (snr / 10.0)) / 2.0))
+    ch_noise_sigma = torch.sqrt(1 / (10 ** (snr / 10.0)) / 2.0)
 
     # Calculate the LLR
     llr = 2 * signal / (ch_noise_sigma**2)

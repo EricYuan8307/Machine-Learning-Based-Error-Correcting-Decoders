@@ -10,13 +10,13 @@ from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber
 from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import DecimaltoBinary
-from generating import all_codebook, SLNN_D2B_matrix
+from generating import all_codebook_NonML, SLNN_D2B_matrix
 from Encode.Encoder import PCC_encoders
 
 
 # Calculate the Error number and BLER
-def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(bits, encoded, device)
+def SLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, device):
+    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
     SLNN_Matrix = SLNN_D2B_matrix(bits, device)
 
 
@@ -42,7 +42,7 @@ def SLNNDecoder(nr_codeword, bits, encoded, snr_dB, model, model_pth, device):
 
     return SLNN_binary, bits_info, practical_snr
 
-def estimation_SLNN(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, result, device):
+def estimation_SLNN(num, method, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth, result, device):
     N = num
 
     # Single-label Neural Network:
@@ -52,7 +52,7 @@ def estimation_SLNN(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth,
         output_size = torch.pow(torch.tensor(2), bits)
 
         model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
-        SLNN_final, bits_info, snr_measure = SLNNDecoder(N, bits, encoded, SNR_opt_NN[i], model, model_pth, device)
+        SLNN_final, bits_info, snr_measure = SLNNDecoder(N, method, bits, encoded, SNR_opt_NN[i], model, model_pth, device)
 
         BER_SLNN, error_num_SLNN = calculate_ber(SLNN_final, bits_info) # BER calculation
 
@@ -61,23 +61,24 @@ def estimation_SLNN(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, model_pth,
             print(f"the code number is {N}")
 
         else:
-            print(f"SLNN: When SNR is {snr_save} and signal number is {N}, error number is {error_num_SLNN} and BLER is {BER_SLNN}")
+            print(f"SLNN: When SNR is {snr_save} and signal number is {N}, error number is {error_num_SLNN} and BER is {BER_SLNN}")
             result[0, i] = BER_SLNN
 
     return result
 
 
 def main():
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #           else (torch.device("cuda") if torch.backends.cuda.is_available()
-    #                 else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+              else (torch.device("cuda") if torch.cuda.is_available()
+                    else torch.device("cpu")))
+    # device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters
     num = int(1e7)
     bits = 4
     encoded = 7
+    encoding_method = "Hamming"
     SLNN_hidden_size = 7
     SNR_opt_NN = torch.arange(0, 8.5, 0.5).to(device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
@@ -85,16 +86,16 @@ def main():
     save_pth = f"Result/Model/SLNN_{device}/SLNN_model_hiddenlayer{SLNN_hidden_size}_BER0.pth"
 
     result_save = np.zeros((1, len(SNR_opt_NN)))
-    result_SLNN = estimation_SLNN(num, bits, encoded, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, device)
+    result_SLNN = estimation_SLNN(num, encoding_method, bits, encoded, SNR_opt_NN, SLNN_hidden_size, save_pth, result_save, device)
 
-    directory_path = "Result/BLER"
+    directory_path = "Result/BER"
 
     # Create the directory if it doesn't exist
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
 
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    csv_filename = f"BLER_result_{current_time}.csv"
+    csv_filename = f"BER_result_{current_time}.csv"
     full_csv_path = os.path.join(directory_path, csv_filename)
     np.savetxt(full_csv_path, result_SLNN, delimiter=', ')
 
