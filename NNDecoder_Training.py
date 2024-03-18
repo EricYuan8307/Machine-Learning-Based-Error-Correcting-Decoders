@@ -288,7 +288,7 @@ def main():
     nr_codeword = int(1e6)
     bits = 10
     encoded = 26
-    encoding_method = "parity"
+    encoding_method = "Parity" # "Hamming", "Parity", "BCH"
 
     SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
     SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
@@ -302,9 +302,9 @@ def main():
     delta = 0.001
 
     # model Path:
-    SLNN_model_path = f"Result/Model/SLNN_{device}/"
-    MLNN_model_path2 = f"Result/Model/MLNN_{device}/"
-    MLNN_model_path3 = f"Result/Model/MLNN_{device}/"
+    SLNN_model_path = f"Result/Model/{encoding_method}{encoded}_{bits}/SLNN_{device}/"
+    MLNN_model_path2 = f"Result/Model/{encoding_method}{encoded}_{bits}/MLNN_{device}/"
+    MLNN_model_path3 = f"Result/Model/{encoding_method}{encoded}_{bits}/MLNN_{device}/"
 
     # Train SLNN with different hidden layer neurons
     for i in range(len(SLNN_hidden_size)):
