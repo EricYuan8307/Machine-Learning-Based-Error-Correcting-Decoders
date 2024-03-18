@@ -52,6 +52,7 @@ def HardDecisionMLP(nr_codeword, method, bits, encoded, snr_dB, device):
 
     return HDML_final, bits_info, practical_snr
 
+
 def BeliefPropagation(nr_codeword, method, bits, encoded, snr_dB, iter, H, device):
     iter_start_time = time.time()
 
