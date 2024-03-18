@@ -165,17 +165,17 @@ def estimation_BP(num, method, bits, encoded, SNR_opt_BP, iter, H, result, devic
         snr_dB = SNR_opt_BP[i]
 
         for _ in range(10):
-            LDPC_final, bits_info = BeliefPropagation(N, method, bits, encoded, snr_dB, iter, H, device)
+            BP_final, bits_info = BeliefPropagation(N, method, bits, encoded, snr_dB, iter, H, device)
 
-            BER_LDPC, error_num_LDPC = calculate_ber(LDPC_final, bits_info) # BER calculation
+            BER_BP, error_num_BP = calculate_ber(BP_final, bits_info) # BER calculation
 
-            if error_num_LDPC < 100:
+            if error_num_BP < 100:
                 N += 1000000
                 print(f"the code number is {N}")
 
             else:
-                print(f"LDPC: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
-                result[0, i] = BER_LDPC
+                print(f"{method}: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_BP} and BER is {BER_BP}")
+                result[0, i] = BER_BP
                 break
 
     return result
@@ -212,7 +212,7 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e4)
+    num = int(1e3)
     iter = 5
     bits = 4
     encoded = 7
@@ -228,9 +228,9 @@ def main():
                             [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float, device=device)
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
-    result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
-    result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, result_save, device)
-    result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, result_save, device)
+    # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, result_save, device)
+    # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, result_save, device)
+    # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, result_save, device)
     result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, result_save, device)
 
     result_all = np.vstack([
