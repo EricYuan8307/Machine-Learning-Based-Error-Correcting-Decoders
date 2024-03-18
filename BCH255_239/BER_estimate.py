@@ -148,7 +148,7 @@ def estimation_BPSK(num, bits, SNR_opt_BPSK, result, device):
 
             BER_BPSK, error_num_BPSK= calculate_ber(BPSK_final, bits_info)
             if error_num_BPSK < 100:
-                N += 2000000
+                N += 200
                 print(f"the code number is {N}")
 
             else:
