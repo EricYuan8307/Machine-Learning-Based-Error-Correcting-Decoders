@@ -35,6 +35,8 @@ def SLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
     # Create an instance of the SimpleNN class
     model = SingleLabelNNDecoder1(input_size, hidden_size, output_size).to(device)
+    optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
 
     # Define the loss function and optimizer
     criterion = nn.CrossEntropyLoss()
@@ -90,6 +92,8 @@ def SLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
         SLNN_test_losses.append(avg_test_loss)
 
         print(f'{NN_type} Testing - Hidden Size:{hidden_size} - SNR{snr_measure} - Loss: {running_loss / len(SLNN_testloader):.9f}')
+
+        scheduler.step(avg_test_loss)
 
         # Early Stopping
         if early_stopping(running_loss, model, model_save_path, model_name):
@@ -124,6 +128,7 @@ def SLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
     # Define the loss function and optimizer
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
 
     # Define lists to store loss values
     SLNN_train_losses = []
@@ -176,6 +181,8 @@ def SLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
         print(f'{NN_type} Testing - Hidden Size:{hidden_size} - SNR{snr_measure} - Loss: {running_loss / len(SLNN_testloader):.9f}')
 
+        scheduler.step(avg_test_loss)
+
         # Early Stopping
         if early_stopping(running_loss, model, model_save_path, model_name):
             print(f'{NN_type}: Early stopping')
@@ -208,6 +215,7 @@ def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
     # Define the loss function and optimizer
     criterion = nn.BCELoss()
     optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
 
     # Define lists to store loss values
     MLNN_train_losses = []
@@ -260,6 +268,7 @@ def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
         print(f'{NN_type} Testing - SNR{snr_measure} - Loss: {running_loss/len(MLNN_testloader):.9f}')
 
+        scheduler.step(avg_test_loss)
 
         # Early Stopping
         if early_stopping(running_loss, model, model_save_path, model_name):
@@ -293,6 +302,7 @@ def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
     # Define the loss function and optimizer
     criterion = nn.BCELoss()
     optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
 
     # Define lists to store loss values
     MLNN_train_losses = []
@@ -345,6 +355,7 @@ def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
         print(f'{NN_type} Testing - SNR{snr_measure} - Loss: {running_loss/len(MLNN_testloader):.9f}')
 
+        scheduler.step(avg_test_loss)
 
         # Early Stopping
         if early_stopping(running_loss, model, model_save_path, model_name):
@@ -359,8 +370,8 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    # device = torch.device("cpu")
-    device = torch.device("cuda")
+    device = torch.device("cpu")
+    # device = torch.device("cuda")
 
     # Hyperparameters
     NeuralNetwork_type = ["SLNN", "MLNN"]
