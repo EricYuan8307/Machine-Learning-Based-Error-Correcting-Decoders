@@ -6,15 +6,15 @@ from torch.utils.data import DataLoader, TensorDataset
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
 from Transmit.noise import AWGN
-from Decode.NNDecoder import SingleLabelNNDecoder, MultiLabelNNDecoder2, MultiLabelNNDecoder3
+from Decode.NNDecoder import SingleLabelNNDecoder1, MultiLabelNNDecoder2, MultiLabelNNDecoder3
 from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import BinarytoDecimal
-from earlystopping import SLNN_EarlyStopping, MLNN_EarlyStopping
+from earlystopping import EarlyStopping
 
 from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 
-def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
+def SLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
     encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
@@ -34,7 +34,7 @@ def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
     SLNN_testloader = torch.utils.data.DataLoader(SLNN_trainset, batch_size, shuffle=False)
 
     # Create an instance of the SimpleNN class
-    model = SingleLabelNNDecoder(input_size, hidden_size, output_size).to(device)
+    model = SingleLabelNNDecoder1(input_size, hidden_size, output_size).to(device)
 
     # Define the loss function and optimizer
     criterion = nn.CrossEntropyLoss()
@@ -45,7 +45,7 @@ def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
     SLNN_test_losses = []
 
     # Early Stopping
-    early_stopping = SLNN_EarlyStopping(patience, delta, snr_measure, hidden_size)
+    early_stopping = EarlyStopping(patience, delta)
 
     # Single-Label Neural Network Training loop
     for epoch in range(epochs):
@@ -64,7 +64,7 @@ def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
 
             running_loss += loss.item()
             if i % 1000 == 999:  # Print every 100 mini-batches
-                print(f'SLNN:Hidden Size:{hidden_size}, SNR{snr_measure}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
+                print(f'{NN_type}:Hidden Size:{hidden_size}, SNR{snr_measure}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
                 running_loss = 0.0
 
         # Calculate the average training loss for this epoch
@@ -89,17 +89,17 @@ def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
         avg_test_loss = running_loss / len(SLNN_testloader)
         SLNN_test_losses.append(avg_test_loss)
 
-        print(f'SLNN Testing - Hidden Size:{hidden_size} - SNR{snr_measure} - Loss: {running_loss / len(SLNN_testloader):.9f}')
+        print(f'{NN_type} Testing - Hidden Size:{hidden_size} - SNR{snr_measure} - Loss: {running_loss / len(SLNN_testloader):.9f}')
 
         # Early Stopping
-        if early_stopping(running_loss, model, model_path):
-            print('SLNN: Early stopping')
-            print(f'SLNN: Hidden Size:{hidden_size}, SNR={snr_measure} Stop at total val_loss is {running_loss/len(SLNN_testloader)} and epoch is {epoch}')
+        if early_stopping(running_loss, model, model_save_path, model_name):
+            print(f'{NN_type}: Early stopping')
+            print(f'{NN_type}: Hidden Size:{hidden_size}, SNR={snr_measure} Stop at total val_loss is {running_loss/len(SLNN_testloader)} and epoch is {epoch}')
             break
         else:
-            print(f"SLNN: Continue Training")
+            print(f"{NN_type}: Continue Training")
 
-def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
+def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
     encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
@@ -129,7 +129,7 @@ def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
     MLNN_test_losses = []
 
     # Early Stopping
-    early_stopping = MLNN_EarlyStopping(patience, delta, snr_measure, hidden_size)
+    early_stopping = EarlyStopping(patience, delta)
 
     # Multi-Label Neural Network Training loop
     for epoch in range(epochs):
@@ -148,7 +148,7 @@ def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
             running_loss += loss.item()
             if i % 1000 == 999:  # Print every 100 mini-batches
-                print(f'MLNN: Hidden Size:{hidden_size}, SNR{snr_measure}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
+                print(f'{NN_type}: Hidden Size:{hidden_size}, SNR{snr_measure}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
                 running_loss = 0.0
 
         # Calculate the average training loss for this epoch
@@ -173,18 +173,18 @@ def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
         avg_test_loss = running_loss / len(MLNN_testloader)
         MLNN_test_losses.append(avg_test_loss)
 
-        print(f'MLNN Testing - SNR{snr_measure} - Loss: {running_loss/len(MLNN_testloader):.9f}')
+        print(f'{NN_type} Testing - SNR{snr_measure} - Loss: {running_loss/len(MLNN_testloader):.9f}')
 
 
         # Early Stopping
-        if early_stopping(running_loss, model, model_path):
-            print('MLNN: Early stopping')
-            print(f'MLNN: Hidden Size:{hidden_size}, SNR={snr_measure} Stop at total val_loss is {running_loss/len(MLNN_testloader)} and epoch is {epoch}')
+        if early_stopping(running_loss, model, model_save_path, model_name):
+            print(f'{NN_type}: Early stopping')
+            print(f'{NN_type}: Hidden Size:{hidden_size}, SNR={snr_measure} Stop at total val_loss is {running_loss/len(MLNN_testloader)} and epoch is {epoch}')
             break
         else:
-            print("MLNN: Continue Training")
+            print(f"{NN_type}: Continue Training")
 
-def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_path, patience, delta, device):
+def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
     encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
@@ -214,7 +214,7 @@ def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
     MLNN_test_losses = []
 
     # Early Stopping
-    early_stopping = MLNN_EarlyStopping(patience, delta, snr_measure, hidden_size)
+    early_stopping = EarlyStopping(patience, delta)
 
     # Multi-Label Neural Network Training loop
     for epoch in range(epochs):
@@ -233,7 +233,7 @@ def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
             running_loss += loss.item()
             if i % 1000 == 999:  # Print every 100 mini-batches
-                print(f'MLNN: Hidden Size:{hidden_size}, SNR{snr_measure}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
+                print(f'{NN_type}: Hidden Size:{hidden_size}, SNR{snr_measure}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
                 running_loss = 0.0
 
         # Calculate the average training loss for this epoch
@@ -258,42 +258,40 @@ def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
         avg_test_loss = running_loss / len(MLNN_testloader)
         MLNN_test_losses.append(avg_test_loss)
 
-        print(f'MLNN Testing - SNR{snr_measure} - Loss: {running_loss/len(MLNN_testloader):.9f}')
+        print(f'{NN_type} Testing - SNR{snr_measure} - Loss: {running_loss/len(MLNN_testloader):.9f}')
 
 
         # Early Stopping
-        if early_stopping(running_loss, model, model_path):
-            print('MLNN: Early stopping')
-            print(f'MLNN: Hidden Size:{hidden_size}, SNR={snr_measure} Stop at total val_loss is {running_loss/len(MLNN_testloader)} and epoch is {epoch}')
+        if early_stopping(running_loss, model, model_save_path, model_name):
+            print(f'{NN_type}: Early stopping')
+            print(f'{NN_type}: Hidden Size:{hidden_size}, SNR={snr_measure} Stop at total val_loss is {running_loss/len(MLNN_testloader)} and epoch is {epoch}')
             break
         else:
-            print("MLNN: Continue Training")
-
+            print(f"{NN_type}: Continue Training")
 
 def main():
     # Device Setting
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.cuda.is_available()
-                    else torch.device("cpu")))
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.cuda.is_available()
+    #                 else torch.device("cpu")))
     # device = torch.device("cpu")
-    # device = torch.device("cuda")
+    device = torch.device("cuda")
 
     # Hyperparameters
-    SLNN_hidden_size = torch.arange(0, 101, 1)
-    MLNN_hidden_size_2 = [[1000, 500], [2000, 1000]]
-    MLNN_hidden_size_3 = [[2000, 1000, 500]]
+    NN_type = "SLNN"
+    hidden_num = 1
+    hidden_size = [24, 25, 26, 27, 28]
     batch_size = 64
     learning_rate = 1e-2
     epochs = 500
-    nr_codeword = int(1e6)
+
+    nr_codeword = int(1e7)
     bits = 10
     encoded = 26
     encoding_method = "Parity" # "Hamming", "Parity", "BCH"
 
-    SLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
-    MLNN_snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    MLNN_snr = MLNN_snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
+    snr = torch.tensor(0.0, dtype=torch.float, device=device)
+    snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
 
     # Early Stopping # Guess same number of your output
@@ -302,23 +300,26 @@ def main():
     delta = 0.001
 
     # model Path:
-    SLNN_model_path = f"Result/Model/{encoding_method}{encoded}_{bits}/SLNN_{device}/"
-    MLNN_model_path2 = f"Result/Model/{encoding_method}{encoded}_{bits}/MLNN_{device}/"
-    MLNN_model_path3 = f"Result/Model/{encoding_method}{encoded}_{bits}/MLNN_{device}/"
+    model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/"
+    model_name = f"{NN_type}_{hidden_size}"
 
-    # Train SLNN with different hidden layer neurons
-    for i in range(len(SLNN_hidden_size)):
-        SLNN_training(SLNN_snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size[i], SLNN_model_path, SLNN_patience, delta, device)
 
-    # Train MLNN model with two hidden layer
-    for i in range(len(MLNN_hidden_size_2)):
-        MLNN_training2(MLNN_snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size_2[i],
-                       MLNN_model_path2, MLNN_patience, delta, device)
+    if NN_type == "SLNN" and hidden_num == 1:
+        for i in range(len(hidden_size)):
+            SLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size[i],
+                          model_save_path, model_name, NN_type, SLNN_patience, delta, device)
 
-    # Train MLNN model with three hidden layers
-    for i in range(len(MLNN_hidden_size_3)):
-        MLNN_training3(MLNN_snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size_3[i],
-                       MLNN_model_path3, MLNN_patience, delta, device)
+    elif NN_type == "MLNN" and hidden_num == 2:
+        # Train MLNN model with two hidden layer
+        for i in range(len(hidden_size)):
+            MLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size[i],
+                           model_save_path, model_name, NN_type, MLNN_patience, delta, device)
+
+    elif NN_type == "MLNN" and hidden_num == 3:
+        # Train MLNN model with three hidden layers
+        for i in range(len(hidden_size)):
+            MLNN_training3(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size[i],
+                           model_save_path, model_name, NN_type, MLNN_patience, delta, device)
 
 
 if __name__ == '__main__':
