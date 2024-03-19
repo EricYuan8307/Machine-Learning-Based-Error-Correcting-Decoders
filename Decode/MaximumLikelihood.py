@@ -44,6 +44,33 @@ class HardDecisionML74(nn.Module):
 
         return harddecision_output
 
+class HardDecisionML(nn.Module):
+    def __init__(self, codebook):
+        """
+        hard-decision Maximum Likelihood Estimation
+
+        Args:
+            C: Use this matrix to calculate the closest hamming distance.
+            mps_device: Move Data on Specific device for computing(GPU).
+
+        Returns:
+            result: The final estimate result.
+        """
+        super(HardDecisionML, self).__init__()
+        self.C = codebook
+
+    def forward(self, harddecision):
+        # Calculate Hamming distances
+        distances = torch.sum(harddecision == self.C, dim=2)
+
+        # Find indices of minimum distances
+        most_like = torch.argmax(distances, dim=1)
+
+        # Information Replace
+        harddecision_output = self.C[most_like].unsqueeze(1)
+
+        return harddecision_output
+
 class SoftDecisionML(nn.Module):
     def __init__(self, codebook):
         """

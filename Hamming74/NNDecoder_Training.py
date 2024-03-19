@@ -271,11 +271,11 @@ def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
 def main():
     # Device Setting
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.cuda.is_available()
-                    else torch.device("cpu")))
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.cuda.is_available()
+    #                 else torch.device("cpu")))
     # device = torch.device("cpu")
-    # device = torch.device("cuda")
+    device = torch.device("cuda")
 
     # Hyperparameters
     SLNN_hidden_size = torch.arange(0, 101, 1)

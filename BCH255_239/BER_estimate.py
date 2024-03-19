@@ -175,7 +175,7 @@ def estimation_BP(num, method, bits, encoded, SNR_opt_BP, iter, H, result, devic
                 print(f"the code number is {N}")
 
             else:
-                print(f"LDPC: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
+                print(f"{method}: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_LDPC} and BER is {BER_LDPC}")
                 result[0, i] = BER_LDPC
                 break
 
@@ -214,7 +214,7 @@ def main():
 
     # Hyperparameters
     num = int(10)
-    iter = 5
+    iter = 10
     bits = 239
     encoded = 255
     encoding_method = "BCH" # "BCH", "parity", "Hamming"

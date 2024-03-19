@@ -11,12 +11,11 @@ from Decode.LDPC_BP import LDPCBeliefPropagation
 from Decode.likelihood import llr
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber, calculate_bler
-from Decode.MaximumLikelihood import HardDecisionML74
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 
-from generating import all_codebook, all_codebook_NonML
+from generating import all_codebook_NonML, all_codebook_HDML, all_codebook_SDML
 from Encode.Encoder import PCC_encoders
-from Decode.MaximumLikelihood import SoftDecisionML
+from Decode.MaximumLikelihood import SoftDecisionML, HardDecisionML
 from Decode.Decoder import PCC_decoder
 
 # Calculate the Error number and BER
@@ -32,10 +31,10 @@ def UncodedBPSK(nr_codeword, bits, snr_dB, device):
     return BPSK_final, bits_info, practical_snr
 
 def HardDecisionMLP(nr_codeword, method, bits, encoded, snr_dB, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(method, bits, encoded, device)
+    encoder_matrix, decoder_matrix, HardDecisionMLMatrix = all_codebook_HDML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
-    HD_MaximumLikelihood = HardDecisionML74(device)
+    HD_MaximumLikelihood = HardDecisionML(HardDecisionMLMatrix)
     decoder = PCC_decoder(decoder_matrix)
 
     # ML:
@@ -69,7 +68,7 @@ def BeliefPropagation(nr_codeword, method, bits, encoded, snr_dB, iter, H, devic
     llr_output = llr(noised_signal, snr_dB)  # LLR
     BP_result = torch.zeros(llr_output.shape, device=device)
 
-    # practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
+    practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
 
     for k in range(llr_output.shape[0]):
         start_time = time.time()
@@ -83,15 +82,15 @@ def BeliefPropagation(nr_codeword, method, bits, encoded, snr_dB, iter, H, devic
             print(f"Processed {k} iterations in {elapsed_time * 10000} seconds")
 
     iter_end_time = time.time()
-    print(f"For {snr_dB}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
+    print(f"For {practical_snr}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
 
     LDPC_HD = hard_decision(BP_result, device)  # Hard Decision
     LDPC_final = decoder(LDPC_HD)  # Decoder
 
-    return LDPC_final, bits_info
+    return LDPC_final, bits_info, practical_snr
 
 def SoftDecisionMLP(nr_codeword, method, bits, encoded, snr_dB, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(method, bits, encoded, device)
+    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook_SDML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
     SD_MaximumLikelihood = SoftDecisionML(SoftDecisionMLMatrix)
@@ -158,7 +157,7 @@ def estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result, device):
             else:
                 print(f"{metric} is not either BER or BLER")
 
-            if error_rate_BPSK < 100:
+            if error_num_BPSK < 100:
                 N += 2000000
                 print(f"the code number is {N}")
 
@@ -177,7 +176,7 @@ def estimation_BP(num, method, bits, encoded, SNR_opt_BP, iter, H, metric, resul
         snr_dB = SNR_opt_BP[i]
 
         for _ in range(10):
-            BP_final, bits_info = BeliefPropagation(N, method, bits, encoded, snr_dB, iter, H, device)
+            BP_final, bits_info, snr_measure = BeliefPropagation(N, method, bits, encoded, snr_dB, iter, H, device)
 
             if metric == "BER":
                 error_rate_BP, error_num_BP = calculate_ber(BP_final, bits_info)
@@ -191,7 +190,7 @@ def estimation_BP(num, method, bits, encoded, SNR_opt_BP, iter, H, metric, resul
                 print(f"the code number is {N}")
 
             else:
-                print(f"{method}: When SNR is {snr_dB} and signal number is {N}, error number is {error_num_BP} and {metric} is {error_rate_BP}")
+                print(f"{method}: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BP} and {metric} is {error_rate_BP}")
                 result[0, i] = error_rate_BP
                 break
 
@@ -236,21 +235,29 @@ def main():
 
     # Hyperparameters
     num = int(1e3)
-    iter = 5
-    bits = 4
-    encoded = 7
-    encoding_method = "Hamming"
-    metric = "BER" # BER or BLER
+    bits = 5
+    encoded = 10
+    encoding_method = "Parity" # "Hamming", "Parity", "BCH"
+    metric = "BLER" # BER or BLER
 
-    SNR_opt_BPSK = torch.arange(0, 7, 0.5)
-    SNR_opt_BP = torch.arange(0, 7, 0.5)
+    iter = 5 # BP
+    # H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
+    #                    [0, 1, 1, 0, 0, 1, 1],
+    #                    [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float, device=device) # Hamming(7,4) BP
 
-    SNR_opt_ML = torch.arange(0, 7, 0.5)
+    H = torch.tensor([[[1, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+                       [1, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+                       [0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
+                       [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
+                       [0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]], dtype=torch.float, device=device)  # Parity(10,5) BP
+
+    SNR_opt_BPSK = torch.arange(0, 7.5, 0.5)
+    SNR_opt_BP = torch.arange(0, 7.5, 0.5)
+    SNR_opt_BP = SNR_opt_BP + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
+    SNR_opt_ML = torch.arange(0, 7.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
 
-    H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
-                            [0, 1, 1, 0, 0, 1, 1],
-                            [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float, device=device)
+
 
     result_save = np.zeros((1, len(SNR_opt_BPSK)))
     result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save, device)
@@ -259,14 +266,14 @@ def main():
     result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save, device)
 
     result_all = np.vstack([
-        # result_BPSK,
-        # result_SDML,
-        # result_HDML,
+        result_BPSK,
+        result_SDML,
+        result_HDML,
         result_BP
     ])
 
 
-    directory_path = f"Result/{encoding_method}/{metric}"
+    directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
 
     # Create the directory if it doesn't exist
     if not os.path.exists(directory_path):
