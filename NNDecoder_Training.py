@@ -14,7 +14,7 @@ from earlystopping import EarlyStopping
 from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 
-def SLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
+def SLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
     encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
@@ -35,12 +35,11 @@ def SLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
     # Create an instance of the SimpleNN class
     model = SingleLabelNNDecoder1(input_size, hidden_size, output_size).to(device)
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
 
     # Define the loss function and optimizer
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), learning_rate, momentum)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
 
     # Define lists to store loss values
     SLNN_train_losses = []
@@ -103,7 +102,7 @@ def SLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
         else:
             print(f"{NN_type}: Continue Training")
 
-def SLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
+def SLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
     encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
@@ -127,7 +126,7 @@ def SLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
     # Define the loss function and optimizer
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), learning_rate, momentum)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
 
     # Define lists to store loss values
@@ -191,7 +190,7 @@ def SLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
         else:
             print(f"{NN_type}: Continue Training")
 
-def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
+def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
     encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
@@ -214,7 +213,7 @@ def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
     # Define the loss function and optimizer
     criterion = nn.BCELoss()
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), learning_rate, momentum)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
 
     # Define lists to store loss values
@@ -278,7 +277,7 @@ def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
         else:
             print(f"{NN_type}: Continue Training")
 
-def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
+def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
     encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
@@ -301,7 +300,7 @@ def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
     # Define the loss function and optimizer
     criterion = nn.BCELoss()
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), learning_rate, momentum)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
 
     # Define lists to store loss values
@@ -367,10 +366,10 @@ def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
 def main():
     # Device Setting
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #           else (torch.device("cuda") if torch.cuda.is_available()
-    #                 else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+              else (torch.device("cuda") if torch.cuda.is_available()
+                    else torch.device("cpu")))
+    # device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters
@@ -380,6 +379,7 @@ def main():
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
     batch_size = 64
     learning_rate = 1e-2
+    momentum = 0.9
     epochs = 500
 
     nr_codeword = int(1e7)
@@ -403,12 +403,12 @@ def main():
         if NN_type == "SLNN" :
             for i in range(len(SLNN_hidden_size1)):
                 model_name = f"{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}"
-                SLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size1[i],
+                SLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, SLNN_hidden_size1[i],
                               model_save_path, model_name, NN_type, patience, delta, device)
 
             for j in range(len(SLNN_hidden_size2)):
                 model_name = f"{NN_type}_hiddenlayer{SLNN_hidden_size2[j]}"
-                SLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size2[j],
+                SLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, SLNN_hidden_size2[j],
                               model_save_path, model_name, NN_type, patience, delta, device)
 
         elif NN_type == "MLNN":
@@ -416,12 +416,12 @@ def main():
             for k in range(len(MLNN_hidden_size)):
                 if len(MLNN_hidden_size[k]) == 2:
                     model_name = f"{NN_type}_hiddenlayer{MLNN_hidden_size[k]}"
-                    MLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size[k],
+                    MLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, MLNN_hidden_size[k],
                                    model_save_path, model_name, NN_type, patience, delta, device)
 
                 elif len(MLNN_hidden_size[k]) == 3:
                     model_name = f"{NN_type}_hiddenlayer{MLNN_hidden_size[k]}"
-                    MLNN_training3(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size[k],
+                    MLNN_training3(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate,momentum, batch_size, MLNN_hidden_size[k],
                                    model_save_path, model_name, NN_type, patience, delta, device)
 
 
