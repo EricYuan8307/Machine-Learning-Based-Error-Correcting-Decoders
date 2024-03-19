@@ -407,7 +407,7 @@ def main():
                     MLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size[i],
                                    model_save_path, model_name, NN_type, MLNN_patience, delta, device)
 
-                if len(MLNN_hidden_size[i]) == 3:
+                elif len(MLNN_hidden_size[i]) == 3:
                     model_name = f"{NN_type}_{MLNN_hidden_size[i]}"
                     MLNN_training3(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size[i],
                                    model_save_path, model_name, NN_type, MLNN_patience, delta, device)
