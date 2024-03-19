@@ -363,7 +363,7 @@ def main():
     device = torch.device("cuda")
 
     # Hyperparameters
-    NN_type = "SLNN"
+    NeuralNetwork_type = ["SLNN", "MLNN"]
     SLNN_hidden_size = [24, 25, 26, 27, 28, [25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
     batch_size = 64
@@ -378,40 +378,39 @@ def main():
     snr = torch.tensor(0.0, dtype=torch.float, device=device)
     snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
-
     # Early Stopping # Guess same number of your output
     SLNN_patience = torch.pow(torch.tensor(2), bits)
     MLNN_patience = bits
     delta = 0.001
 
-    # model Path:
-    model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/"
+    for NN_type in NeuralNetwork_type:
+        # model Path:
+        model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/"
 
+        if NN_type == "SLNN" :
+            for i in range(len(SLNN_hidden_size)):
+                if SLNN_hidden_size[i] == 1:
+                    model_name = f"{NN_type}_{SLNN_hidden_size[i]}"
+                    SLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size[i],
+                                  model_save_path, model_name, NN_type, SLNN_patience, delta, device)
 
-    if NN_type == "SLNN" :
-        for i in range(len(SLNN_hidden_size)):
-            if SLNN_hidden_size[i] == 1:
-                model_name = f"{NN_type}_{SLNN_hidden_size[i]}"
-                SLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size[i],
-                              model_save_path, model_name, NN_type, SLNN_patience, delta, device)
+                if SLNN_hidden_size[i] == 2:
+                    model_name = f"{NN_type}_{SLNN_hidden_size[i]}"
+                    SLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size[i],
+                                  model_save_path, model_name, NN_type, SLNN_patience, delta, device)
 
-            if SLNN_hidden_size[i] == 2:
-                model_name = f"{NN_type}_{SLNN_hidden_size[i]}"
-                SLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size[i],
-                              model_save_path, model_name, NN_type, SLNN_patience, delta, device)
+        elif NN_type == "MLNN":
+            # Train MLNN model with two hidden layer
+            for i in range(len(MLNN_hidden_size)):
+                if MLNN_hidden_size[i] == 2:
+                    model_name = f"{NN_type}_{MLNN_hidden_size[i]}"
+                    MLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size[i],
+                                   model_save_path, model_name, NN_type, MLNN_patience, delta, device)
 
-    elif NN_type == "MLNN":
-        # Train MLNN model with two hidden layer
-        for i in range(len(MLNN_hidden_size)):
-            if MLNN_hidden_size[i] == 2:
-                model_name = f"{NN_type}_{MLNN_hidden_size[i]}"
-                MLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size[i],
-                               model_save_path, model_name, NN_type, MLNN_patience, delta, device)
-
-            if MLNN_hidden_size[i] == 3:
-                model_name = f"{NN_type}_{MLNN_hidden_size[i]}"
-                MLNN_training3(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size[i],
-                               model_save_path, model_name, NN_type, MLNN_patience, delta, device)
+                if MLNN_hidden_size[i] == 3:
+                    model_name = f"{NN_type}_{MLNN_hidden_size[i]}"
+                    MLNN_training3(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size[i],
+                                   model_save_path, model_name, NN_type, MLNN_patience, delta, device)
 
 
 if __name__ == '__main__':
