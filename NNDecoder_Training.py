@@ -380,8 +380,9 @@ def main():
     snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
     # Early Stopping # Guess same number of your output
-    SLNN_patience = torch.pow(torch.tensor(2), bits)
-    MLNN_patience = bits
+    patience = encoded
+    # SLNN_patience = torch.pow(torch.tensor(2), bits)
+    # MLNN_patience = bits
     delta = 0.001
 
     for NN_type in NeuralNetwork_type:
@@ -390,27 +391,27 @@ def main():
 
         if NN_type == "SLNN" :
             for i in range(len(SLNN_hidden_size1)):
-                model_name = f"{NN_type}_{SLNN_hidden_size1[i]}"
+                model_name = f"{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}"
                 SLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size1[i],
-                              model_save_path, model_name, NN_type, SLNN_patience, delta, device)
+                              model_save_path, model_name, NN_type, patience, delta, device)
 
-            for i in range(len(SLNN_hidden_size2)):
-                model_name = f"{NN_type}_{SLNN_hidden_size2[i]}"
-                SLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size2[i],
-                              model_save_path, model_name, NN_type, SLNN_patience, delta, device)
+            for j in range(len(SLNN_hidden_size2)):
+                model_name = f"{NN_type}_hiddenlayer{SLNN_hidden_size2[j]}"
+                SLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size2[j],
+                              model_save_path, model_name, NN_type, patience, delta, device)
 
         elif NN_type == "MLNN":
             # Train MLNN model with two hidden layer
-            for i in range(len(MLNN_hidden_size)):
-                if len(MLNN_hidden_size[i]) == 2:
-                    model_name = f"{NN_type}_{MLNN_hidden_size[i]}"
-                    MLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size[i],
-                                   model_save_path, model_name, NN_type, MLNN_patience, delta, device)
+            for k in range(len(MLNN_hidden_size)):
+                if len(MLNN_hidden_size[k]) == 2:
+                    model_name = f"{NN_type}_hiddenlayer{MLNN_hidden_size[k]}"
+                    MLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size[k],
+                                   model_save_path, model_name, NN_type, patience, delta, device)
 
-                elif len(MLNN_hidden_size[i]) == 3:
-                    model_name = f"{NN_type}_{MLNN_hidden_size[i]}"
-                    MLNN_training3(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size[i],
-                                   model_save_path, model_name, NN_type, MLNN_patience, delta, device)
+                elif len(MLNN_hidden_size[k]) == 3:
+                    model_name = f"{NN_type}_hiddenlayer{MLNN_hidden_size[k]}"
+                    MLNN_training3(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size[k],
+                                   model_save_path, model_name, NN_type, patience, delta, device)
 
 
 if __name__ == '__main__':
