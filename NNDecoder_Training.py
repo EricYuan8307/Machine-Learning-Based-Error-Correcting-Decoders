@@ -364,7 +364,8 @@ def main():
 
     # Hyperparameters
     NeuralNetwork_type = ["SLNN", "MLNN"]
-    SLNN_hidden_size = [24, 25, 26, 27, 28, [25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
+    SLNN_hidden_size1 = [24, 25, 26, 27, 28]
+    SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
     batch_size = 64
     learning_rate = 1e-2
@@ -388,26 +389,25 @@ def main():
         model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/"
 
         if NN_type == "SLNN" :
-            for i in range(len(SLNN_hidden_size)):
-                if SLNN_hidden_size[i] == 1:
-                    model_name = f"{NN_type}_{SLNN_hidden_size[i]}"
-                    SLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size[i],
-                                  model_save_path, model_name, NN_type, SLNN_patience, delta, device)
+            for i in range(len(SLNN_hidden_size1)):
+                model_name = f"{NN_type}_{SLNN_hidden_size1[i]}"
+                SLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size1[i],
+                              model_save_path, model_name, NN_type, SLNN_patience, delta, device)
 
-                if SLNN_hidden_size[i] == 2:
-                    model_name = f"{NN_type}_{SLNN_hidden_size[i]}"
-                    SLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size[i],
-                                  model_save_path, model_name, NN_type, SLNN_patience, delta, device)
+            for i in range(len(SLNN_hidden_size2)):
+                model_name = f"{NN_type}_{SLNN_hidden_size2[i]}"
+                SLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size2[i],
+                              model_save_path, model_name, NN_type, SLNN_patience, delta, device)
 
         elif NN_type == "MLNN":
             # Train MLNN model with two hidden layer
             for i in range(len(MLNN_hidden_size)):
-                if MLNN_hidden_size[i] == 2:
+                if len(MLNN_hidden_size[i]) == 2:
                     model_name = f"{NN_type}_{MLNN_hidden_size[i]}"
                     MLNN_training2(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size[i],
                                    model_save_path, model_name, NN_type, MLNN_patience, delta, device)
 
-                if MLNN_hidden_size[i] == 3:
+                if len(MLNN_hidden_size[i]) == 3:
                     model_name = f"{NN_type}_{MLNN_hidden_size[i]}"
                     MLNN_training3(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size[i],
                                    model_save_path, model_name, NN_type, MLNN_patience, delta, device)
