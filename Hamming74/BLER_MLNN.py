@@ -43,9 +43,8 @@ def estimation1(num, method, bits, encoded, SNR_opt_NN, MLNN_hidden_size, model_
     for i in range(len(SNR_opt_NN)):
         snr_save = i / 2
         snr_dB = SNR_opt_NN[i]
-        input_size = 7
 
-        model = MultiLabelNNDecoder1(input_size, MLNN_hidden_size, bits).to(device)
+        model = MultiLabelNNDecoder1(bits, MLNN_hidden_size, bits).to(device)
         MLNN_result, bits_info, snr_measure = MLNNDecoder(N, method, bits, encoded, snr_dB, model, model_pth, device)
         MLNN_final = MLNN_decision(MLNN_result, device)
 
