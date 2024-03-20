@@ -5,7 +5,7 @@ from datetime import datetime
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
-from Decode.NNDecoder import SingleLabelNNDecoder
+from Decode.NNDecoder import SingleLabelNNDecoder1
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_bler
 from Transmit.NoiseMeasure import NoiseMeasure
@@ -50,7 +50,7 @@ def estimation_SLNN(num, method, bits, encoded, SNR_opt_NN, SLNN_hidden_size, mo
         input_size = 7
         output_size = torch.pow(torch.tensor(2), bits)
 
-        model = SingleLabelNNDecoder(input_size, SLNN_hidden_size, output_size).to(device)
+        model = SingleLabelNNDecoder1(input_size, SLNN_hidden_size, output_size).to(device)
         SLNN_final, bits_info, snr_measure = SLNNDecoder(N, method, bits, encoded, SNR_opt_NN[i], model, model_pth, device)
 
         BLER_SLNN, error_num_SLNN = calculate_bler(SLNN_final, bits_info) # BER calculation
