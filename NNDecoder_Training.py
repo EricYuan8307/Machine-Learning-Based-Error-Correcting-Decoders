@@ -366,15 +366,15 @@ def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
 def main():
     # Device Setting
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.cuda.is_available()
-                    else torch.device("cpu")))
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.cuda.is_available()
+    #                 else torch.device("cpu")))
     # device = torch.device("cpu")
-    # device = torch.device("cuda")
+    device = torch.device("cuda")
 
     # Hyperparameters
     NeuralNetwork_type = ["SLNN", "MLNN"]
-    SLNN_hidden_size1 = [24, 25, 26, 27, 28]
+    SLNN_hidden_size1 = [25, 26, 27, 28] # [24, 25, 26, 27, 28]
     SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
     batch_size = 64
@@ -382,7 +382,7 @@ def main():
     momentum = 0.9
     epochs = 500
 
-    nr_codeword = int(1e7)
+    nr_codeword = int(1e6)
     bits = 10
     encoded = 26
     encoding_method = "Parity" # "Hamming", "Parity", "BCH"
