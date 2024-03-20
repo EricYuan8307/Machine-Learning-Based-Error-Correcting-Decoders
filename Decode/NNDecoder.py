@@ -28,7 +28,7 @@ class SingleLabelNNDecoder2(nn.Module):
         self.hidden0 = nn.Linear(input_size, hidden_size[0])
         self.hidden1 = nn.Linear(hidden_size[0], hidden_size[1])
         self.relu = nn.ReLU()
-        self.output = nn.Linear(hidden_size, output_size)
+        self.output = nn.Linear(hidden_size[1], output_size)
         self.softmax = nn.LogSoftmax(dim=2)
 
     def forward(self, x):

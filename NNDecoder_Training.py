@@ -401,10 +401,10 @@ def main():
         model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/"
 
         if NN_type == "SLNN" :
-            for i in range(len(SLNN_hidden_size1)):
-                model_name = f"{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}"
-                SLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, SLNN_hidden_size1[i],
-                              model_save_path, model_name, NN_type, patience, delta, device)
+            # for i in range(len(SLNN_hidden_size1)):
+            #     model_name = f"{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}"
+            #     SLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, SLNN_hidden_size1[i],
+            #                   model_save_path, model_name, NN_type, patience, delta, device)
 
             for j in range(len(SLNN_hidden_size2)):
                 model_name = f"{NN_type}_hiddenlayer{SLNN_hidden_size2[j]}"
