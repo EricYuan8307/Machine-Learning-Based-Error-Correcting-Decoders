@@ -136,8 +136,8 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    # device = torch.device("cpu")
-    device = torch.device("cuda")
+    device = torch.device("cpu")
+    # device = torch.device("cuda")
 
     # Hyperparameters
     metrics = ["BER", "BLER"]
@@ -157,9 +157,9 @@ def main():
     for NN_type in NeuralNetwork_type:
         for metric in metrics:
             if NN_type == "SLNN":
-                for hidden_size in SLNN_hidden_size1:
-                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{hidden_size}.pth"
-                    result_NN = estimation_SLNN1(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, hidden_size, model_pth, result_save, device)
+                for i in range(len(SLNN_hidden_size1)):
+                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}.pth"
+                    result_NN = estimation_SLNN1(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size1[i], model_pth, result_save, device)
 
                     directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
 
@@ -172,9 +172,9 @@ def main():
                     full_csv_path = os.path.join(directory_path, csv_filename)
                     np.savetxt(full_csv_path, result_NN, delimiter=', ')
 
-                for hidden_size in SLNN_hidden_size2:
-                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{hidden_size}.pth"
-                    result_NN = estimation_NN(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, hidden_size, model_pth, result_save, device)
+                for j in range(len(SLNN_hidden_size2)):
+                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size2[j]}.pth"
+                    result_NN = estimation_NN(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size2[j], model_pth, result_save, device)
 
                     directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
 
@@ -188,9 +188,9 @@ def main():
                     np.savetxt(full_csv_path, result_NN, delimiter=', ')
 
             elif NN_type == "MLNN":
-                for hidden_size in MLNN_hidden_size:
-                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{hidden_size}.pth"
-                    result_NN = estimation_NN(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, hidden_size, model_pth, result_save, device)
+                for k in range(len(MLNN_hidden_size)):
+                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{MLNN_hidden_size[k]}.pth"
+                    result_NN = estimation_NN(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, MLNN_hidden_size[k], model_pth, result_save, device)
 
                     directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
 
