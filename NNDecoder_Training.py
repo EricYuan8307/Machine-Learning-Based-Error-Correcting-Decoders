@@ -385,7 +385,7 @@ def main():
     nr_codeword = int(1e6)
     bits = 10
     encoded = 26
-    encoding_method = "Parity" # "Hamming", "Parity", "BCH"
+    encoding_method = "Parity" # "Hamming", "Parity", "BCH",
 
     snr = torch.tensor(0.0, dtype=torch.float, device=device)
     snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
