@@ -234,7 +234,7 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e4)
+    num = int(3e5)
     bits = 12
     encoded = 24
     encoding_method = "Golay" # "Hamming", "Parity", "BCH", Golay
@@ -257,19 +257,21 @@ def main():
     SNR_opt_ML = torch.arange(0, 7.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
 
+    result_save_BPSK = np.zeros((1, len(SNR_opt_BPSK)))
+    result_save_SDML = np.zeros((1, len(SNR_opt_ML)))
+    result_save_HDML = np.zeros((1, len(SNR_opt_ML)))
+    result_save_BP = np.zeros((1, len(SNR_opt_BP)))
 
-
-    result_save = np.zeros((1, len(SNR_opt_BPSK)))
-    # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save, device)
-    result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save, device)
-    result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save, device)
-    # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save, device)
+    result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
+    result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, device)
+    result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, device)
+    result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
 
     result_all = np.vstack([
-        # result_BPSK,
+        result_BPSK,
         result_SDML,
         result_HDML,
-        # result_BP
+        result_BP
     ])
 
 

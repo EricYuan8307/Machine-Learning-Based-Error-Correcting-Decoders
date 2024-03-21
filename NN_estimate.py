@@ -82,7 +82,7 @@ def estimation_SLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN
             error_rate, error_num = calculate_ber(NN_final, bits_info)  # BER calculation
 
         if error_num < 100:
-            N += 1000000
+            N += 100000
             print(f"the code number is {N}")
 
         else:
@@ -100,6 +100,7 @@ def estimation_NN(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hi
     for i in range(len(SNR_opt_NN)):
         snr_save = i / 2
 
+        
         if NN_type == "SLNN":
             output_size = torch.pow(torch.tensor(2), bits)
             if hiddenlayer_num == 2:
@@ -122,7 +123,7 @@ def estimation_NN(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hi
             error_rate, error_num = calculate_ber(NN_final, bits_info) # BER calculation
 
         if error_num < 100:
-            N += 1000000
+            N += 100000
             print(f"the code number is {N}")
 
         else:
@@ -141,11 +142,11 @@ def main():
 
     # Hyperparameters
     metrics = ["BER", "BLER"]
-    nr_codeword = int(1e7)
+    nr_codeword = int(2.5e6)
     bits = 10
     encoded = 26
     encoding_method = "Parity"  # "Hamming", "Parity", "BCH"
-    NeuralNetwork_type = ["SLNN"] # ["SLNN", "MLNN"]
+    NeuralNetwork_type = ["SLNN", "MLNN"] # ["SLNN", "MLNN"]
     SLNN_hidden_size1 = [24, 25, 26, 27, 28]
     SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
