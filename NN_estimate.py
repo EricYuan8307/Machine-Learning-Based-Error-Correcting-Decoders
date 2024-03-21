@@ -71,24 +71,25 @@ def estimation_SLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN
     for i in range(len(SNR_opt_NN)):
         snr_save = i / 2
 
-        if NN_type == "SLNN":
-            output_size = torch.pow(torch.tensor(2), bits)
-            model = SingleLabelNNDecoder1(encoded, NN_hidden_size, output_size).to(device)
-            NN_final, bits_info, snr_measure = SLNNDecoder(N, method, bits, encoded, SNR_opt_NN[i], model, model_pth, device)
+        for _ in range(20):
+            if NN_type == "SLNN":
+                output_size = torch.pow(torch.tensor(2), bits)
+                model = SingleLabelNNDecoder1(encoded, NN_hidden_size, output_size).to(device)
+                NN_final, bits_info, snr_measure = SLNNDecoder(N, method, bits, encoded, SNR_opt_NN[i], model, model_pth, device)
 
-        if metric == "BLER":
-            error_rate, error_num = calculate_bler(NN_final, bits_info)
-        elif metric == "BER":
-            error_rate, error_num = calculate_ber(NN_final, bits_info)  # BER calculation
+            if metric == "BLER":
+                error_rate, error_num = calculate_bler(NN_final, bits_info)
+            elif metric == "BER":
+                error_rate, error_num = calculate_ber(NN_final, bits_info)  # BER calculation
 
-        if error_num < 100:
-            N += 1000000
-            print(f"the code number is {N}")
+            if error_num < 100:
+                N += 1000000
+                print(f"the code number is {N}")
 
-        else:
-            print(
-                f"{NN_type}, hiddenlayer{NN_hidden_size}: When SNR is {snr_save} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
-            result[0, i] = error_rate
+            else:
+                print(
+                    f"{NN_type}, hiddenlayer{NN_hidden_size}: When SNR is {snr_save} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
+                result[0, i] = error_rate
 
     return result
 
@@ -100,34 +101,35 @@ def estimation_NN(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hi
     for i in range(len(SNR_opt_NN)):
         snr_save = i / 2
 
-        if NN_type == "SLNN":
-            output_size = torch.pow(torch.tensor(2), bits)
-            if hiddenlayer_num == 2:
-                model = SingleLabelNNDecoder2(encoded, NN_hidden_size, output_size).to(device)
-            NN_final, bits_info, snr_measure = SLNNDecoder(N, method, bits, encoded, SNR_opt_NN[i], model, model_pth, device)
+        for _ in range(20):
+            if NN_type == "SLNN":
+                output_size = torch.pow(torch.tensor(2), bits)
+                if hiddenlayer_num == 2:
+                    model = SingleLabelNNDecoder2(encoded, NN_hidden_size, output_size).to(device)
+                NN_final, bits_info, snr_measure = SLNNDecoder(N, method, bits, encoded, SNR_opt_NN[i], model, model_pth, device)
 
-        elif NN_type == "MLNN":
-            if hiddenlayer_num == 1:
-                model = MultiLabelNNDecoder1(encoded, NN_hidden_size, bits).to(device)
-            elif hiddenlayer_num == 2:
-                model = MultiLabelNNDecoder2(encoded, NN_hidden_size, bits).to(device)
-            elif hiddenlayer_num == 3:
-                model = MultiLabelNNDecoder3(encoded, NN_hidden_size, bits).to(device)
-            NN_result, bits_info, snr_measure = MLNNDecoder(N, method, bits, encoded, snr_save, model, model_pth, device)
-            NN_final = MLNN_decision(NN_result, device)
+            elif NN_type == "MLNN":
+                if hiddenlayer_num == 1:
+                    model = MultiLabelNNDecoder1(encoded, NN_hidden_size, bits).to(device)
+                elif hiddenlayer_num == 2:
+                    model = MultiLabelNNDecoder2(encoded, NN_hidden_size, bits).to(device)
+                elif hiddenlayer_num == 3:
+                    model = MultiLabelNNDecoder3(encoded, NN_hidden_size, bits).to(device)
+                NN_result, bits_info, snr_measure = MLNNDecoder(N, method, bits, encoded, snr_save, model, model_pth, device)
+                NN_final = MLNN_decision(NN_result, device)
 
-        if metric == "BLER":
-            error_rate, error_num = calculate_bler(NN_final, bits_info)
-        elif metric == "BER":
-            error_rate, error_num = calculate_ber(NN_final, bits_info) # BER calculation
+            if metric == "BLER":
+                error_rate, error_num = calculate_bler(NN_final, bits_info)
+            elif metric == "BER":
+                error_rate, error_num = calculate_ber(NN_final, bits_info) # BER calculation
 
-        if error_num < 100:
-            N += 1000000
-            print(f"the code number is {N}")
+            if error_num < 100:
+                N += 1000000
+                print(f"the code number is {N}")
 
-        else:
-            print(f"{NN_type}, hiddenlayer{NN_hidden_size}: When SNR is {snr_save} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
-            result[0, i] = error_rate
+            else:
+                print(f"{NN_type}, hiddenlayer{NN_hidden_size}: When SNR is {snr_save} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
+                result[0, i] = error_rate
 
     return result
 

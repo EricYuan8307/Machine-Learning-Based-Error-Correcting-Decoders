@@ -118,7 +118,7 @@ def estimation_HDML(num, method, bits, encoded, SNR_opt_ML, metric, result, devi
     for i in range(len(SNR_opt_ML)):
         snr_dB = SNR_opt_ML[i]
 
-        for _ in range(10):
+        for _ in range(20):
             HDML_final, bits_info, snr_measure = HardDecisionMLP(N, method, bits, encoded, snr_dB, device)
 
             if metric == "BER":
@@ -147,7 +147,7 @@ def estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result, device):
     for i in range(len(SNR_opt_BPSK)):
         snr_dB =SNR_opt_BPSK[i]
 
-        for _ in range(10):
+        for _ in range(20):
             BPSK_final, bits_info, snr_measure = UncodedBPSK(N, bits, snr_dB, device)
 
             if metric == "BER":
@@ -175,7 +175,7 @@ def estimation_BP(num, method, bits, encoded, SNR_opt_BP, iter, H, metric, resul
     for i in range(len(SNR_opt_BP)):
         snr_dB = SNR_opt_BP[i]
 
-        for _ in range(10):
+        for _ in range(20):
             BP_final, bits_info, snr_measure = BeliefPropagation(N, method, bits, encoded, snr_dB, iter, H, device)
 
             if metric == "BER":
@@ -204,7 +204,7 @@ def estimation_SDML(num, method, bits, encoded, SNR_opt_ML, metric, result, devi
         snr_dB = SNR_opt_ML[i]
 
         # BER
-        for _ in range(10):
+        for _ in range(20):
             SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, method, bits, encoded, snr_dB, device)
 
             if metric == "BER":
