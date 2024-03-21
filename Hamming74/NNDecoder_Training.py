@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
 from Transmit.noise import AWGN
-from Decode.NNDecoder import SingleLabelNNDecoder, MultiLabelNNDecoder1, MultiLabelNNDecoder2
+from Decode.NNDecoder import SingleLabelNNDecoder1, MultiLabelNNDecoder1, MultiLabelNNDecoder2
 from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import BinarytoDecimal
 from earlystopping import SLNN_EarlyStopping, MLNN_EarlyStopping
@@ -34,7 +34,7 @@ def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
     SLNN_testloader = torch.utils.data.DataLoader(SLNN_trainset, batch_size, shuffle=False)
 
     # Create an instance of the SimpleNN class
-    model = SingleLabelNNDecoder(input_size, hidden_size, output_size).to(device)
+    model = SingleLabelNNDecoder1(input_size, hidden_size, output_size).to(device)
 
     # Define the loss function and optimizer
     criterion = nn.CrossEntropyLoss()

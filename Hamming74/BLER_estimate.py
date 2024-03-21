@@ -10,7 +10,7 @@ from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_bler
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 
-from generating import all_codebook, all_codebook_NonML
+from generating import all_codebook_SDML, all_codebook_NonML, all_codebook_HDML
 from Encode.Encoder import PCC_encoders
 from Decode.MaximumLikelihood import SoftDecisionML
 from Decode.Decoder import PCC_decoder
@@ -29,7 +29,7 @@ def UncodedBPSK(nr_codeword, bits, snr_dB, device):
     return BPSK_final, bits_info, practical_snr
 
 def SoftDecisionMLP(nr_codeword, method, bits, encoded, snr_dB, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook(method, bits, encoded, device)
+    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook_SDML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
     SD_MaximumLikelihood = SoftDecisionML(SoftDecisionMLMatrix)
