@@ -1,6 +1,6 @@
 import torch
 import os
-from Decode.NNDecoder import SingleLabelNNDecoder
+from Decode.NNDecoder import SingleLabelNNDecoder1
 
 def Mask40(order, device):
     if order == 1:
@@ -258,7 +258,7 @@ output_size = torch.pow(torch.tensor(2), origin_size)
 encoder_type = "Hamming74"
 device = "cpu"
 neuron_number = 7
-origin_model = SingleLabelNNDecoder
+origin_model = SingleLabelNNDecoder1
 parameter = "output.weight"
 edge_delete = 42
 
