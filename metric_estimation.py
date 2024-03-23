@@ -234,10 +234,10 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(5e2)
-    bits = 51
-    encoded = 63
-    encoding_method = "BCH" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
+    num = int(5e3)
+    bits = 24
+    encoded = 49
+    encoding_method = "LDPC" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
     metrics = ["BER"] # BER or BLER
 
     iter = 5 # BP
