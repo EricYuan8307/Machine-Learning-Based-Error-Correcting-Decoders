@@ -83,13 +83,14 @@ def estimation_SLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN
                 error_rate, error_num = calculate_ber(NN_final, bits_info)  # BER calculation
 
             if error_num < 100:
-                N += 1000000
+                N += 500000
                 print(f"the code number is {N}")
 
             else:
                 print(
                     f"{NN_type}, hiddenlayer{NN_hidden_size}: When SNR is {snr_save} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
                 result[0, i] = error_rate
+                break
 
     return result
 
@@ -115,7 +116,7 @@ def estimation_NN(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hi
                     model = MultiLabelNNDecoder2(encoded, NN_hidden_size, bits).to(device)
                 elif hiddenlayer_num == 3:
                     model = MultiLabelNNDecoder3(encoded, NN_hidden_size, bits).to(device)
-                NN_result, bits_info, snr_measure = MLNNDecoder(N, method, bits, encoded, snr_save, model, model_pth, device)
+                NN_result, bits_info, snr_measure = MLNNDecoder(N, method, bits, encoded, SNR_opt_NN[i], model, model_pth, device)
                 NN_final = MLNN_decision(NN_result, device)
 
             if metric == "BLER":
@@ -124,12 +125,13 @@ def estimation_NN(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hi
                 error_rate, error_num = calculate_ber(NN_final, bits_info) # BER calculation
 
             if error_num < 100:
-                N += 1000000
+                N += 500000
                 print(f"the code number is {N}")
 
             else:
                 print(f"{NN_type}, hiddenlayer{NN_hidden_size}: When SNR is {snr_save} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
                 result[0, i] = error_rate
+                break
 
     return result
 
@@ -142,13 +144,13 @@ def main():
     device = torch.device("cuda")
 
     # Hyperparameters
-    metrics = ["BER", "BLER"]
-    nr_codeword = int(1e7)
+    metrics = ["BER"] # ["BER", "BLER"]
+    nr_codeword = int(1e5)
     bits = 10
     encoded = 26
     encoding_method = "Parity"  # "Hamming", "Parity", "BCH"
-    NeuralNetwork_type = ["SLNN"] # ["SLNN", "MLNN"]
-    SLNN_hidden_size1 = [24, 25, 26, 27, 28]
+    NeuralNetwork_type = ["MLNN"] # ["SLNN", "MLNN"]
+    SLNN_hidden_size1 = [26] # [24, 25, 26, 27, 28]
     SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
 

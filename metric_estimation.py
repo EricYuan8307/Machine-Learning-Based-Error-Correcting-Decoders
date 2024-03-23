@@ -215,7 +215,7 @@ def estimation_SDML(num, method, bits, encoded, SNR_opt_ML, metric, result, devi
                 print(f"{metric} is not either BER or BLER")
 
             if error_num_SDML < 100:
-                N += 10000
+                N += 50
                 print(f"the code number is {N}")
 
             else:
@@ -234,11 +234,11 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(3e5)
-    bits = 12
-    encoded = 24
-    encoding_method = "Golay" # "Hamming", "Parity", "BCH", Golay
-    metric = "BLER" # BER or BLER
+    num = int(5e2)
+    bits = 51
+    encoded = 63
+    encoding_method = "BCH" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
+    metrics = ["BER"] # BER or BLER
 
     iter = 5 # BP
     # H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
@@ -251,40 +251,41 @@ def main():
                        [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
                        [0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]], dtype=torch.float, device=device)  # Parity(10,5) BP
 
-    SNR_opt_BPSK = torch.arange(0, 7.5, 0.5)
-    SNR_opt_BP = torch.arange(0, 7.5, 0.5)
+    SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
+    SNR_opt_BP = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = SNR_opt_BP + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
-    SNR_opt_ML = torch.arange(0, 7.5, 0.5)
-    SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for MLNN article
+    SNR_opt_ML = torch.arange(0, 8.5, 0.5)
+    SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
 
     result_save_BPSK = np.zeros((1, len(SNR_opt_BPSK)))
     result_save_SDML = np.zeros((1, len(SNR_opt_ML)))
     result_save_HDML = np.zeros((1, len(SNR_opt_ML)))
     result_save_BP = np.zeros((1, len(SNR_opt_BP)))
 
-    result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
-    result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, device)
-    result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, device)
-    result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
+    for metric in metrics:
+        # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
+        result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, device)
+        result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, device)
+        # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
 
-    result_all = np.vstack([
-        result_BPSK,
-        result_SDML,
-        result_HDML,
-        result_BP
-    ])
+        result_all = np.vstack([
+            # result_BPSK,
+            # result_SDML,
+            # result_HDML,
+            # result_BP
+        ])
 
 
-    directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
+        directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
 
-    # Create the directory if it doesn't exist
-    if not os.path.exists(directory_path):
-        os.makedirs(directory_path)
+        # Create the directory if it doesn't exist
+        if not os.path.exists(directory_path):
+            os.makedirs(directory_path)
 
-    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    csv_filename = f"BER_result_{current_time}.csv"
-    full_csv_path = os.path.join(directory_path, csv_filename)
-    np.savetxt(full_csv_path, result_all, delimiter=', ')
+        current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        csv_filename = f"{encoding_method}_result_{current_time}.csv"
+        full_csv_path = os.path.join(directory_path, csv_filename)
+        np.savetxt(full_csv_path, result_all, delimiter=', ')
 
 
 if __name__ == "__main__":
