@@ -130,7 +130,7 @@ def estimation_HDML(num, method, bits, encoded, SNR_opt_ML, metric, result, devi
                 print(f"{metric} is not either BER or BLER")
 
             if error_num_HDML < 100:
-                N += 10000
+                N += int(1e4)
                 print(f"the code number is {N}")
 
             else:
@@ -187,11 +187,11 @@ def estimation_BP(num, method, bits, encoded, SNR_opt_BP, iter, H, metric, resul
                 print(f"{metric} is not either BER or BLER")
 
             if error_num_BP < 100:
-                N += 10000
+                N += int(1e4)
                 print(f"the code number is {N}")
 
             else:
-                print(f"{method}: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BP} and {metric} is {error_rate_BP}")
+                print(f"{method} iter{iter}: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BP} and {metric} is {error_rate_BP}")
                 result[0, i] = error_rate_BP
                 break
 
@@ -216,7 +216,7 @@ def estimation_SDML(num, method, bits, encoded, SNR_opt_ML, metric, result, devi
                 print(f"{metric} is not either BER or BLER")
 
             if error_num_SDML < 100:
-                N += 50
+                N += int(1e6)
                 print(f"the code number is {N}")
 
             else:
@@ -235,16 +235,16 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e2)
-    bits = 24
-    encoded = 49
-    encoding_method = "LDPC" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
+    num = int(1e3)
+    bits = 21
+    encoded = 31
+    encoding_method = "BCH" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
     metrics = ["BER"] # BER or BLER
 
-    iter = 5 # BP
+    iter = 10 # BP
 
 
-    H = ParitycheckMatrix(bits, encoded, device, device)
+    H = ParitycheckMatrix(encoded, bits, encoding_method, device)
 
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = torch.arange(0, 8.5, 0.5)
@@ -258,8 +258,8 @@ def main():
     result_save_BP = np.zeros((1, len(SNR_opt_BP)))
 
     for metric in metrics:
-        result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
-        result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, device)
+        # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
+        # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, device)
         # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, device)
         result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
 

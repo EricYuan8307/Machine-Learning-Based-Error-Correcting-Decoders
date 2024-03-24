@@ -607,7 +607,7 @@ def ParitycheckMatrix(encoded, origin, method, device):
     Returns:
     torch.Tensor: The parity check matrix.
     """
-    # Define Hamming matrix
+
     # Define Hamming 7x4 matrix
     if method == "Hamming" and encoded == 7 and origin == 4:
         H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
