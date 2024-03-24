@@ -258,9 +258,9 @@ def main():
     result_save_BP = np.zeros((1, len(SNR_opt_BP)))
 
     for metric in metrics:
-        # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
-        # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, device)
-        # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, device)
+        result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
+        result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, device)
+        result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, device)
         result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
 
     result_all = np.vstack([
