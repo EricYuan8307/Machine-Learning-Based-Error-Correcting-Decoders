@@ -17,6 +17,7 @@ from generating import all_codebook_NonML, all_codebook_HDML, all_codebook_SDML
 from Encode.Encoder import PCC_encoders
 from Decode.MaximumLikelihood import SoftDecisionML, HardDecisionML
 from Decode.Decoder import PCC_decoder
+from CodebookMatrix import ParitycheckMatrix
 
 # Calculate the Error number and BER
 def UncodedBPSK(nr_codeword, bits, snr_dB, device):
@@ -241,39 +242,9 @@ def main():
     metrics = ["BER"] # BER or BLER
 
     iter = 5 # BP
-    # H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
-    #                    [0, 1, 1, 0, 0, 1, 1],
-    #                    [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float, device=device) # Hamming(7,4) BP
 
-    H = torch.tensor([[[1, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-                       [1, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-                       [0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
-                       [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
-                       [0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]], dtype=torch.float, device=device)  # Parity(10,5) BP
 
-    # H = torch.tensor([[[1, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-    #                    [1, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-    #                    [0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
-    #                    [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
-    #                    [0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]], dtype=torch.float, device=device)  # Parity(20,7) BP
-    #
-    # H = torch.tensor([[[1, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-    #                    [1, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-    #                    [0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
-    #                    [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
-    #                    [0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]], dtype=torch.float, device=device)  # Parity(26,10) BP
-    #
-    # H = torch.tensor([[[1, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-    #                    [1, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-    #                    [0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
-    #                    [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
-    #                    [0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]], dtype=torch.float, device=device)  # Golay(24,12) BP
-    #
-    # H = torch.tensor([[[1, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-    #                    [1, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-    #                    [0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
-    #                    [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
-    #                    [0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]], dtype=torch.float, device=device)  # BCH(31,21) BP
+    H = ParitycheckMatrix(bits, encoded, device, device)
 
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = torch.arange(0, 8.5, 0.5)
