@@ -234,7 +234,7 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(5e3)
+    num = int(1e2)
     bits = 24
     encoded = 49
     encoding_method = "LDPC" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
@@ -251,6 +251,30 @@ def main():
                        [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
                        [0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]], dtype=torch.float, device=device)  # Parity(10,5) BP
 
+    # H = torch.tensor([[[1, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+    #                    [1, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+    #                    [0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
+    #                    [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
+    #                    [0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]], dtype=torch.float, device=device)  # Parity(20,7) BP
+    #
+    # H = torch.tensor([[[1, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+    #                    [1, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+    #                    [0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
+    #                    [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
+    #                    [0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]], dtype=torch.float, device=device)  # Parity(26,10) BP
+    #
+    # H = torch.tensor([[[1, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+    #                    [1, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+    #                    [0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
+    #                    [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
+    #                    [0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]], dtype=torch.float, device=device)  # Golay(24,12) BP
+    #
+    # H = torch.tensor([[[1, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+    #                    [1, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+    #                    [0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
+    #                    [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
+    #                    [0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]], dtype=torch.float, device=device)  # BCH(31,21) BP
+
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = SNR_opt_BP + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
@@ -263,10 +287,10 @@ def main():
     result_save_BP = np.zeros((1, len(SNR_opt_BP)))
 
     for metric in metrics:
-        # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
+        result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
         result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, device)
-        result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, device)
-        # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
+        # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, device)
+        result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
 
         result_all = np.vstack([
             # result_BPSK,
