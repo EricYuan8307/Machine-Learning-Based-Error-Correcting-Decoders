@@ -614,6 +614,14 @@ def ParitycheckMatrix(encoded, origin, method, device):
                            [0, 1, 1, 0, 0, 1, 1],
                            [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float, device=device)  # Hamming(7,4) BP
 
+    # Define parity 10x5 matrix
+    elif method == "Parity" and encoded == 10 and origin == 5:
+        H = torch.tensor([[[1, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+        [0, 1, 1, 0, 0, 0, 0, 1, 0, 0],
+        [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
+        [0, 0, 0, 1, 1, 0, 0, 0, 0, 1]]], dtype=torch.float,device=device)  # Parity(10,5) BP
+
     # Define parity 20x7 matrix
     elif method == "Parity" and encoded == 20 and origin == 7:
         H = torch.tensor([[[0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

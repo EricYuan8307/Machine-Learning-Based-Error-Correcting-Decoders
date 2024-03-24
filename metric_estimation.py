@@ -263,24 +263,24 @@ def main():
         # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, device)
         result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
 
-        result_all = np.vstack([
-            # result_BPSK,
-            # result_SDML,
-            # result_HDML,
-            # result_BP
-        ])
+    result_all = np.vstack([
+        result_BPSK,
+        result_SDML,
+        # result_HDML,
+        result_BP
+    ])
 
 
-        directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
+    directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
 
-        # Create the directory if it doesn't exist
-        if not os.path.exists(directory_path):
-            os.makedirs(directory_path)
+    # Create the directory if it doesn't exist
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
 
-        current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        csv_filename = f"{encoding_method}_result_{current_time}.csv"
-        full_csv_path = os.path.join(directory_path, csv_filename)
-        np.savetxt(full_csv_path, result_all, delimiter=', ')
+    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    csv_filename = f"{encoding_method}_result_{current_time}.csv"
+    full_csv_path = os.path.join(directory_path, csv_filename)
+    np.savetxt(full_csv_path, result_all, delimiter=', ')
 
 
 if __name__ == "__main__":
