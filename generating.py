@@ -1,7 +1,7 @@
 import torch
 
 from Encode.Encoder import PCC_encoders
-from CodebookMatrix import coderMatrix
+from Codebook.CodebookMatrix import coderMatrix
 from Encode.Modulator import bpsk_modulator
 
 def all_codebook_NonML(method, original, encoded, device):

@@ -2,7 +2,6 @@ import torch
 import numpy as np
 import time
 import os
-from datetime import datetime
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
@@ -17,7 +16,7 @@ from generating import all_codebook_NonML, all_codebook_HDML, all_codebook_SDML
 from Encode.Encoder import PCC_encoders
 from Decode.MaximumLikelihood import SoftDecisionML, HardDecisionML
 from Decode.Decoder import PCC_decoder
-from CodebookMatrix import ParitycheckMatrix
+from Codebook.CodebookMatrix import ParitycheckMatrix
 
 # Calculate the Error number and BER
 def UncodedBPSK(nr_codeword, bits, snr_dB, device):
@@ -287,7 +286,7 @@ def main():
     bits = 10
     encoded = 26
     encoding_method = "Parity" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
-    metrics = ["BER", "BLER"] # BER or BLER
+    metrics = ["BLER"] # BER or BLER
     batch_size = int(1e6)
 
     iter = 10 # BP

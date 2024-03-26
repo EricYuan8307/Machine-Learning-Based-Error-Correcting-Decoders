@@ -1,7 +1,6 @@
 import torch
 import numpy as np
 import os
-from datetime import datetime
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
@@ -183,14 +182,14 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    metrics = ["BER"] # ["BER", "BLER"]
+    metrics = ["BLER"] # ["BER", "BLER"]
     nr_codeword = int(1e6)
     bits = 10
     encoded = 26
     encoding_method = "Parity"  # "Hamming", "Parity", "BCH"
     NeuralNetwork_type = ["SLNN"] # ["SLNN", "MLNN"]
     batch_size = int(1e6)
-    SLNN_hidden_size1 = [20, 21, 22, 23, 24, 25, 26, 27, 28] # [24, 25, 26, 27, 28]
+    SLNN_hidden_size1 = [20, 21, 22, 23, 24] # [24, 25, 26, 27, 28]
     SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
 
