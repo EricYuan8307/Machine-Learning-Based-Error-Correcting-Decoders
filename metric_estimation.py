@@ -164,7 +164,7 @@ def estimation_HDML(num, method, bits, encoded, SNR_opt_ML, metric, result, batc
                 print(f"{metric} is not either BER or BLER")
 
             if error_num_HDML < 100:
-                N += int(1e4)
+                N += int(1e7)
                 print(f"the code number is {N}")
 
             else:
@@ -198,7 +198,7 @@ def estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result, device):
                 print(f"{metric} is not either BER or BLER")
 
             if error_num_BPSK < 100:
-                N += 2000000
+                N += int(1e7)
                 print(f"the code number is {N}")
 
             else:
@@ -231,7 +231,7 @@ def estimation_BP(num, method, bits, encoded, SNR_opt_BP, iter, H, metric, resul
                 print(f"{metric} is not either BER or BLER")
 
             if error_num_BP < 100:
-                N += int(1e4)
+                N += int(1e6)
                 print(f"the code number is {N}")
 
             else:
@@ -264,7 +264,7 @@ def estimation_SDML(num, method, bits, encoded, SNR_opt_ML, metric, result, batc
                 print(f"{metric} is not either BER or BLER")
 
             if error_num_SDML < 100:
-                N += int(1e6)
+                N += int(1e7)
                 print(f"the code number is {N}")
 
             else:
@@ -283,12 +283,12 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e4)
-    bits = 5
-    encoded = 10
+    num = int(1e6)
+    bits = 10
+    encoded = 26
     encoding_method = "Parity" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
     metrics = ["BER"] # BER or BLER
-    batch_size = int(1e3)
+    batch_size = int(1e6)
 
     iter = 10 # BP
 
@@ -308,13 +308,13 @@ def main():
 
     for metric in metrics:
         # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
-        # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
-        result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, batch_size, device)
+        result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
+        # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, batch_size, device)
         # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
 
         result_all = np.vstack([
             # result_BPSK,
-            # result_SDML,
+            result_SDML,
             # result_HDML,
             # result_BP
         ])

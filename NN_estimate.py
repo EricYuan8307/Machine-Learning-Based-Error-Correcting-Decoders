@@ -117,7 +117,7 @@ def estimation_SLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN
                 error_rate, error_num = calculate_ber(NN_final, bits_info)  # BER calculation
 
             if error_num < 100:
-                N += 500000
+                N += int(1e7)
                 print(f"the code number is {N}")
 
             else:
@@ -164,7 +164,7 @@ def estimation_NN(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hi
                 error_rate, error_num = calculate_ber(NN_final, bits_info) # BER calculation
 
             if error_num < 100:
-                N += 500000
+                N += int(1e7)
                 print(f"the code number is {N}")
 
             else:
@@ -184,7 +184,7 @@ def main():
 
     # Hyperparameters
     metrics = ["BER"] # ["BER", "BLER"]
-    nr_codeword = int(1e7)
+    nr_codeword = int(1e6)
     bits = 10
     encoded = 26
     encoding_method = "Parity"  # "Hamming", "Parity", "BCH"
