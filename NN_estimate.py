@@ -145,7 +145,7 @@ def main():
 
     # Hyperparameters
     metrics = ["BER"] # ["BER", "BLER"]
-    nr_codeword = int(5e6)
+    nr_codeword = int(2e7)
     bits = 10
     encoded = 26
     encoding_method = "Parity"  # "Hamming", "Parity", "BCH"
@@ -172,7 +172,7 @@ def main():
                         os.makedirs(directory_path)
 
                     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                    csv_filename = f"{metric}_result_{current_time}.csv"
+                    csv_filename = f"{metric}_{NN_type}_hidden{SLNN_hidden_size1[i]}.csv"
                     full_csv_path = os.path.join(directory_path, csv_filename)
                     np.savetxt(full_csv_path, result_NN, delimiter=', ')
 
