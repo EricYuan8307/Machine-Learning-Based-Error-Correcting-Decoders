@@ -287,7 +287,7 @@ def main():
     bits = 10
     encoded = 26
     encoding_method = "Parity" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
-    metrics = ["BER"] # BER or BLER
+    metrics = ["BER", "BLER"] # BER or BLER
     batch_size = int(1e6)
 
     iter = 10 # BP
