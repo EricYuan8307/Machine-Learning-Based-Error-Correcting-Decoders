@@ -147,8 +147,13 @@ def estimation_HDML(num, method, bits, encoded, SNR_opt_ML, metric, result, batc
     # Hard-Decision Maximum Likelihood
     for i in range(len(SNR_opt_ML)):
         snr_dB = SNR_opt_ML[i]
+        condition_met = False
+        iteration_count = 0  # Initialize iteration counter
+        max_iterations = 50
 
-        for _ in range(20):
+        while not condition_met and iteration_count < max_iterations:
+            iteration_count += 1
+
             HDML_final, bits_info, snr_measure = HardDecisionMLP(N, method, bits, encoded, snr_dB, batch_size, device)
 
             if metric == "BER":
@@ -166,7 +171,7 @@ def estimation_HDML(num, method, bits, encoded, SNR_opt_ML, metric, result, batc
                 print(
                     f"HD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_HDML} and {metric} is {error_rate_HDML}")
                 result[0, i] = error_rate_HDML
-                break
+                condition_met = True
 
     return result
 
@@ -176,8 +181,13 @@ def estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result, device):
     # De-Encoder, BPSK only
     for i in range(len(SNR_opt_BPSK)):
         snr_dB =SNR_opt_BPSK[i]
+        condition_met = False
+        iteration_count = 0  # Initialize iteration counter
+        max_iterations = 50
 
-        for _ in range(20):
+        while not condition_met and iteration_count < max_iterations:
+            iteration_count += 1
+
             BPSK_final, bits_info, snr_measure = UncodedBPSK(N, bits, snr_dB, device)
 
             if metric == "BER":
@@ -194,7 +204,7 @@ def estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result, device):
             else:
                 print(f"BPSK: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BPSK} and {metric} is {error_rate_BPSK}")
                 result[0, i] = error_rate_BPSK
-                break
+                condition_met = True
 
     return result
 
@@ -204,8 +214,13 @@ def estimation_BP(num, method, bits, encoded, SNR_opt_BP, iter, H, metric, resul
     # Belief Propagation
     for i in range(len(SNR_opt_BP)):
         snr_dB = SNR_opt_BP[i]
+        condition_met = False
+        iteration_count = 0  # Initialize iteration counter
+        max_iterations = 50
 
-        for _ in range(20):
+        while not condition_met and iteration_count < max_iterations:
+            iteration_count += 1
+
             BP_final, bits_info, snr_measure = BeliefPropagation(N, method, bits, encoded, snr_dB, iter, H, device)
 
             if metric == "BER":
@@ -222,7 +237,7 @@ def estimation_BP(num, method, bits, encoded, SNR_opt_BP, iter, H, metric, resul
             else:
                 print(f"{method} iter{iter}: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_BP} and {metric} is {error_rate_BP}")
                 result[0, i] = error_rate_BP
-                break
+                condition_met = True
 
     return result
 
@@ -232,9 +247,13 @@ def estimation_SDML(num, method, bits, encoded, SNR_opt_ML, metric, result, batc
     # Soft-Decision Maximum Likelihood
     for i in range(len(SNR_opt_ML)):
         snr_dB = SNR_opt_ML[i]
+        condition_met = False
+        iteration_count = 0  # Initialize iteration counter
+        max_iterations = 50
 
-        # BER
-        for _ in range(20):
+        while not condition_met and iteration_count < max_iterations:
+            iteration_count += 1
+
             SDML_final, bits_info, snr_measure = SoftDecisionMLP(N, method, bits, encoded, snr_dB, batch_size, device)
 
             if metric == "BER":
@@ -251,7 +270,7 @@ def estimation_SDML(num, method, bits, encoded, SNR_opt_ML, metric, result, batc
             else:
                 print(f"SD-ML: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_SDML} and {metric} is {error_rate_SDML}")
                 result[0, i] = error_rate_SDML
-                break
+                condition_met = True
 
     return result
 
@@ -293,24 +312,23 @@ def main():
         result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, batch_size, device)
         # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
 
-    result_all = np.vstack([
-        # result_BPSK,
-        # result_SDML,
-        # result_HDML,
-        # result_BP
-    ])
+        result_all = np.vstack([
+            # result_BPSK,
+            # result_SDML,
+            # result_HDML,
+            # result_BP
+        ])
 
 
-    directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
+        directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
 
-    # Create the directory if it doesn't exist
-    if not os.path.exists(directory_path):
-        os.makedirs(directory_path)
+        # Create the directory if it doesn't exist
+        if not os.path.exists(directory_path):
+            os.makedirs(directory_path)
 
-    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    csv_filename = f"{encoding_method}_result_{current_time}.csv"
-    full_csv_path = os.path.join(directory_path, csv_filename)
-    np.savetxt(full_csv_path, result_all, delimiter=', ')
+        csv_filename = f"{metric}_{encoding_method}{encoded}_{bits}.csv"
+        full_csv_path = os.path.join(directory_path, csv_filename)
+        np.savetxt(full_csv_path, result_all, delimiter=', ')
 
 
 if __name__ == "__main__":

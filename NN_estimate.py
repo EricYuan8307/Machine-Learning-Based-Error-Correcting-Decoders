@@ -99,8 +99,13 @@ def estimation_SLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN
     # Single-label Neural Network:
     for i in range(len(SNR_opt_NN)):
         snr_save = i / 2
+        condition_met = False
+        iteration_count = 0  # Initialize iteration counter
+        max_iterations = 50
 
-        for _ in range(20):
+        while not condition_met and iteration_count < max_iterations:
+            iteration_count += 1
+
             if NN_type == "SLNN":
                 output_size = torch.pow(torch.tensor(2), bits)
                 model = SingleLabelNNDecoder1(encoded, NN_hidden_size, output_size).to(device)
@@ -119,7 +124,7 @@ def estimation_SLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN
                 print(
                     f"{NN_type}, hiddenlayer{NN_hidden_size}: When SNR is {snr_save} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
                 result[0, i] = error_rate
-                break
+                condition_met = True
 
     return result
 
@@ -130,8 +135,13 @@ def estimation_NN(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hi
     # Single-label Neural Network:
     for i in range(len(SNR_opt_NN)):
         snr_save = i / 2
+        condition_met = False
+        iteration_count = 0  # Initialize iteration counter
+        max_iterations = 50
 
-        for _ in range(20):
+        while not condition_met and iteration_count < max_iterations:
+            iteration_count += 1
+
             if NN_type == "SLNN":
                 output_size = torch.pow(torch.tensor(2), bits)
                 if hiddenlayer_num == 2:
@@ -160,7 +170,7 @@ def estimation_NN(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hi
             else:
                 print(f"{NN_type}, hiddenlayer{NN_hidden_size}: When SNR is {snr_save} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
                 result[0, i] = error_rate
-                break
+                condition_met = True
 
     return result
 
@@ -174,12 +184,12 @@ def main():
 
     # Hyperparameters
     metrics = ["BER"] # ["BER", "BLER"]
-    nr_codeword = int(3e6)
+    nr_codeword = int(1e7)
     bits = 10
     encoded = 26
     encoding_method = "Parity"  # "Hamming", "Parity", "BCH"
     NeuralNetwork_type = ["SLNN"] # ["SLNN", "MLNN"]
-    batch_size = 1000
+    batch_size = int(1e6)
     SLNN_hidden_size1 = [20, 21, 22, 23, 24, 25, 26, 27, 28] # [24, 25, 26, 27, 28]
     SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
@@ -201,25 +211,23 @@ def main():
                     if not os.path.exists(directory_path):
                         os.makedirs(directory_path)
 
-                    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                    csv_filename = f"{metric}_result_{current_time}.csv"
+                    csv_filename = f"{metric}_{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}.csv"
                     full_csv_path = os.path.join(directory_path, csv_filename)
                     np.savetxt(full_csv_path, result_NN, delimiter=', ')
 
-                for j in range(len(SLNN_hidden_size2)):
-                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size2[j]}.pth"
-                    result_NN = estimation_NN(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size2[j], model_pth, result_save, batch_size, device)
-
-                    directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
-
-                    # Create the directory if it doesn't exist
-                    if not os.path.exists(directory_path):
-                        os.makedirs(directory_path)
-
-                    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                    csv_filename = f"{metric}_result_{current_time}.csv"
-                    full_csv_path = os.path.join(directory_path, csv_filename)
-                    np.savetxt(full_csv_path, result_NN, delimiter=', ')
+                # for j in range(len(SLNN_hidden_size2)):
+                #     model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size2[j]}.pth"
+                #     result_NN = estimation_NN(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size2[j], model_pth, result_save, batch_size, device)
+                #
+                #     directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
+                #
+                #     # Create the directory if it doesn't exist
+                #     if not os.path.exists(directory_path):
+                #         os.makedirs(directory_path)
+                #
+                #     csv_filename = f"{metric}_{NN_type}_hiddenlayer{SLNN_hidden_size2[j]}.csv"
+                #     full_csv_path = os.path.join(directory_path, csv_filename)
+                #     np.savetxt(full_csv_path, result_NN, delimiter=', ')
 
             elif NN_type == "MLNN":
                 for k in range(len(MLNN_hidden_size)):
@@ -232,8 +240,7 @@ def main():
                     if not os.path.exists(directory_path):
                         os.makedirs(directory_path)
 
-                    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                    csv_filename = f"{metric}_result_{current_time}.csv"
+                    csv_filename = f"{metric}_{NN_type}_hiddenlayer{MLNN_hidden_size[k]}.csv"
                     full_csv_path = os.path.join(directory_path, csv_filename)
                     np.savetxt(full_csv_path, result_NN, delimiter=', ')
 
