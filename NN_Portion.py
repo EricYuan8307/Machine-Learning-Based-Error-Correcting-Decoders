@@ -54,7 +54,7 @@ def SLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, ba
 
     return SLNN_binary, bits_info, practical_snr
 
-def estimation_SLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hidden_size, edge_deleted, model_pth, result, batch_size, device):
+def estimation_SLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hidden_size, edge_deleted, model_pth, result, batch_size, t, device):
     N = num
 
     # Single-label Neural Network:
@@ -82,7 +82,7 @@ def estimation_SLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN
         else:
             print(
                 f"{NN_type}, hiddenlayer{NN_hidden_size} - edgedeleted{edge_deleted}: When SNR is {snr_measure} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
-            result[0, edge_deleted.to(int)] = error_rate
+            result[0, t] = error_rate
             condition_met = True
 
     return result
@@ -95,13 +95,14 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
+    t = 0
     metrics = ["BLER"]
     num = int(2e7)
     bits = 10
     encoded = 26
     encoding_method = "Parity"
     NN_type = "SLNN"
-    batch_size = int(1e4)
+    batch_size = int(1e5)
     SLNN_hidden_size = 26
     edge_delete_range = torch.arange(0, 26*26+1, 1)
     SNR_opt_NN = torch.tensor(7, dtype=torch.int, device=device)
@@ -115,7 +116,8 @@ def main():
             if not os.path.exists(model_pth):
                 continue
             edge_delete = edge_delete_range[i]
-            result_all = estimation_SLNN1(num, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size, edge_delete, model_pth, result_save, batch_size, device)
+            result_all = estimation_SLNN1(num, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size, edge_delete, model_pth, result_save, batch_size, t, device)
+            t += 1
             directory_path = f"Result/{encoding_method}{encoded}_{bits}_deleted/{metric}/"
 
             # Create the directory if it doesn't exist
