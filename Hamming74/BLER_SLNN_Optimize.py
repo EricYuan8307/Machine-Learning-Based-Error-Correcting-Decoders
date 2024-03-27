@@ -42,6 +42,7 @@ def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
     # Define the loss function and optimizer
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
 
     # Define lists to store loss values
     SLNN_train_losses = []
@@ -93,6 +94,8 @@ def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
         SLNN_test_losses.append(avg_test_loss)
 
         print(f'SLNN Testing - Edge Deleted:{edge_delete} - order:{order}, - SNR{snr_measure} - Loss: {running_loss / len(SLNN_testloader):.9f}')
+
+        scheduler.step(avg_test_loss)
 
         # Early Stopping
         if early_stopping(running_loss, model, model_save_path, model_name):
