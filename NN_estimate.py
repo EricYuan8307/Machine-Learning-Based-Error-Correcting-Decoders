@@ -48,8 +48,8 @@ def SLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, ba
 
         SLNN_binary_batches.append(SLNN_binary_batch)
 
-        if i % batch_size == 0 and i > 0:
-            print(f"NN Decoder Batch: Processed {i} batches out of {num_batches}")
+        if i % 500 == 0 and i > 0:
+            print(f"NN Decoder Batch: Processed batch: {i}/{num_batches}")
 
     # Concatenate the results
     SLNN_binary = torch.cat(SLNN_binary_batches, dim=0)
@@ -188,8 +188,8 @@ def main():
     encoded = 26
     encoding_method = "Parity"  # "Hamming", "Parity", "BCH"
     NeuralNetwork_type = ["SLNN"] # ["SLNN", "MLNN"]
-    batch_size = int(1e6)
-    SLNN_hidden_size1 = [20, 21, 22, 23, 24, 25, 26] # [24, 25, 26, 27, 28]
+    batch_size = int(1e4)
+    SLNN_hidden_size1 = [27, 28] # [20, 21, 22, 23, 24, 25, 26, 27, 28]
     SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
 

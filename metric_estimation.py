@@ -93,8 +93,8 @@ def HardDecisionMLP(nr_codeword, method, bits, encoded, snr_dB, batch_size,devic
         HD_ML_batch = HD_MaximumLikelihood(HD_signal_batch)
         HD_ML_batches.append(HD_ML_batch)
 
-        if i % batch_size == 0 and i > 0:
-            print(f"SDML Batch: Processed {i} batches out of {num_batches}")
+        if i % 500 == 0 and i > 0:
+            print(f"NN Decoder Batch: Processed batch: {i}/{num_batches}")
 
     # Concatenating the processed batches
     HD_ML = torch.cat(HD_ML_batches, dim=0)
@@ -127,8 +127,8 @@ def SoftDecisionMLP(nr_codeword, method, bits, encoded, snr_dB, batch_size, devi
         SD_ML_batch = SD_MaximumLikelihood(noised_signal_batch)
         SD_ML_batches.append(SD_ML_batch)
 
-        if i % batch_size == 0 and i > 0:
-            print(f"SDML Batch: Processed {i} batches out of {num_batches}")
+        if i % 500 == 0 and i > 0:
+            print(f"NN Decoder Batch: Processed batch: {i}/{num_batches}")
 
     # Concatenating the processed batches
     SD_ML = torch.cat(SD_ML_batches, dim=0)
@@ -287,7 +287,7 @@ def main():
     encoded = 26
     encoding_method = "Parity" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
     metrics = ["BER", "BLER"] # BER or BLER
-    batch_size = int(1e6)
+    batch_size = int(1e4)
 
     iter = 10 # BP
 

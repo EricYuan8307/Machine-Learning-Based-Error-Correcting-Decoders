@@ -20,7 +20,7 @@ def SLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, de
     convertor = DecimaltoBinary(SLNN_Matrix)
 
     bits_info = generator(nr_codeword, bits, device)  # Code Generator
-    encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
+    encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
     noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
 
