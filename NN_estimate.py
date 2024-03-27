@@ -48,8 +48,8 @@ def SLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, ba
 
         SLNN_binary_batches.append(SLNN_binary_batch)
 
-        if i % batch_size == 0 and i > 0:
-            print(f"NN Decoder Batch: Processed {i} batches out of {num_batches}")
+        if i % 500 == 0 and i > 0:
+            print(f"NN Decoder Batch: Processed batch: {i}/{num_batches}")
 
     # Concatenate the results
     SLNN_binary = torch.cat(SLNN_binary_batches, dim=0)
