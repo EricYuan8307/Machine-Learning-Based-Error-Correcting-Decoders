@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
+import os
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
@@ -123,7 +124,8 @@ def main():
     bits = 10
     encoded = 26
     encoding_method = "Parity"
-    edge_delete = 622
+    # edge_delete = 622
+    edge_delete_range = torch.arange(400, 26*24+1, 1)
     # order = torch.arange(1, 113, 1).to(torch.int)
     order = None
     NN_type = "SLNN"
@@ -136,16 +138,22 @@ def main():
     patience = encoded
     delta = 0.001
 
-    Load_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{hidden_size}_deleted_{device}/{NN_type}_deleted{edge_delete}.pth"
-    model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{encoding_method}_{hidden_size}_ft_{device}/"
-    model_name = f"SLNN_edgedeleted{edge_delete}_trained"
+    for edge_delete in edge_delete_range:
+        model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{hidden_size}_deleted_{device}/{NN_type}_deleted{edge_delete}.pth"
+        if not os.path.exists(model_pth):
+            continue
+        # edge_delete = edge_delete_range[i]
 
-    # Train SLNN with different hidden layer neurons
-    model = torch.load(Load_path)
-    mask = (model['hidden.weight'] != 0).int()
+        Load_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{hidden_size}_deleted_{device}/{NN_type}_deleted{edge_delete}.pth"
+        model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{hidden_size}_ft_{device}/"
+        model_name = f"SLNN_deleted{edge_delete}_trained"
 
-    SLNN_training(SLNN_snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, edge_delete,
-                  Load_path, model_save_path, model_name, patience, delta, mask, order, device)
+        # Train SLNN with different hidden layer neurons
+        model = torch.load(Load_path)
+        mask = (model['hidden.weight'] != 0).int()
+
+        SLNN_training(SLNN_snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, edge_delete,
+                      Load_path, model_save_path, model_name, patience, delta, mask, order, device)
 
     # for j in range(len(order)):
     #     mask =
