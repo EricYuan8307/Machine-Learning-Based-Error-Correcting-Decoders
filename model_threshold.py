@@ -2,6 +2,7 @@ import torch
 import os
 from Decode.NNDecoder import SingleLabelNNDecoder1
 
+
 def Mask40(order, device):
     if order == 1:
         mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
@@ -95,6 +96,7 @@ def Mask40(order, device):
 
     return mask
 
+
 def Mask42(device):
     mask = torch.tensor([[0, 0, 0, 0, 0, 1, 0],
                          [0, 0, 0, 1, 0, 0, 0],
@@ -105,6 +107,7 @@ def Mask42(device):
                          [1, 0, 0, 0, 0, 0, 0]], dtype=torch.float, device=device)
 
     return mask
+
 
 def Mask43(order, device):
     if order == 1:
@@ -177,15 +180,17 @@ def normalize_abs(data):
     normalized = torch.div(torch.abs(data), torch.sum(torch.abs(data), dim=1).unsqueeze(1))
     return normalized
 
+
 def modify(origin_size, input_size, threshold, neuron_number, origin_model, parameter, origin_model_pth, save_pth):
-    output_size = torch.pow(torch.tensor(2), origin_size) # Filter out the model absoluted normalized parameter that is smaller than the threshold
+    output_size = torch.pow(torch.tensor(2),
+                            origin_size)  # Filter out the model absoluted normalized parameter that is smaller than the threshold
 
     # Assuming you have the model class defined somewhere
     model = origin_model(input_size, neuron_number, output_size)
     model.load_state_dict(torch.load(origin_model_pth))
 
     for name, param in model.named_parameters():
-        if name in(parameter):
+        if name in (parameter):
             # Apply thresholding to the absoluted normalized weight values
             with (torch.no_grad()):  # Ensure that these operations don't track gradients
                 abs_normalized = normalize_abs(param.data)
@@ -195,7 +200,6 @@ def modify(origin_size, input_size, threshold, neuron_number, origin_model, para
                 num_zeros = (mask == 0).sum().item()
                 model_name = f"{Model_type}_deleted{num_zeros}"
 
-
     # Create the directory if it doesn't exist
     os.makedirs(save_pth, exist_ok=True)
     torch.save(model.state_dict(), f"{save_pth}{model_name}.pth")
@@ -203,15 +207,18 @@ def modify(origin_size, input_size, threshold, neuron_number, origin_model, para
     # model_modified = torch.load(f'{save_pth}{Model_type}_model_modified_hiddenlayer{neuron_number}_BER0.pth')
     # return model_modified
 
-def modify_exact(origin_size, input_size, position, neuron_number, origin_model, parameter, origin_model_pth, save_pth, order):
-    output_size = torch.pow(torch.tensor(2), origin_size) # Filter out the model parameter that is exactly same as the threshold
+
+def modify_exact(origin_size, input_size, position, neuron_number, origin_model, parameter, origin_model_pth, save_pth,
+                 order):
+    output_size = torch.pow(torch.tensor(2),
+                            origin_size)  # Filter out the model parameter that is exactly same as the threshold
 
     # Assuming you have the model class defined somewhere
     model = origin_model(input_size, neuron_number, output_size)
     model.load_state_dict(torch.load(origin_model_pth))
 
     for name, param in model.named_parameters():
-        if name in(parameter):
+        if name in (parameter):
             # Apply thresholding to the absoluted normalized weight values
             with (torch.no_grad()):  # Ensure that these operations don't track gradients
                 mask = (param.data != 0).int()
@@ -228,7 +235,9 @@ def modify_exact(origin_size, input_size, position, neuron_number, origin_model,
     # model_modified = torch.load(f'{save_pth}{Model_type}_model_modified_hiddenlayer{neuron_number}_BER0.pth')
     # return model_modified
 
-def modify_mask(origin_size, input_size, model_name, neuron_number, origin_model, parameter, origin_model_pth, save_pth, mask):
+
+def modify_mask(origin_size, input_size, model_name, neuron_number, origin_model, parameter, origin_model_pth, save_pth,
+                mask):
     output_size = torch.pow(torch.tensor(2), origin_size)
 
     # Assuming you have the model class defined somewhere
@@ -236,20 +245,21 @@ def modify_mask(origin_size, input_size, model_name, neuron_number, origin_model
     model.load_state_dict(torch.load(origin_model_pth))
 
     for name, param in model.named_parameters():
-        if name in(parameter):
+        if name in (parameter):
             # Apply thresholding to the absoluted normalized weight values
             with (torch.no_grad()):  # Ensure that these operations don't track gradients
                 param.data = param.data * mask
 
     # Create the directory if it doesn't exist
     os.makedirs(save_pth, exist_ok=True)
-    torch.save(model.state_dict(), f"{save_pth}{model_name}.pth") # exclusive for neuron=7
+    torch.save(model.state_dict(), f"{save_pth}{model_name}.pth")  # exclusive for neuron=7
+
 
 def loadpara(origin_size, input_size, neuron_number, origin_model, origin_model_pth):
     output_size = torch.pow(torch.tensor(2), origin_size)
 
     model = torch.load(origin_model_pth)
-    print("model parameters:",model)
+    print("model parameters:", model)
 
     # Assuming you have the model class defined somewhere
     model = origin_model(input_size, neuron_number, output_size)
@@ -526,15 +536,67 @@ edge_delete = 619
 model_pth = f"Result/Model/{encoder_type}{input_size}_{bits}/{neuron_number}_ft_{device}/{Model_type}_deleted{edge_delete}_trained.pth"
 
 # position = one_positions = (mask == 1).nonzero()
-position = torch.tensor([[ 0,  4],[ 0,  6],[ 1,  5],[ 1, 21],[ 2,  3],[ 3,  4],[ 3,  7],[ 3, 13],[ 3, 21],[ 4, 14],[ 4, 23],
-        [ 5,  5],[ 6, 16],[ 6, 17],[ 6, 19],[ 7, 15],[ 7, 18],[ 8, 13],[ 9,  0],[ 9, 18],
-        [10,  6],[11, 15],[11, 21],[12,  0],[12,  2],[13,  2],[13,  3],[13, 24],[14,  6],
-        [15,  8],[15, 16],[16, 19],[16, 25],[17,  1],[17, 17],[17, 20],[18,  5],[18, 20],
-        [19,  2],[19,  9],[19, 13],[20, 22],[20, 24],[21,  2],[21, 11],[21, 13],[22, 19],
-        [22, 25],[23,  3],[23, 21],[24,  5],[24,  9],[24, 20],[24, 23],[25,  4],[25,  7],[25, 16]])
-
+position = torch.tensor([[0, 4], # 0
+                         [0, 6], # 1
+                         [1, 5], # 2
+                         [1, 21], # 3
+                         [2, 3], # 4
+                         [3, 4], # 5
+                         [3, 7], # 6
+                         [3, 13], # 7
+                         [3, 21], # 8
+                         [4, 14], # 9
+                         [4, 23], # 10
+                         [5, 5], # 11
+                         [6, 16], # 12
+                         [6, 17], # 13
+                         [6, 19], # 14
+                         [7, 15], # 15
+                         [7, 18], # 16
+                         [8, 13], # 17
+                         [9, 0], # 18
+                         [9, 18], # 19
+                         [10, 6], # 20
+                         [11, 15], # 21
+                         [11, 21], # 22
+                         [12, 0], # 23
+                         [12, 2], # 24
+                         [13, 2], # 25
+                         [13, 3], # 26
+                         [13, 24], # 27
+                         [14, 6], # 28
+                         [15, 8], # 29
+                         [15, 16], # 30
+                         [16, 19], # 31
+                         [16, 25], # 32
+                         [17, 1], # 33
+                         [17, 17], # 34
+                         [17, 20], # 35
+                         [18, 5], # 36
+                         [18, 20], # 37
+                         [19, 2], # 38
+                         [19, 9], # 39
+                         [19, 13], # 40
+                         [20, 22], # 41
+                         [20, 24], # 42
+                         [21, 2], # 43
+                         [21, 11], # 44
+                         [21, 13], # 45
+                         [22, 19], # 46
+                         [22, 25], # 47
+                         [23, 3], # 48
+                         [23, 21], # 49
+                         [24, 5], # 50
+                         [24, 9], # 51
+                         [24, 20], # 52
+                         [24, 23], # 53
+                         [25, 4], # 54
+                         [25, 7], # 55
+                         [25, 16] # 56
+                         ])
 
 save_pth = f"Result/Model/{encoder_type}{input_size}_{bits}/{neuron_number}_ft_{device}/"
 for i in range(len((position))):
-    model_modified = modify_exact(bits, input_size, position[i], neuron_number, origin_model, parameter, model_pth, save_pth, i)
+    model_modified = modify_exact(bits, input_size, position[i], neuron_number, origin_model, parameter, model_pth,
+                                  save_pth, i)
 print("Model Modify Finished")

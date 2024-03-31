@@ -116,7 +116,7 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    hidden_size = 26
+    hidden_size = 24
     batch_size = 64
     learning_rate = 1e-2
     epochs = 500
@@ -124,7 +124,7 @@ def main():
     bits = 10
     encoded = 26
     encoding_method = "Parity"
-    edge_delete_range = [611, 612, 613, 614, 617, 618, 619] # 449, 470, 490, 501, 530, 540, 551, 561, 571, 581, 593, 601, 610
+    edge_delete_range = [611, 601,592, 580, 569, 560, 550, 540, 530, 517, 510,501, 491, 480, 470, 461, 450, 440, 430, 420, 414, 400] # 449, 470, 490, 501, 530, 540, 551, 561, 571, 581, 593, 601, 610, 611, 612, 613, 614, 617, 618, 619
     # order = torch.arange(1, 113, 1).to(torch.int)
     order = None
     NN_type = "SLNN"
@@ -138,10 +138,9 @@ def main():
     delta = 0.001
 
     for edge_delete in edge_delete_range:
-        model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{hidden_size}_deleted_{device}/{NN_type}_deleted{edge_delete}.pth"
-        if not os.path.exists(model_pth):
-            continue
-        # edge_delete = edge_delete_range[i]
+        # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{hidden_size}_deleted_{device}/{NN_type}_deleted{edge_delete}.pth"
+        # if not os.path.exists(model_pth):
+        #     continue
 
         Load_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{hidden_size}_deleted_{device}/{NN_type}_deleted{edge_delete}.pth"
         model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{hidden_size}_ft_{device}/"
