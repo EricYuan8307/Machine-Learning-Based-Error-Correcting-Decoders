@@ -124,7 +124,7 @@ def main():
     bits = 10
     encoded = 26
     encoding_method = "Parity"
-    edge_delete_range = [449, 470, 490, 501, 530, 540, 551, 561, 571, 581, 593, 601, 610]
+    edge_delete_range = [611, 612, 613, 614, 617, 618, 619] # 449, 470, 490, 501, 530, 540, 551, 561, 571, 581, 593, 601, 610
     # order = torch.arange(1, 113, 1).to(torch.int)
     order = None
     NN_type = "SLNN"
