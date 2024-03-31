@@ -183,7 +183,7 @@ def main():
 
     # Hyperparameters
     metrics = ["BLER"] # ["BER", "BLER"]
-    nr_codeword = int(2.1e7)
+    nr_codeword = int(3e7)
     bits = 10
     encoded = 26
     encoding_method = "Parity"  # "Hamming", "Parity", "BCH"
@@ -193,7 +193,7 @@ def main():
     SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
     # edge_deleteds = [408, 449, 470, 490, 501, 530, 540, 551, 561, 571, 581, 593, 601, 610, 622]
-    edge_deleteds = [622]
+    edge_deleteds = [611, 612, 613, 614, 617, 618, 619]
 
     SNR_opt_NN = torch.arange(7, 7.5, 0.5).to(device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
