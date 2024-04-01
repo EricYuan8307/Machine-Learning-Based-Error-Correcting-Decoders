@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
 from Transmit.noise import AWGN
-from Decode.NNDecoder import SingleLabelNNDecoder_nonfully
+from Decode.NNDecoder import SingleLabelNNDecoder_nonfully, SingleLabelNNDecoder1
 from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import BinarytoDecimal
 from earlystopping import EarlyStopping
@@ -117,8 +117,8 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    NeuralNetwork_type = ["SLNN"]  # ["SLNN", "MLNN"]
-    SLNN_hidden_size1 = [24, 25, 26, 27, 28]
+    NeuralNetwork_type = "SLNN"  # ["SLNN", "MLNN"]
+    SLNN_hidden_size1 = 26
     # SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
     batch_size = 64
@@ -130,7 +130,6 @@ def main():
     bits = 10
     encoded = 26
     encoding_method = "Parity"  # "Hamming", "Parity", "BCH",
-    NN_type = {"SLNN"}
 
     snr = torch.tensor(0.0, dtype=torch.float, device=device)
     snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for SLNN article
@@ -139,19 +138,23 @@ def main():
     patience = encoded
     delta = 0.001
 
-    edge_delete = [] # Edge delete
-    masks = MaskMatrix(device)
+    edge_deletes = [642] # Edge delete
+    orders = [0]
 
-    for i in range(len(edge_delete)):
-        mask = masks(edge_delete[i], encoded, SLNN_hidden_size1)
-        # model Path:
-        model_load_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size1}.pth"
-        model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_decrease_{device}/"
+    for edge_delete in edge_deletes:
+        for order in orders:
+            # model Path:
+            model_load_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{encoded}_ft_{device}/{NeuralNetwork_type}_deleted{edge_delete}_order{order}.pth"
+            model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{encoded}_ft_{device}/"
 
-        # Train SLNN with different hidden layer neurons
-        model_name = f"{NN_type}_hiddenlayer{SLNN_hidden_size1}"
-        SLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size1,
-                      model_load_path, model_save_path, model_name, NN_type, patience, delta, mask, device)
+            # calculate the mask
+            model = torch.load(model_load_path)
+            mask = (model['hidden.weight'] != 0).int()
+
+            # Train SLNN with different hidden layer neurons
+            model_name = f"{NeuralNetwork_type}_deleted{edge_delete}_order{order}_trained"
+            SLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size1,
+                          model_load_path, model_save_path, model_name, NeuralNetwork_type, patience, delta, mask, device)
 
 
 if __name__ == '__main__':
