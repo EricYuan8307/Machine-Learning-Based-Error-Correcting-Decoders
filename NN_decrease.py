@@ -138,13 +138,13 @@ def main():
     patience = encoded
     delta = 0.001
 
-    edge_deletes = [642] # Edge delete
-    orders = [0]
+    edge_deletes = [643] # Edge delete
+    orders = torch.arange(0, 34, 1)
 
     for edge_delete in edge_deletes:
         for order in orders:
             # model Path:
-            model_load_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{encoded}_ft_{device}/{NeuralNetwork_type}_deleted{edge_delete}.pth"
+            model_load_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{encoded}_ft_{device}/{NeuralNetwork_type}_deleted{edge_delete}_order{order}.pth"
             model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{encoded}_ft_{device}/"
 
             # calculate the mask

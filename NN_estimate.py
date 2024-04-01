@@ -192,7 +192,7 @@ def main():
     SLNN_hidden_size1 = [26] # [20, 21, 22, 23, 24, 25, 26, 27, 28]
     SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
-    edge_deleteds = [642] # N = 26
+    edge_deleteds = [625] # N = 26
     # edge_deleteds = [550, 560, 569, 580] # N = 24
 
     SNR_opt_NN = torch.arange(7, 7.5, 0.5).to(device)
