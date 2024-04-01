@@ -143,7 +143,7 @@ def main():
     encoding_method = "Parity"
     NN_type = "SLNN"
     batch_size = int(1e4)
-    SLNN_hidden_size = 26
+    SLNN_hidden_size = 24
     edge_delete_range = 645
     # orders = torch.arange(1, 57, 1)
     orders = [0]
