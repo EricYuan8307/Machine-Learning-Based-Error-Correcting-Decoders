@@ -143,10 +143,10 @@ def main():
     encoding_method = "Parity"
     NN_type = "SLNN"
     batch_size = int(1e4)
-    SLNN_hidden_size = 24
-    edge_delete_range = 645
-    # orders = torch.arange(1, 57, 1)
-    orders = [0]
+    SLNN_hidden_size = 26
+    edge_delete_range = 620
+    orders = torch.arange(1, 57, 1)
+    # orders = [0]
     SNR_opt_NN = torch.tensor(7, dtype=torch.float, device=device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
