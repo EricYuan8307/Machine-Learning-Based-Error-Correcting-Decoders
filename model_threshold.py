@@ -547,10 +547,10 @@ input_size = 26
 output_size = torch.pow(torch.tensor(2), bits)
 encoder_type = "Parity"
 device = "cpu"
-neuron_number = 26
+neuron_number = 24
 origin_model = SingleLabelNNDecoder1
 parameter = "hidden.weight"
-edge_delete = 642
+edge_delete = 580
 
 model_pth = f"Result/Model/{encoder_type}{input_size}_{bits}/{neuron_number}_ft_{device}/{Model_type}_deleted{edge_delete}_trained.pth"
 
@@ -616,41 +616,51 @@ model_pth = f"Result/Model/{encoder_type}{input_size}_{bits}/{neuron_number}_ft_
 #                          ]) # To filter out the edge that has been deleted deleted619
 
 position = torch.tensor([
-    [0, 4],
-    [1, 5],
-    [1, 21],
-    [2, 3],
-    [3, 4],
-    [3, 7],
-    [4, 14],
-    [4, 23],
-    [5, 5],
-    [6, 17],
-    [7, 18],
-    [8, 13],
-    [9, 0],
-    [9, 18],
-    [11, 15],
-    [11, 21],
-    [12, 2],
-    [13, 24],
-    [14, 6],
-    [15, 8],
-    [16, 19],
-    [16, 25],
-    [17, 1],
-    [18, 20],
-    [19, 2],
-    [19, 9],
-    [20, 22],
-    [20, 24],
-    [21, 11],
-    [22, 19],
-    [22, 25],
-    [23, 21],
-    [24, 23],
-    [25, 16]
-]) # To filter out the edge that has been deleted deleted619
+    [ 0, 13], # 0
+    [ 0, 18], # 1
+    [ 0, 23], # 2
+    [ 1, 23], # 3
+    [ 1, 25], # 4
+    [ 2,  4], # 5
+    [ 2, 15], # 6
+    [ 2, 23], # 7
+    [ 3, 22], # 8
+    [ 3, 23], # 9
+    [ 4,  7], # 10
+    [ 4, 18], # 11
+    [ 5, 14], # 12
+    [ 5, 18], # 13
+    [ 5, 23], # 14
+    [ 6,  2], # 15
+    [ 6,  9], # 16
+    [ 6, 23], # 17
+    [ 7, 18], # 18
+    [ 7, 20], # 19
+    [ 8,  5], # 20
+    [ 8, 18], # 21
+    [ 8, 23], # 22
+    [ 9,  6], # 23
+    [ 9, 15], # 24
+    [10, 18], # 25
+    [11,  9], # 26
+    [12,  0], # 27
+    [13,  7], # 28
+    [14,  8], # 29
+    [15,  4], # 30
+    [18,  8], # 31
+    [18, 20], # 32
+    [18, 23], # 33
+    [19,  1], # 34
+    [19, 23], # 35
+    [20, 21], # 36
+    [20, 23], # 37
+    [21, 23], # 38
+    [21, 24], # 39
+    [22, 18], # 40
+    [22, 21], # 41
+    [23,  1], # 42
+    [23,  9] # 43
+                         ]) # To filter out the edge that has been deleted deleted619
 
 save_pth = f"Result/Model/{encoder_type}{input_size}_{bits}/{neuron_number}_ft_{device}/"
 
