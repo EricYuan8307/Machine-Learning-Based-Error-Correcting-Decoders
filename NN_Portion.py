@@ -54,7 +54,7 @@ def SLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, ba
 
     return SLNN_binary, bits_info, practical_snr
 
-def estimation_SLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hidden_size, edge_deleted, model_pth, result, batch_size, t, device):
+def estimation_SLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hidden_size, edge_deleted, model_pth, result, batch_size, order, t, device):
     N = num
 
     # Single-label Neural Network:
@@ -81,11 +81,52 @@ def estimation_SLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN
 
         else:
             print(
-                f"{NN_type}, hiddenlayer{NN_hidden_size} - edgedeleted{edge_deleted}: When SNR is {snr_measure} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
+                f"{NN_type}, hiddenlayer{NN_hidden_size} - edgedeleted{edge_deleted}, order{order}: When SNR is {snr_measure} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
             result[0, t] = error_rate
             condition_met = True
 
     return result
+
+# def main():
+#     # device = (torch.device("mps") if torch.backends.mps.is_available()
+#     #           else (torch.device("cuda") if torch.cuda.is_available()
+#     #                 else torch.device("cpu")))
+#     device = torch.device("cpu")
+#     # device = torch.device("cuda")
+#
+#     # Hyperparameters
+#     t = 0
+#     metrics = ["BLER"]
+#     num = int(2e7)
+#     bits = 10
+#     encoded = 26
+#     encoding_method = "Parity"
+#     NN_type = "SLNN"
+#     batch_size = int(1e4)
+#     SLNN_hidden_size = 24
+#     edge_delete_range = torch.arange(0, 26*24+1, 1)
+#     SNR_opt_NN = torch.tensor(7, dtype=torch.int, device=device)
+#     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
+#
+#     result_save = np.zeros((1, len(edge_delete_range)))
+#
+#     for metric in metrics:
+#         for i in range(0, len(edge_delete_range)):
+#             model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{SLNN_hidden_size}_deleted_{device}/{NN_type}_deleted{edge_delete_range[i]}.pth"
+#             if not os.path.exists(model_pth):
+#                 continue
+#             edge_delete = edge_delete_range[i]
+#             result_all = estimation_SLNN1(num, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size, edge_delete, model_pth, result_save, batch_size, t, device)
+#             t += 1
+#             directory_path = f"Result/{encoding_method}{encoded}_{bits}_deleted/{metric}/"
+#
+#             # Create the directory if it doesn't exist
+#             if not os.path.exists(directory_path):
+#                 os.makedirs(directory_path)
+#
+#             csv_filename = f"{NN_type}_{SLNN_hidden_size}_deleted.csv"
+#             full_csv_path = os.path.join(directory_path, csv_filename)
+#             np.savetxt(full_csv_path, result_all, delimiter=', ')
 
 def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
@@ -95,7 +136,6 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    t = 0
     metrics = ["BLER"]
     num = int(2e7)
     bits = 10
@@ -104,29 +144,31 @@ def main():
     NN_type = "SLNN"
     batch_size = int(1e4)
     SLNN_hidden_size = 24
-    edge_delete_range = torch.arange(0, 26*24+1, 1)
-    SNR_opt_NN = torch.tensor(7, dtype=torch.int, device=device)
+    edge_delete_range = 581
+    orders = torch.arange(0, 44, 1)
+    # orders = [5, 10, 17, 23, 29, 32, 38, 42, 46]
+    SNR_opt_NN = torch.tensor(7, dtype=torch.float, device=device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
-    result_save = np.zeros((1, len(edge_delete_range)))
+    result_save = np.zeros((1, len(orders)))
 
     for metric in metrics:
-        for i in range(0, len(edge_delete_range)):
-            model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{SLNN_hidden_size}_deleted_{device}/{NN_type}_deleted{edge_delete_range[i]}.pth"
-            if not os.path.exists(model_pth):
-                continue
-            edge_delete = edge_delete_range[i]
-            result_all = estimation_SLNN1(num, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size, edge_delete, model_pth, result_save, batch_size, t, device)
-            t += 1
-            directory_path = f"Result/{encoding_method}{encoded}_{bits}_deleted/{metric}/"
+        for i in range(0, len(orders)):
+            # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{SLNN_hidden_size}_deleted_{device}/{NN_type}_deleted{edge_delete_range}.pth"
+            model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size}_ft_{device}/{NN_type}_deleted{edge_delete_range}_order{orders[i]}.pth"
+            # if not os.path.exists(model_pth):
+            #     continue
+            edge_delete = edge_delete_range
+            result_all = estimation_SLNN1(num, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size, edge_delete, model_pth, result_save, batch_size, orders[i], i, device)
+        directory_path = f"Result/{encoding_method}{encoded}_{bits}_deleted/{metric}/"
 
-            # Create the directory if it doesn't exist
-            if not os.path.exists(directory_path):
-                os.makedirs(directory_path)
+        # Create the directory if it doesn't exist
+        if not os.path.exists(directory_path):
+            os.makedirs(directory_path)
 
-            csv_filename = f"{NN_type}_{SLNN_hidden_size}_deleted.csv"
-            full_csv_path = os.path.join(directory_path, csv_filename)
-            np.savetxt(full_csv_path, result_all, delimiter=', ')
+        csv_filename = f"{NN_type}_{SLNN_hidden_size}_deleted.csv"
+        full_csv_path = os.path.join(directory_path, csv_filename)
+        np.savetxt(full_csv_path, result_all, delimiter=', ')
 
 
 if __name__ == "__main__":

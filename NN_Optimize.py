@@ -2,11 +2,12 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
+import os
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
 from Transmit.noise import AWGN
-from Decode.NNDecoder import SingleLabelNNDecoder_nonfully, SingleLabelNNDecoder1
+from Decode.NNDecoder import SingleLabelNNDecoder_nonfully
 from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import BinarytoDecimal
 from earlystopping import EarlyStopping
@@ -15,8 +16,8 @@ from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 
 
-def SLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size,
-                   model_load_pth, model_save_path, model_name, NN_type, patience, delta, mask, device):
+def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, edge_delete,
+                  model_load_pth, model_save_path, model_name, patience, delta, mask, order, device):
     encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
@@ -41,9 +42,8 @@ def SLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
     # Define the loss function and optimizer
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), learning_rate, momentum)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
-
 
     # Define lists to store loss values
     SLNN_train_losses = []
@@ -69,7 +69,7 @@ def SLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
             running_loss += loss.item()
             if i % 1000 == 999:  # Print every 100 mini-batches
-                print(f'{NN_type}:Hidden Size:{hidden_size}, SNR{snr_measure}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
+                print(f'SLNN Edge Deleted:{edge_delete}, order:{order}, SNR={snr_measure}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
                 running_loss = 0.0
 
         # Calculate the average training loss for this epoch
@@ -94,18 +94,17 @@ def SLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
         avg_test_loss = running_loss / len(SLNN_testloader)
         SLNN_test_losses.append(avg_test_loss)
 
-        print(f'{NN_type} Testing - Hidden Size:{hidden_size} - SNR{snr_measure} - Loss: {running_loss / len(SLNN_testloader):.9f}')
+        print(f'SLNN Testing - Edge Deleted:{edge_delete} - order:{order}, - SNR{snr_measure} - Loss: {running_loss / len(SLNN_testloader):.9f}')
 
         scheduler.step(avg_test_loss)
 
         # Early Stopping
         if early_stopping(running_loss, model, model_save_path, model_name):
-            print(f'{NN_type}: Early stopping')
-            print(
-                f'{NN_type}: Hidden Size:{hidden_size}, SNR={snr_measure} Stop at total val_loss is {running_loss / len(SLNN_testloader)} and epoch is {epoch}')
+            print('SLNN: Early stopping')
+            print(f'SLNN Edge Deleted:{edge_delete}, order:{order}, SNR={snr_measure} Stop at total val_loss is {running_loss/len(SLNN_testloader)} and epoch is {epoch}')
             break
         else:
-            print(f"{NN_type}: Continue Training")
+            print("SLNN: Continue Training")
 
 
 def main():
@@ -117,44 +116,52 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    NeuralNetwork_type = "SLNN"  # ["SLNN", "MLNN"]
-    SLNN_hidden_size1 = 26
-    # SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
-    MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
+    hidden_size = 24
     batch_size = 64
     learning_rate = 1e-2
-    momentum = 0.9
     epochs = 500
-
     nr_codeword = int(1e6)
     bits = 10
     encoded = 26
-    encoding_method = "Parity"  # "Hamming", "Parity", "BCH",
+    encoding_method = "Parity"
+    edge_delete_range = [642] # 449, 470, 490, 501, 530, 540, 551, 561, 571, 581, 593, 601, 610, 611, 612, 613, 614, 617, 618, 619
+    # order = torch.arange(1, 113, 1).to(torch.int)
+    order = None
+    NN_type = "SLNN"
+    momentum = 0.9
 
-    snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for SLNN article
+    SLNN_snr = torch.tensor(0, dtype=torch.float, device=device) # SLNN training
+    SLNN_snr = SLNN_snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for SLNN article
 
-    # Early Stopping # Guess same number of your output
+    # Early Stopping
     patience = encoded
     delta = 0.001
 
-    edge_deletes = [643] # Edge delete
-    orders = torch.arange(0, 34, 1)
+    for edge_delete in edge_delete_range:
+        # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{hidden_size}_deleted_{device}/{NN_type}_deleted{edge_delete}.pth"
+        # if not os.path.exists(model_pth):
+        #     continue
 
-    for edge_delete in edge_deletes:
-        for order in orders:
-            # model Path:
-            model_load_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{encoded}_ft_{device}/{NeuralNetwork_type}_deleted{edge_delete}_order{order}.pth"
-            model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{encoded}_ft_{device}/"
+        Load_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{hidden_size}_deleted_{device}/{NN_type}_deleted{edge_delete}.pth"
+        model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{hidden_size}_ft_{device}/"
+        model_name = f"SLNN_deleted{edge_delete}_trained"
 
-            # calculate the mask
-            model = torch.load(model_load_path)
-            mask = (model['hidden.weight'] != 0).int()
+        # Train SLNN with different hidden layer neurons
+        model = torch.load(Load_path)
+        mask = (model['hidden.weight'] != 0).int()
 
-            # Train SLNN with different hidden layer neurons
-            model_name = f"{NeuralNetwork_type}_deleted{edge_delete}_order{order}_trained"
-            SLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size1,
-                          model_load_path, model_save_path, model_name, NeuralNetwork_type, patience, delta, mask, device)
+        SLNN_training(SLNN_snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, edge_delete,
+                      Load_path, model_save_path, model_name, patience, delta, mask, order, device)
+
+    # for j in range(len(order)):
+    #     mask =
+    #     Load_path = f"Result/Model/SLNN_edgedeleted{edge_delete}_output.weight_cpu/SLNN7_edgedeleted{edge_delete}_order{order[j]}.pth"
+    #     model_save_path = f"Result/Model/SLNN_edgedeleted{edge_delete}_trained_output.weight_{device}_BER{snr}/"
+    #     model_name = f"SLNN_edgedeleted{edge_delete}_order{order[j]}"
+    #
+    #     # Train SLNN with different hidden layer neurons
+    #     SLNN_training(SLNN_snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, SLNN_hidden_size, edge_delete,
+    #                   Load_path, model_save_path, model_name, SLNN_patience, delta, mask, order[j], device)
 
 
 if __name__ == '__main__':
