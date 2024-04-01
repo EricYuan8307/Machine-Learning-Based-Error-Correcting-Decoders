@@ -192,8 +192,9 @@ def main():
     SLNN_hidden_size1 = [26] # [20, 21, 22, 23, 24, 25, 26, 27, 28]
     SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
-    # edge_deleteds = [601, 610, 622] # N = 26
-    edge_deleteds = [550, 560, 569, 580] # N = 24
+    edge_deleteds = [642] # N = 26
+    # edge_deleteds = [550, 560, 569, 580] # N = 24
+    order = 0
 
     SNR_opt_NN = torch.arange(7, 7.5, 0.5).to(device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
@@ -205,8 +206,9 @@ def main():
             for metric in metrics:
                 if NN_type == "SLNN":
                     for i in range(len(SLNN_hidden_size1)):
-                        model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}.pth" # Normal
+                        # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}.pth" # Normal
                         # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size1[i]}_ft_{device}/{NN_type}_deleted{edge_deleted}_trained.pth"  # edge deleted trained NN
+                        model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size1[i]}_ft_{device}/{NN_type}_deleted{edge_deleted}_order{order}.pth"
                         result_NN = estimation_SLNN1(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size1[i], model_pth, result_save, batch_size, device)
 
                         # directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}" # Normal NN
