@@ -207,8 +207,8 @@ def main():
                 if NN_type == "SLNN":
                     for i in range(len(SLNN_hidden_size1)):
                         # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}.pth" # Normal
-                        # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size1[i]}_ft_{device}/{NN_type}_deleted{edge_deleted}_trained.pth"  # edge deleted trained NN
-                        model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size1[i]}_ft_{device}/{NN_type}_deleted{edge_deleted}_order{order}.pth"
+                        model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size1[i]}_ft_{device}/{NN_type}_deleted{edge_deleted}_trained.pth"  # edge deleted trained NN
+                        # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size1[i]}_ft_{device}/{NN_type}_deleted{edge_deleted}_order{order}.pth"
                         result_NN = estimation_SLNN1(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size1[i], model_pth, result_save, batch_size, device)
 
                         # directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}" # Normal NN

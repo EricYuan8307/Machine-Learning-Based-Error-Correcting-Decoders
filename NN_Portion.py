@@ -144,8 +144,8 @@ def main():
     NN_type = "SLNN"
     batch_size = int(1e4)
     SLNN_hidden_size = 26
-    edge_delete_range = 620
-    orders = torch.arange(0, 57, 1)
+    edge_delete_range = 643
+    orders = torch.arange(0, 33, 1)
     # orders = [5, 10, 17, 23, 29, 32, 38, 42, 46]
     SNR_opt_NN = torch.tensor(7, dtype=torch.float, device=device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
@@ -154,8 +154,8 @@ def main():
 
     for metric in metrics:
         for i in range(0, len(orders)):
-            # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{SLNN_hidden_size}_deleted_{device}/{NN_type}_deleted{edge_delete_range[i]}.pth"
-            model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size}_ft_{device}/{NN_type}_deleted{edge_delete_range}_order{orders[i]}.pth"
+            model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{SLNN_hidden_size}_deleted_{device}/{NN_type}_deleted{edge_delete_range}.pth"
+            # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size}_ft_{device}/{NN_type}_deleted{edge_delete_range}_order{orders[i]}.pth"
             # if not os.path.exists(model_pth):
             #     continue
             edge_delete = edge_delete_range
