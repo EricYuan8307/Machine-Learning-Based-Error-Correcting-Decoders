@@ -602,7 +602,7 @@ position = torch.tensor([
                          # [25, 4], # 54
                          [25, 7], # 55
                          [25, 16] # 56
-                         ])
+                         ]) # To filter out the edge that has been deleted
 
 save_pth = f"Result/Model/{encoder_type}{input_size}_{bits}/{neuron_number}_ft_{device}/"
 # for i in range(len((position))):
