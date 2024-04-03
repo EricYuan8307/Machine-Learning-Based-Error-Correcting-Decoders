@@ -145,7 +145,7 @@ def main():
     batch_size = int(1e4)
     SLNN_hidden_size = 26
     edge_delete_range = 643
-    orders = torch.arange(0, 34, 1)
+    orders = torch.arange(33, 34, 1)
     # orders = [0]
     SNR_opt_NN = torch.tensor(7, dtype=torch.float, device=device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
