@@ -117,19 +117,19 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
+    nr_codeword = int(1e6)
+    bits = 10
+    encoded = 26
+    encoding_method = "Parity"  # "Hamming", "Parity", "BCH",
     NeuralNetwork_type = "SLNN"  # ["SLNN", "MLNN"]
-    SLNN_hidden_size1 = 26
+
+    SLNN_hidden_size1 = 24
     # SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
     batch_size = 64
     learning_rate = 1e-2
     momentum = 0.9
     epochs = 500
-
-    nr_codeword = int(1e6)
-    bits = 10
-    encoded = 26
-    encoding_method = "Parity"  # "Hamming", "Parity", "BCH",
 
     snr = torch.tensor(0.0, dtype=torch.float, device=device)
     snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))  # for SLNN article
@@ -138,15 +138,15 @@ def main():
     patience = encoded
     delta = 0.001
 
-    edge_deletes = [652] # Edge delete
-    # orders = torch.arange(0, 34, 1)
-    orders = [0]
+    edge_deletes = [581] # Edge delete
+    orders = torch.arange(0, 44, 1)
+    # orders = [0]
 
     for edge_delete in edge_deletes:
         for order in orders:
             # model Path:
-            model_load_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{encoded}_ft_{device}/{NeuralNetwork_type}_deleted{edge_delete}_order{order}.pth"
-            model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{encoded}_ft_{device}/"
+            model_load_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size1}_ft_{device}/{NeuralNetwork_type}_deleted{edge_delete}_order{order}.pth"
+            model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size1}_ft_{device}/"
 
             # calculate the mask
             model = torch.load(model_load_path)
