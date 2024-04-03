@@ -3,16 +3,16 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
+from generating import all_codebook_NonML
 from Encode.Generator import generator
+from Encode.Encoder import PCC_encoders
 from Encode.Modulator import bpsk_modulator
 from Transmit.noise import AWGN
-from Decode.NNDecoder import SingleLabelNNDecoder_nonfully, SingleLabelNNDecoder1
+from Decode.NNDecoder import SingleLabelNNDecoder_nonfully
 from Transmit.NoiseMeasure import NoiseMeasure
 from Decode.Converter import BinarytoDecimal
 from earlystopping import EarlyStopping
 
-from generating import all_codebook_NonML
-from Encode.Encoder import PCC_encoders
 
 
 def SLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size,
@@ -138,8 +138,9 @@ def main():
     patience = encoded
     delta = 0.001
 
-    edge_deletes = [643] # Edge delete
-    orders = torch.arange(0, 34, 1)
+    edge_deletes = [652] # Edge delete
+    # orders = torch.arange(0, 34, 1)
+    orders = [0]
 
     for edge_delete in edge_deletes:
         for order in orders:
