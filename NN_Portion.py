@@ -142,9 +142,10 @@ def main():
     encoded = 26
     encoding_method = "Parity"
     NN_type = "SLNN"
+
     batch_size = int(1e4)
     SLNN_hidden_size = 26
-    edge_delete_range = 651
+    edge_delete_range = 652
     # orders = torch.arange(33, 34, 1)
     orders = [0]
     SNR_opt_NN = torch.tensor(7, dtype=torch.float, device=device)
