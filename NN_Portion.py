@@ -145,7 +145,7 @@ def main():
 
     batch_size = int(1e4)
     SLNN_hidden_size = 26
-    edge_delete_range = 652
+    edge_delete_range = 619
     # orders = torch.arange(33, 34, 1)
     orders = [0]
     SNR_opt_NN = torch.tensor(7, dtype=torch.float, device=device)
@@ -157,7 +157,8 @@ def main():
         for i in range(0, len(orders)):
             # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{SLNN_hidden_size}_deleted_{device}/{NN_type}_deleted{edge_delete_range}.pth" # Model just deleted the edges
             # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size}_ft_{device}/{NN_type}_deleted{edge_delete_range}_order{orders[i]}.pth" # Model deleted edges in order
-            model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size}_ft_{device}/{NN_type}_deleted{edge_delete_range}_order{orders[i]}_trained.pth" # Model trained with deleted edges in order
+            # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size}_ft_{device}/{NN_type}_deleted{edge_delete_range}_order{orders[i]}_trained.pth" # Model trained with deleted edges in order
+            model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{SLNN_hidden_size}_ft_{device}/{NN_type}_deleted{edge_delete_range}_trained.pth" # Model trained with deleted edges in order
             # if not os.path.exists(model_pth):
             #     continue
             edge_delete = edge_delete_range
