@@ -282,11 +282,11 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e6)
+    num = int(1e5)
     bits = 10
     encoded = 26
     encoding_method = "Parity" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
-    metrics = ["BER", "BLER"] # BER or BLER
+    metrics = ["BLER"] # BER or BLER
     batch_size = int(1e4)
 
     iter = 10 # BP
