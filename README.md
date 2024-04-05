@@ -2,7 +2,7 @@
 Implemented in PyTorch.
 
 ### Implement the Soft-Decision Maximum Likelihood, Hard-Decsion Maximum Likelihood, and Belief propagation
-LDPC Belief Propagation Reference: <br>
+Belief Propagation Reference: <br>
 D. E. Hocevar, "A reduced complexity decoder architecture via layered decoding of LDPC codes," IEEE Workshop on Signal Processing Systems, 2004. SIPS 2004., Austin, TX, USA, 2004, pp. 107-112, doi: 10.1109/SIPS.2004.1363033.
 
 ### Implement Neural Network Decoder:
