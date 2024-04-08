@@ -374,7 +374,7 @@ def main():
 
     # Hyperparameters
     NeuralNetwork_type = ["SLNN"] # ["SLNN", "MLNN"]
-    SLNN_hidden_size1 = [24, 25, 26, 27, 28]
+    SLNN_hidden_size1 = [24] # 25, 26, 27, 28
     # SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size = [[1000, 500], [2000, 1000], [2000, 1000, 500]]
     batch_size = 64
@@ -384,7 +384,7 @@ def main():
 
     nr_codeword = int(1e6)
     bits = 10
-    encoded = 26
+    encoded = 24
     encoding_method = "Parity" # "Hamming", "Parity", "BCH",
 
     snr = torch.tensor(0.0, dtype=torch.float, device=device)
