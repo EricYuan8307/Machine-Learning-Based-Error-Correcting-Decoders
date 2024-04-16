@@ -138,8 +138,8 @@ def main():
     patience = encoded
     delta = 0.001
 
-    edge_deletes = [581] # Edge delete
-    orders = torch.arange(0, 44, 1)
+    edge_deletes = [551] # Edge delete
+    orders = torch.arange(0, 74, 1)
     # orders = [0]
 
     for edge_delete in edge_deletes:
