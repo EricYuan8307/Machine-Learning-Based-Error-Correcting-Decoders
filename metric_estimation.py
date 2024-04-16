@@ -283,14 +283,14 @@ def main():
 
     # Hyperparameters
     num = int(1e4)
-    bits = 10
-    encoded = 24
-    encoding_method = "Parity" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
+    bits = 239
+    encoded = 255
+    encoding_method = "BCH" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
     metrics = ["BLER"] # BER or BLER
     batch_size = int(1e4)
 
     # iter = 10 # BP
-    # H = ParitycheckMatrix(encoded, bits, encoding_method, device)
+    H = ParitycheckMatrix(encoded, bits, encoding_method, device)
 
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = torch.arange(0, 8.5, 0.5)
