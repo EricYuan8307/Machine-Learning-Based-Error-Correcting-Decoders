@@ -97,7 +97,6 @@ def estimation_SLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN
 
     # Single-label Neural Network:
     for i in range(len(SNR_opt_NN)):
-        snr_save = i / 2
         condition_met = False
         iteration_count = 0  # Initialize iteration counter
         max_iterations = 50
@@ -121,7 +120,7 @@ def estimation_SLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN
 
             else:
                 print(
-                    f"{NN_type}, hiddenlayer{NN_hidden_size}: When SNR is {snr_save} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
+                    f"{NN_type}, hiddenlayer{NN_hidden_size}: When SNR is {snr_measure} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
                 result[0, i] = error_rate
                 condition_met = True
 
@@ -132,7 +131,6 @@ def estimation_MLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN
 
     # Single-label Neural Network:
     for i in range(len(SNR_opt_NN)):
-        snr_save = i / 2
         condition_met = False
         iteration_count = 0  # Initialize iteration counter
         max_iterations = 50
@@ -154,7 +152,7 @@ def estimation_MLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN
                 print(f"the code number is {N}")
 
             else:
-                print(f"{NN_type}, hiddenlayer{NN_hidden_size}: When SNR is {snr_save} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
+                print(f"{NN_type}, hiddenlayer{NN_hidden_size}: When SNR is {snr_measure} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
                 result[0, i] = error_rate
                 condition_met = True
 
@@ -166,7 +164,6 @@ def estimation_NN(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hi
 
     # Single-label Neural Network:
     for i in range(len(SNR_opt_NN)):
-        snr_save = i / 2
         condition_met = False
         iteration_count = 0  # Initialize iteration counter
         max_iterations = 50
@@ -198,7 +195,7 @@ def estimation_NN(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hi
                 print(f"the code number is {N}")
 
             else:
-                print(f"{NN_type}, hiddenlayer{NN_hidden_size}: When SNR is {snr_save} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
+                print(f"{NN_type}, hiddenlayer{NN_hidden_size}: When SNR is {snr_measure} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
                 result[0, i] = error_rate
                 condition_met = True
 
@@ -209,8 +206,8 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
-    # device = torch.device("cuda")
+    # device = torch.device("cpu")
+    device = torch.device("cuda")
 
     # Hyperparameters
     metrics = ["BER"] # ["BER", "BLER"]
@@ -222,10 +219,10 @@ def main():
     batch_size = int(1e4)
     # SLNN_hidden_size1 = [24] # [20, 21, 22, 23, 24, 25, 26, 27, 28]
     # SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
-    MLNN_hidden_size1 = [100]
+    MLNN_hidden_size1 = [16]
     MLNN_hidden_size2 = [[50,50], [100, 100]]
 
-    SNR_opt_NN = torch.arange(0, 7.5, 0.5).to(device)
+    SNR_opt_NN = torch.arange(-5, 7.5, 0.5).to(device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
     result_save = np.zeros((1, len(SNR_opt_NN)))
 
@@ -250,7 +247,7 @@ def main():
 
             if NN_type == "MLNN":
                 for MLNN_hidden_size in MLNN_hidden_size1:
-                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{MLNN_hidden_size}.pth"
+                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{MLNN_hidden_size}_peter.pth"
                     result_NN = estimation_MLNN1(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, MLNN_hidden_size, model_pth, result_save, batch_size, device)
 
                     directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
