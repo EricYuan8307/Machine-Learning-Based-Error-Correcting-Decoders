@@ -463,7 +463,7 @@ def main():
     NeuralNetwork_type = ["MLNN"] # ["SLNN", "MLNN"]
     SLNN_hidden_size1 = [24] # 25, 26, 27, 28
     SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
-    MLNN_hidden_size1 = [16]
+    MLNN_hidden_size1 = [100]
     MLNN_hidden_size2 = [[50,50], [100, 100]]
     batch_size = 64
     learning_rate = 1e-2
@@ -479,7 +479,7 @@ def main():
     snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
     # Early Stopping # Guess same number of your output
-    patience = bits
+    patience = bits*2
     # SLNN_patience = torch.pow(torch.tensor(2), bits)
     # MLNN_patience = bits
     delta = 0.001

@@ -11,6 +11,7 @@ def NoiseMeasure(noised_signal, modulated_signal, origin, encoded):
     # practical_snr = 10 * torch.log10(1 / (noise_power * 2.0)) - 10 * torch.log10(torch.tensor(origin / encoded, dtype=torch.float))
     practical_snr = 10 * torch.log10(1 / (noise_power * 2.0))
 
+
     return practical_snr
 
 def NoiseMeasure_BPSK(noised_signal, modulated_signal):
