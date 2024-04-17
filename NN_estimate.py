@@ -206,8 +206,8 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    # device = torch.device("cpu")
-    device = torch.device("cuda")
+    device = torch.device("cpu")
+    # device = torch.device("cuda")
 
     # Hyperparameters
     metrics = ["BER"] # ["BER", "BLER"]
@@ -219,7 +219,7 @@ def main():
     batch_size = int(1e4)
     # SLNN_hidden_size1 = [24] # [20, 21, 22, 23, 24, 25, 26, 27, 28]
     # SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
-    MLNN_hidden_size1 = [16]
+    MLNN_hidden_size1 = [100]
     MLNN_hidden_size2 = [[50,50], [100, 100]]
 
     SNR_opt_NN = torch.arange(-5, 7.5, 0.5).to(device)
