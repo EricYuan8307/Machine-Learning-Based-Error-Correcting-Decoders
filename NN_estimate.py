@@ -247,7 +247,7 @@ def main():
 
             if NN_type == "MLNN":
                 for MLNN_hidden_size in MLNN_hidden_size1:
-                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{MLNN_hidden_size}_peter.pth"
+                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{MLNN_hidden_size}.pth"
                     result_NN = estimation_MLNN1(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, MLNN_hidden_size, model_pth, result_save, batch_size, device)
 
                     directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
