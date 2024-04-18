@@ -13,7 +13,7 @@ from earlystopping import EarlyStopping
 from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 
-def MLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
+def MLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
     encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
@@ -113,7 +113,6 @@ def main():
     MLNN_hidden_size1 = 16
     batch_size = 64
     learning_rate = 1e-2
-    momentum = 0.9
     epochs = 500
 
     nr_codeword = int(1e6)
@@ -131,7 +130,7 @@ def main():
     model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/"
     model_name = f"{NN_type}_hiddenlayer{MLNN_hidden_size1}"
 
-    MLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, MLNN_hidden_size1,
+    MLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size1,
                    model_save_path, model_name, NN_type, patience, delta, device)
 
 if __name__ == '__main__':
