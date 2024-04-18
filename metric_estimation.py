@@ -283,20 +283,20 @@ def main():
 
     # Hyperparameters
     num = int(1e4)
-    bits = 10
-    encoded = 24
-    encoding_method = "Parity" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
-    metrics = ["BLER"] # BER or BLER
+    bits = 4
+    encoded = 7
+    encoding_method = "Hamming" # "Hamming", "Parity", "BCH", "Golay", "LDPC"
+    metrics = ["BER"] # BER or BLER
     batch_size = int(1e4)
 
     # iter = 10 # BP
-    # H = ParitycheckMatrix(encoded, bits, encoding_method, device)
+    H = ParitycheckMatrix(encoded, bits, encoding_method, device)
 
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = SNR_opt_BP + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
-    SNR_opt_ML = torch.arange(7, 7.5, 0.5)
-    SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
+    SNR_opt_ML = torch.arange(0, 7.5, 0.5)
+    # SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
 
     result_save_BPSK = np.zeros((1, len(SNR_opt_BPSK)))
     result_save_SDML = np.zeros((1, len(SNR_opt_ML)))
