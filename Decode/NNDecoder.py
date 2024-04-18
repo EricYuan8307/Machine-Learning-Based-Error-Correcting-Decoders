@@ -167,7 +167,7 @@ class MultiLabelNNDecoder_Mask(nn.Module):
 
     def forward(self, x):
         x = self.hidden(x)
-        x = self.softmax(x) # for Maximum Likelihood
+        # x = self.softmax(x) # for Maximum Likelihood
         x = self.output(x)
         x = self.sigmoid(x)
 
