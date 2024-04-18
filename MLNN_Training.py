@@ -9,7 +9,6 @@ from Transmit.noise import AWGN
 from Decode.NNDecoder import MultiLabelNNDecoder_N
 from Transmit.NoiseMeasure import NoiseMeasure_MLNN
 from earlystopping import EarlyStopping
-
 from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 
@@ -119,10 +118,9 @@ def main():
     bits = 4
     encoded = 7
     encoding_method = "Hamming"
-
     snr = torch.tensor(0.0, dtype=torch.float, device=device)
 
-    # Early Stopping # Guess same number of your output
+    # Early Stopping
     patience = bits*2
     delta = 0.001
 
