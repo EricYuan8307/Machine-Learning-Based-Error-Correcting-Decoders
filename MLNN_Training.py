@@ -7,7 +7,7 @@ from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
 from Transmit.noise import AWGN
 from Decode.NNDecoder import MultiLabelNNDecoder_N
-from Transmit.NoiseMeasure import NoiseMeasure
+from Transmit.NoiseMeasure import NoiseMeasure_MLNN
 from earlystopping import EarlyStopping
 
 from generating import all_codebook_NonML
@@ -22,7 +22,7 @@ def MLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
     encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)
     noised_signal = AWGN(modulated_signal, snr, device)
-    snr_measure = NoiseMeasure(noised_signal, modulated_signal, bits, encoded).to(torch.int)
+    snr_measure = NoiseMeasure_MLNN(noised_signal, modulated_signal, bits, encoded).to(torch.int)
 
     # NN structure:
     input_size = noised_signal.shape[2]
@@ -36,8 +36,8 @@ def MLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
     # Define the loss function and optimizer
     criterion = nn.BCELoss()
-    optimizer = optim.Adam(model.parameters(), learning_rate, momentum)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
+    optimizer = optim.Adam(model.parameters(), learning_rate)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True)
 
     # Define lists to store loss values
     MLNN_train_losses = []
@@ -122,7 +122,6 @@ def main():
     encoding_method = "Hamming"
 
     snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
     # Early Stopping # Guess same number of your output
     patience = bits*2

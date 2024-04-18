@@ -152,7 +152,7 @@ class MultiLabelNNDecoder_N(nn.Module):
 
         super().__init__()
         self.hidden = nn.Linear(input_size, hidden_size)
-        self.softmax = nn.LogSoftmax(dim=2)
+        self.softmax = nn.Softmax(dim=2)
         self.output = nn.Linear(hidden_size, output_size)
         self.sigmoid = nn.Sigmoid()
 
@@ -160,6 +160,23 @@ class MultiLabelNNDecoder_N(nn.Module):
         x = self.hidden(x)
         x = self.softmax(x) # for Maximum Likelihood
         x = self.output(x)
+        x = self.sigmoid(x)
+
+        return x
+
+class MultiLabelNNDecoder_Peter(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+
+        super().__init__()
+        self.fc1 = nn.Linear(input_size, hidden_size)
+        self.softmax = nn.Softmax(dim=2)
+        self.fc2 = nn.Linear(hidden_size, output_size)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.softmax(x) # for Maximum Likelihood
+        x = self.fc2(x)
         x = self.sigmoid(x)
 
         return x

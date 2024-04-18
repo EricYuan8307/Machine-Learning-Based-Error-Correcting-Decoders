@@ -7,7 +7,7 @@ from Encode.Modulator import bpsk_modulator
 from Decode.NNDecoder import MultiLabelNNDecoder_N
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber, calculate_bler
-from Transmit.NoiseMeasure import NoiseMeasure
+from Transmit.NoiseMeasure import NoiseMeasure_MLNN
 from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 from Decode.Converter import MLNN_decision
@@ -24,7 +24,7 @@ def MLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, ba
     modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
     noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
 
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
+    practical_snr = NoiseMeasure_MLNN(noised_signal, modulated_signal, bits, encoded)
 
     # use MLNN model:
     model.eval()
@@ -85,8 +85,8 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
-    # device = torch.device("cuda")
+    # device = torch.device("cpu")
+    device = torch.device("cuda")
 
     # Hyperparameters
     metric = "BER"
@@ -99,7 +99,6 @@ def main():
     MLNN_hidden_size = 16
 
     SNR_opt_NN = torch.arange(0, 7.5, 0.5).to(device)
-    SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
     result_save = np.zeros((1, len(SNR_opt_NN)))
 
     # For trained and deleted model
