@@ -14,7 +14,6 @@ from Encode.Encoder import PCC_encoders
 from Decode.Converter import MLNN_decision
 
 
-
 # Calculate the Error number and BLER
 def SLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, batch_size, device):
     encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
@@ -24,7 +23,7 @@ def SLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, ba
     convertor = DecimaltoBinary(SLNN_Matrix)
 
     bits_info = generator(nr_codeword, bits, device)  # Code Generator
-    encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
+    encoded_codeword = encoder(bits_info)  # Encoder
     modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
     noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
 
@@ -63,7 +62,7 @@ def MLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, ba
     encoder = PCC_encoders(encoder_matrix)
 
     bits_info = generator(nr_codeword, bits, device)  # Code Generator
-    encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
+    encoded_codeword = encoder(bits_info)  # Encoder
     modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
     noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
 
