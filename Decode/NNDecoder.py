@@ -2,6 +2,19 @@ import torch
 import torch.nn as nn
 
 
+class SingleLabelNNDecoder0(nn.Module):
+    def __init__(self, input_size, output_size):
+
+        super().__init__()
+        self.output = nn.Linear(input_size, output_size)
+        self.softmax = nn.LogSoftmax(dim=2)
+
+    def forward(self, x):
+        x = self.output(x)
+        x = self.softmax(x)
+
+        return x
+
 class SingleLabelNNDecoder1(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
 
@@ -86,24 +99,6 @@ class MultiLabelNNDecoder1(nn.Module):
 
         return x
 
-    # def __init__(self, input_size, hidden_size, output_size):
-    #
-    #     super().__init__()
-    #     self.fc1 = nn.Linear(input_size, hidden_size)
-    #     self.relu = nn.ReLU()
-    #     self.softmax = nn.LogSoftmax(dim=2)
-    #     self.fc2 = nn.Linear(hidden_size, output_size)
-    #     self.sigmoid = nn.Sigmoid()
-    #
-    # def forward(self, x):
-    #     x = self.fc1(x)
-    #     # x = self.relu(x) # In author's article
-    #     x = self.softmax(x) # for Maximum Likelihood
-    #     x = self.fc2(x)
-    #     x = self.sigmoid(x)
-    #
-    #     return x
-
 class MultiLabelNNDecoder2(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
 
@@ -152,13 +147,40 @@ class MultiLabelNNDecoder_N(nn.Module):
 
         super().__init__()
         self.hidden = nn.Linear(input_size, hidden_size)
-        self.softmax = nn.LogSoftmax(dim=2)
+        self.softmax = nn.Softmax(dim=2)
         self.output = nn.Linear(hidden_size, output_size)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         x = self.hidden(x)
         x = self.softmax(x) # for Maximum Likelihood
+        x = self.output(x)
+        x = self.sigmoid(x)
+
+        return x
+
+class MultiLabelNNDecoder_Mask(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size, mask):
+
+        super().__init__()
+        self.hidden = nn.Linear(input_size, hidden_size)
+        self.softmax = nn.Softmax(dim=2)
+        self.output = nn.Linear(hidden_size, output_size)
+        self.sigmoid = nn.Sigmoid()
+        self.mask = mask
+
+    def apply_mask(self, mask):
+        # ensure mask's shape is same as hidden weight shape
+        assert mask.shape == self.output.weight.shape
+        with torch.no_grad():
+            self.hidden.weight *= mask
+
+    def register_hooks(self):
+        self.hidden.weight.register_hook(lambda grad: grad * self.mask)
+
+    def forward(self, x):
+        x = self.hidden(x)
+        # x = self.softmax(x) # for Maximum Likelihood
         x = self.output(x)
         x = self.sigmoid(x)
 

@@ -4,7 +4,7 @@ import os
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
-from Decode.NNDecoder import SingleLabelNNDecoder1, SingleLabelNNDecoder2, MultiLabelNNDecoder1, MultiLabelNNDecoder2, MultiLabelNNDecoder3
+from Decode.NNDecoder import SingleLabelNNDecoder1, SingleLabelNNDecoder2, MultiLabelNNDecoder1, MultiLabelNNDecoder2, MultiLabelNNDecoder3, MultiLabelNNDecoder_N
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber, calculate_bler
 from Transmit.NoiseMeasure import NoiseMeasure
@@ -137,7 +137,7 @@ def estimation_MLNN1(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN
         while not condition_met and iteration_count < max_iterations:
             iteration_count += 1
 
-            model = MultiLabelNNDecoder1(encoded, NN_hidden_size, bits).to(device)
+            model = MultiLabelNNDecoder_N(encoded, NN_hidden_size, bits).to(device)
             NN_result, bits_info, snr_measure = MLNNDecoder(N, method, bits, encoded, SNR_opt_NN[i], model, model_pth, batch_size, device)
             NN_final = MLNN_decision(NN_result, device)
 
@@ -218,10 +218,10 @@ def main():
     batch_size = int(1e4)
     # SLNN_hidden_size1 = [24] # [20, 21, 22, 23, 24, 25, 26, 27, 28]
     # SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
-    MLNN_hidden_size1 = [100]
+    MLNN_hidden_size1 = [16]
     MLNN_hidden_size2 = [[50,50], [100, 100]]
 
-    SNR_opt_NN = torch.arange(0, 7.5, 0.5).to(device)
+    SNR_opt_NN = torch.arange(0, 8.5, 0.5).to(device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
     result_save = np.zeros((1, len(SNR_opt_NN)))
 

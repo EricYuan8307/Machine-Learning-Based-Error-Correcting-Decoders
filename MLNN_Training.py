@@ -7,13 +7,12 @@ from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
 from Transmit.noise import AWGN
 from Decode.NNDecoder import MultiLabelNNDecoder_N
-from Transmit.NoiseMeasure import NoiseMeasure
+from Transmit.NoiseMeasure import NoiseMeasure_MLNN
 from earlystopping import EarlyStopping
-
 from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 
-def MLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
+def MLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
     encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
@@ -22,7 +21,7 @@ def MLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
     encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)
     noised_signal = AWGN(modulated_signal, snr, device)
-    snr_measure = NoiseMeasure(noised_signal, modulated_signal, bits, encoded).to(torch.int)
+    snr_measure = NoiseMeasure_MLNN(noised_signal, modulated_signal, bits, encoded).to(torch.int)
 
     # NN structure:
     input_size = noised_signal.shape[2]
@@ -36,8 +35,8 @@ def MLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
 
     # Define the loss function and optimizer
     criterion = nn.BCELoss()
-    optimizer = optim.Adam(model.parameters(), learning_rate, momentum)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
+    optimizer = optim.Adam(model.parameters(), learning_rate)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True)
 
     # Define lists to store loss values
     MLNN_train_losses = []
@@ -105,26 +104,23 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
-    # device = torch.device("cuda")
+    # device = torch.device("cpu")
+    device = torch.device("cuda")
 
     # Hyperparameters
     NN_type = "MLNN"
     MLNN_hidden_size1 = 16
     batch_size = 64
     learning_rate = 1e-2
-    momentum = 0.9
     epochs = 500
 
     nr_codeword = int(1e6)
     bits = 4
     encoded = 7
     encoding_method = "Hamming"
-
     snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
-    # Early Stopping # Guess same number of your output
+    # Early Stopping
     patience = bits*2
     delta = 0.001
 
@@ -132,7 +128,7 @@ def main():
     model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/"
     model_name = f"{NN_type}_hiddenlayer{MLNN_hidden_size1}"
 
-    MLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, MLNN_hidden_size1,
+    MLNN_training1(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, MLNN_hidden_size1,
                    model_save_path, model_name, NN_type, patience, delta, device)
 
 if __name__ == '__main__':

@@ -7,24 +7,23 @@ from Encode.Modulator import bpsk_modulator
 from Decode.NNDecoder import MultiLabelNNDecoder_N
 from Transmit.noise import AWGN
 from Metric.ErrorRate import calculate_ber, calculate_bler
-from Transmit.NoiseMeasure import NoiseMeasure
+from Transmit.NoiseMeasure import NoiseMeasure_MLNN
 from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 from Decode.Converter import MLNN_decision
 
 
-# Calculate the Error number and BLER
 def MLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, batch_size, device):
     encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
     bits_info = generator(nr_codeword, bits, device)  # Code Generator
-    encoded_codeword = encoder(bits_info)  # Hamming(7,4) Encoder
+    encoded_codeword = encoder(bits_info)  # Encoder
     modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
     noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
 
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
+    practical_snr = NoiseMeasure_MLNN(noised_signal, modulated_signal, bits, encoded)
 
     # use MLNN model:
     model.eval()
@@ -99,13 +98,11 @@ def main():
     MLNN_hidden_size = 16
 
     SNR_opt_NN = torch.arange(0, 7.5, 0.5).to(device)
-    SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
     result_save = np.zeros((1, len(SNR_opt_NN)))
 
     # For trained and deleted model
     model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{MLNN_hidden_size}.pth"
     result_NN = estimation_MLNN1(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, MLNN_hidden_size, model_pth, result_save, batch_size, device)
-
     directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
 
     # Create the directory if it doesn't exist

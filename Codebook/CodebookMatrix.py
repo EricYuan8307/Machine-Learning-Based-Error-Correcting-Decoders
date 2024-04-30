@@ -186,7 +186,7 @@ class coderMatrix(torch.nn.Module):
                                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                           ], device=self.device, dtype=torch.float)
 
-        # Define parity 26x10 matrix
+        # Define parity 24x10 matrix
         elif method == "Parity" and encoded == 24 and origin == 10:
             encode_matrix = torch.tensor([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                                           [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -652,8 +652,8 @@ def ParitycheckMatrix(encoded, origin, method, device):
     # Define Hamming 7x4 matrix
     if method == "Hamming" and encoded == 7 and origin == 4:
         H = torch.tensor([[[1, 0, 1, 0, 1, 0, 1],
-                           [0, 1, 1, 0, 0, 1, 1],
-                           [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float, device=device)  # Hamming(7,4) BP
+                                 [0, 1, 1, 0, 0, 1, 1],
+                                 [0, 0, 0, 1, 1, 1, 1]]], dtype=torch.float, device=device)  # Hamming(7,4) BP
 
     # Define parity 10x5 matrix
     elif method == "Parity" and encoded == 10 and origin == 5:
