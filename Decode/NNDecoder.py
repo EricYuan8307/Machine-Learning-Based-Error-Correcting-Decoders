@@ -2,6 +2,19 @@ import torch
 import torch.nn as nn
 
 
+class SingleLabelNNDecoder0(nn.Module):
+    def __init__(self, input_size, output_size):
+
+        super().__init__()
+        self.output = nn.Linear(input_size, output_size)
+        self.softmax = nn.LogSoftmax(dim=2)
+
+    def forward(self, x):
+        x = self.output(x)
+        x = self.softmax(x)
+
+        return x
+
 class SingleLabelNNDecoder1(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
 
@@ -140,7 +153,7 @@ class MultiLabelNNDecoder_N(nn.Module):
 
     def forward(self, x):
         x = self.hidden(x)
-        # x = self.softmax(x) # for Maximum Likelihood
+        x = self.softmax(x) # for Maximum Likelihood
         x = self.output(x)
         x = self.sigmoid(x)
 
