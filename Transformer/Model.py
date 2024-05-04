@@ -7,9 +7,9 @@ from Decode.HardDecision import hard_decision # sign to binary
 from Encode.Modulator import bpsk_modulator # Binary to sign
 from Codebook.CodebookMatrix import ParitycheckMatrix
 
-class InitialEmbedding(nn.Module):
+class Embedding(nn.Module):
     def __init__(self, encoded, d_model, parity_matrix, device):
-        super(InitialEmbedding, self).__init__()
+        super(Embedding, self).__init__()
         self.device = device
         self.parity = parity_matrix.squeeze(0)
         self.src_embed = nn.Parameter(torch.empty((encoded + self.parity.size(0), d_model)))
@@ -24,4 +24,29 @@ class InitialEmbedding(nn.Module):
 
 def clones(module, N):
     return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
+
+class decoder(nn.Module):
+    def __init__(self, layer, N):
+            super(decoder, self).__init__()
+            self.layers = clones(layer, N)
+            self.norm = LayerNorm(layer.size)
+
+    def forward(self, x, memory, src_mask, tgt_mask):
+        for layer in self.layers:
+            x = layer(x, memory, src_mask, tgt_mask)
+        return self.norm(x)
+
+
+class PositionwiseFeedForward(nn.Module):
+    def __init__(self, d_model, d_ff, dropout=0):
+        super(PositionwiseFeedForward, self).__init__()
+        self.w_1 = nn.Linear(d_model, d_ff)
+        self.w_2 = nn.Linear(d_ff, d_model)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x):
+        x = F.gelu(self.w_1(x))
+        x = self.dropout(x)
+        x = self.w_2(x)
+        return x
 
