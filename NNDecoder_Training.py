@@ -191,7 +191,7 @@ def SLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
             print(f"{NN_type}: Continue Training")
 
 def MLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
-    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
+    encoder_matrix, _ = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
@@ -278,7 +278,7 @@ def MLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
             print(f"{NN_type}: Continue Training")
 
 def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
-    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
+    encoder_matrix, _ = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
@@ -365,7 +365,7 @@ def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
             print(f"{NN_type}: Continue Training")
 
 def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
-    encoder_matrix, decoder_matrix, SoftDecisionMLMatrix = all_codebook_NonML(method, bits, encoded, device)
+    encoder_matrix, _, _ = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
