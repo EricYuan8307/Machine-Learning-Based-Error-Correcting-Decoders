@@ -13,7 +13,7 @@ class Embedding(nn.Module):
         super(Embedding, self).__init__()
         self.device = device
         self.parity = parity_matrix.squeeze(0)
-        self.src_embed = nn.Parameter(torch.empty((encoded + self.parity.size(0), d_model)))
+        self.src_embed = nn.Parameter(torch.empty((encoded + self.parity.size(0), d_model))).to(self.device)
         nn.init.xavier_uniform_(self.src_embed)
 
     def forward(self, noised_signal):
@@ -69,7 +69,7 @@ class EncoderLayer(nn.Module):
         return self.sublayer[1](x, self.feed_forward)
 
 class MultiHeadedAttention(nn.Module):
-    def __init__(self, h, d_model, dropout=0.1):
+    def __init__(self, h, d_model, dropout, device):
         super(MultiHeadedAttention, self).__init__()
         assert d_model % h == 0 # embedding dimension must be divisible by number of heads
         self.d_k = d_model // h
@@ -77,6 +77,7 @@ class MultiHeadedAttention(nn.Module):
         self.linears = clones(nn.Linear(d_model, d_model), 4)
         self.attn = None
         self.dropout = nn.Dropout(p=dropout)
+        self.device = device
 
     def forward(self, query, key, value, mask):
         nbatches = query.size(0)
@@ -91,7 +92,7 @@ class MultiHeadedAttention(nn.Module):
         d_k = query.size(-1)
         scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
         if mask is not None:
-            scores = scores.masked_fill(mask, -1e9)
+            scores = scores.masked_fill(mask, torch.tensor(-1e9, dtype=torch.float, device=self.device))
         p_attn = F.softmax(scores, dim=-1)
         if self.dropout is not None:
             p_attn = self.dropout(p_attn)
@@ -113,16 +114,16 @@ class PositionwiseFeedForward(nn.Module):
 class ECC_Transformer(nn.Module):
     def __init__(self, n_head, d_model, encoded, pc_matrix, N_dec, dropout, device):
         super(ECC_Transformer, self).__init__()
-        ####
-        c = copy.deepcopy
-        attn = MultiHeadedAttention(n_head, d_model)
-        ff = PositionwiseFeedForward(d_model, d_model*4, dropout)
-
         self.d_model = d_model
         self.parity_matrix = pc_matrix
         self.encoded = encoded
         self.device = device
 
+        c = copy.deepcopy
+        attn = MultiHeadedAttention(n_head, d_model, dropout, self.device)
+        ff = PositionwiseFeedForward(d_model, d_model*4, dropout)
+
+        self.input_embed = Embedding(self.encoded, self.d_model, self.parity_matrix, self.device)
         self.encoderlayer = EncoderLayer(self.d_model, c(attn), c(ff), dropout)
         self.decoder = Decoder(self.encoderlayer, N_dec) # N_dec: encoder layers 复制次数
         self.oned_final_embed = torch.nn.Sequential(*[nn.Linear(self.d_model, 1)]) # make 32 channel to 1 channel. Convert to original channel
@@ -133,14 +134,13 @@ class ECC_Transformer(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
-    def forward(self, noised_signal):
-        input_embed = Embedding(self.encoded, self.d_model, self.parity_matrix, self.device)
-        emb = input_embed(noised_signal)
-        emb = self.encoderlayer(emb, self.src_mask)
-        emb = self.decoder(emb, self.src_mask)
-        emb = self.oned_final_embed(emb).squeeze(-1)
-        emb = self.out_fc(emb)
-        return emb
+    def forward(self, x):
+        x = self.input_embed(x)
+        x = self.encoderlayer(x, self.src_mask)
+        x = self.decoder(x, self.src_mask)
+        x = self.oned_final_embed(x).squeeze(-1)
+        x = self.out_fc(x)
+        return x
 
     def get_mask(self, n, pc_matrix, no_mask=False):
         if no_mask:
@@ -161,5 +161,5 @@ class ECC_Transformer(nn.Module):
                             mask[jj, n + ii] += 1
             src_mask = ~ (mask > 0).unsqueeze(0).unsqueeze(0)
             return src_mask
-        src_mask = build_mask(n, pc_matrix)
+        src_mask = build_mask(n, pc_matrix).to(self.device)
         return src_mask

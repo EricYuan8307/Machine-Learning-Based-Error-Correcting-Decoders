@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
-from Encode.Generator import generator
+from Encode.Generator import generator_ECCT
 from Encode.Modulator import bpsk_modulator
 from Transmit.noise import AWGN
 from Transformer.Model import ECC_Transformer
@@ -12,13 +13,14 @@ from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 from earlystopping import EarlyStopping
+from Decode.HardDecision import hard_decision
 
 def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, model_save_path, model_name, NN_type, patience, delta, n_dec, n_head, d_model, dropout, device):
     encoder_matrix, _ = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
-    bits_info = generator(nr_codeword, bits, device)
+    bits_info = generator_ECCT(nr_codeword, bits, device)
     encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)
     noised_signal = AWGN(modulated_signal, snr, device)
@@ -28,8 +30,11 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
     noised_signal = noised_signal.squeeze(1)
     bits_info = bits_info.squeeze(1)
     encoded_codeword = encoded_codeword.squeeze(1)
+    compare = noised_signal * bpsk_modulator(encoded_codeword)
+    compare = hard_decision(torch.sign(compare), device)
+
     H = ParitycheckMatrix(encoded, bits, method, device).squeeze(0)
-    ECCT_trainset = TensorDataset(noised_signal, encoded_codeword)
+    ECCT_trainset = TensorDataset(noised_signal, compare)
     ECCT_trainloader = torch.utils.data.DataLoader(ECCT_trainset, batch_size, shuffle=True)
     ECCT_testloader = torch.utils.data.DataLoader(ECCT_trainset, batch_size, shuffle=False)
 
@@ -37,7 +42,7 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
     model = ECC_Transformer(n_head, d_model, encoded, H, n_dec, dropout, device).to(device)
 
     # Define the loss function and optimizer
-    criterion = nn.BCELoss()
+    criterion = F.binary_cross_entropy_with_logits
     optimizer = optim.Adam(model.parameters(), learning_rate)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
 
@@ -48,7 +53,7 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
     # Early Stopping
     early_stopping = EarlyStopping(patience, delta)
 
-    # Multi-Label Neural Network Training loop
+    # ECCT Training loop
     for epoch in range(epochs):
         running_loss = 0.0
         for i, data in enumerate(ECCT_trainloader, 0):
@@ -65,7 +70,7 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
 
             running_loss += loss.item()
             if i % 1000 == 999:  # Print every 100 mini-batches
-                print(f'{NN_type}: Head Num:{n_head}, Encoding Dimension:{d_model}, SNR{snr_measure}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
+                print(f'{NN_type}: Head Num:{n_head}, Encoding Dim:{d_model}, SNR{snr_measure}, Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 1000:.9f}')
                 running_loss = 0.0
 
         # Calculate the average training loss for this epoch
@@ -90,31 +95,34 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
         avg_test_loss = running_loss / len(ECCT_testloader)
         ECCT_test_losses.append(avg_test_loss)
 
-        print(f'{NN_type} Testing - SNR{snr_measure} - Loss: {running_loss/len(ECCT_testloader):.9f}')
+        print(f'{NN_type} Testing - {NN_type}: Head Num:{n_head}, Encoding Dim:{d_model}, SNR{snr_measure} - Loss: {running_loss/len(ECCT_testloader):.9f}')
 
         scheduler.step(avg_test_loss)
 
         # Early Stopping
         if early_stopping(running_loss, model, model_save_path, model_name):
             print(f'{NN_type}: Early stopping')
-            print(f'{NN_type}: Head Num:{n_head}, Encoding Dimension:{d_model}, SNR={snr_measure} Stop at total val_loss is {running_loss/len(ECCT_testloader)} and epoch is {epoch}')
+            print(f'{NN_type}: Head Num:{n_head}, Encoding Dim:{d_model}, SNR={snr_measure} Stop at total val_loss is {running_loss/len(ECCT_testloader)} and epoch is {epoch}')
             break
         else:
             print(f"{NN_type}: Continue Training")
 
 
 def main():
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+              else (torch.device("cuda") if torch.cuda.is_available()
+                    else torch.device("cpu")))
     device = torch.device("cpu")
 
-    NN_type = "Transformer"
-    nr_codeword = int(1e7)
+    NN_type = "ECCT"
+    nr_codeword = int(1e6)
     bits = 4
     encoded = 7
     encoding_method = "Hamming" # "Hamming", "Parity", "BCH",
     n_decoder = 6
     n_head = 8
-    dropout = 0.1
-    d_model = 32 # model embedding dimension
+    dropout = 0
+    d_model = 16 # model embedding dimension
     epochs = 1000
     learning_rate = 0.001
     batch_size = 16
@@ -127,7 +135,7 @@ def main():
     snr = torch.tensor(0.0, dtype=torch.float, device=device)
     snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
-    ECCT_Training(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size,model_save_path,
+    ECCT_Training(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, model_save_path,
                   model_name, NN_type, patience, delta, n_decoder, n_head, d_model, dropout, device)
 
 if __name__ == "__main__":
