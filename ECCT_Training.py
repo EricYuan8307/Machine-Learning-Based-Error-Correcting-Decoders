@@ -11,7 +11,6 @@ from Codebook.CodebookMatrix import ParitycheckMatrix
 from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
-from Decode.Converter import BinarytoDecimal
 from earlystopping import EarlyStopping
 
 def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, model_save_path, model_name, NN_type, patience, delta, n_dec, n_head, d_model, dropout, device):
@@ -28,8 +27,9 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
     # Transformer:
     noised_signal = noised_signal.squeeze(1)
     bits_info = bits_info.squeeze(1)
+    encoded_codeword = encoded_codeword.squeeze(1)
     H = ParitycheckMatrix(encoded, bits, method, device).squeeze(0)
-    ECCT_trainset = TensorDataset(noised_signal, bits_info)
+    ECCT_trainset = TensorDataset(noised_signal, encoded_codeword)
     ECCT_trainloader = torch.utils.data.DataLoader(ECCT_trainset, batch_size, shuffle=True)
     ECCT_testloader = torch.utils.data.DataLoader(ECCT_trainset, batch_size, shuffle=False)
 
