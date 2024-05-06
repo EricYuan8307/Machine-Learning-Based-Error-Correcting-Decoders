@@ -1,4 +1,4 @@
-# Master Thesis: Improve Belief Propagation in Maximum Likelihood
+# Master Thesis: Improve Error Correction Code by Machine Learning
 Implemented in PyTorch.
 
 ### Implement the Soft-Decision Maximum Likelihood, Hard-Decsion Maximum Likelihood, and Belief propagation
