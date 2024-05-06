@@ -49,7 +49,8 @@ def BeliefPropagation(nr_codeword, method, bits, encoded, snr_dB, iter, H, devic
     llr_output = llr(noised_signal, snr_dB)  # LLR
     BP_result = torch.zeros(llr_output.shape, device=device)
 
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
+    practical_snr = NoiseMeasure_BPSK(noised_signal, modulated_signal)
+    # practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
 
     for k in range(llr_output.shape[0]):
         start_time = time.time()
@@ -58,9 +59,9 @@ def BeliefPropagation(nr_codeword, method, bits, encoded, snr_dB, iter, H, devic
         BP_result[k] = BP
         end_time = time.time()
 
-        if k % 100 == 0 and k > 0:
+        if k % 10000 == 0 and k > 0:
             elapsed_time = end_time - start_time
-            print(f"Processed {k} iterations in {elapsed_time * 100} seconds")
+            print(f"Processed {k} iterations in {elapsed_time * 10000} seconds")
 
     iter_end_time = time.time()
     print(f"For {practical_snr}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
@@ -316,7 +317,7 @@ def estimation_HD(num, method, bits, encoded, SNR_opt_ML, metric, result, device
                 print(f"{metric} is not either BER or BLER")
 
             if error_num_HD < 100:
-                N += int(1e7)
+                N += int(1e5)
                 print(f"the code number is {N}")
 
             else:
@@ -348,25 +349,23 @@ def main():
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = torch.arange(0, 8.5, 0.5)
     # SNR_opt_BP = SNR_opt_BP + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
-    SNR_opt_BP = torch.sqrt(1. / (10. ** (SNR_opt_BP + 10. * torch.log10(torch.tensor(2 * bits / encoded, dtype=torch.float)) / 10.))) # from ECCT Article
 
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
     # SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
-    SNR_opt_ML = torch.sqrt(1. / (10. ** (SNR_opt_ML + 10. * torch.log10(torch.tensor(2 * bits / encoded, dtype=torch.float)) / 10.))) # from ECCT Article
 
 
     result_save_BPSK = np.zeros((1, len(SNR_opt_BPSK)))
     result_save_SDML = np.zeros((1, len(SNR_opt_ML)))
     result_save_HDML = np.zeros((1, len(SNR_opt_ML)))
     result_save_BP = np.zeros((1, len(SNR_opt_BP)))
-    result_save_HDBCH = np.zeros((1, len(SNR_opt_ML)))
+    result_save_HD = np.zeros((1, len(SNR_opt_ML)))
 
     for metric in metrics:
         # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
         # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
         # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, batch_size, device)
-        # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
-        result_HD = estimation_HD(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDBCH, device)
+        result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
+        # result_HD = estimation_HD(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HD, device)
 
         # result_all = np.vstack([
         #     result_BPSK,
