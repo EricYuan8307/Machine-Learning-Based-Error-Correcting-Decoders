@@ -347,9 +347,9 @@ def main():
 
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = torch.arange(0, 8.5, 0.5)
-    SNR_opt_BP = SNR_opt_BP + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
+    # SNR_opt_BP = SNR_opt_BP + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
-    SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
+    # SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
 
     result_save_BPSK = np.zeros((1, len(SNR_opt_BPSK)))
     result_save_SDML = np.zeros((1, len(SNR_opt_ML)))
@@ -358,11 +358,11 @@ def main():
     result_save_HDBCH = np.zeros((1, len(SNR_opt_ML)))
 
     for metric in metrics:
-        # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
+        result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
         # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
         # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, batch_size, device)
         # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
-        result_HD = estimation_HD(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDBCH, device)
+        # result_HD = estimation_HD(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDBCH, device)
 
         # result_all = np.vstack([
         #     result_BPSK,
