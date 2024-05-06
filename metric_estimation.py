@@ -33,6 +33,7 @@ def UncodedBPSK(nr_codeword, bits, snr_dB, device):
 
 def BeliefPropagation(nr_codeword, method, bits, encoded, snr_dB, iter, H, device):
     iter_start_time = time.time()
+    H = H.T.unsqueeze(0) # for BCH
 
     encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
 
@@ -57,9 +58,9 @@ def BeliefPropagation(nr_codeword, method, bits, encoded, snr_dB, iter, H, devic
         BP_result[k] = BP
         end_time = time.time()
 
-        if k % 10000 == 0 and k > 0:
+        if k % 100 == 0 and k > 0:
             elapsed_time = end_time - start_time
-            print(f"Processed {k} iterations in {elapsed_time * 10000} seconds")
+            print(f"Processed {k} iterations in {elapsed_time * 100} seconds")
 
     iter_end_time = time.time()
     print(f"For {practical_snr}SNR, the Belief Propagation spend {iter_end_time - iter_start_time} seconds.")
@@ -357,10 +358,10 @@ def main():
     result_save_HDBCH = np.zeros((1, len(SNR_opt_ML)))
 
     for metric in metrics:
-        result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
+        # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
         # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
         # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, batch_size, device)
-        # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
+        result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
         # result_DBCH = estimation_HDBCH(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDBCH, device)
 
         # result_all = np.vstack([
