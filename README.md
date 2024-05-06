@@ -9,6 +9,10 @@ D. E. Hocevar, "A reduced complexity decoder architecture via layered decoding o
 Neural Network Decoder Reference: <br>
 C. T. Leung, R. V. Bhat and M. Motani, "Low Latency Energy-Efficient Neural Decoders for Block Codes," in IEEE Transactions on Green Communications and Networking, vol. 7, no. 2, pp. 680-691, June 2023, doi: 10.1109/TGCN.2022.3222961.
 
+### Error Correction Code Transformer:
+Transformer Reference: <br>
+Yoni Choukroun and Lior Wolf. Error correction code transformer. arXiv preprint arXiv:2203.14966, 2022.
+
 For faster training the model, I used early stopping.
 
 ### Addition: In Good First Issue, I mentioned some common bugs and solutions in Belief Pragation, BER and BLER.
