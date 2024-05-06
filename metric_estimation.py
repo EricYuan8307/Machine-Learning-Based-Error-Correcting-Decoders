@@ -357,11 +357,11 @@ def main():
     result_save_HDBCH = np.zeros((1, len(SNR_opt_ML)))
 
     for metric in metrics:
-        # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
+        result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
         # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
         # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, batch_size, device)
         # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
-        result_DBCH = estimation_HDBCH(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDBCH, device)
+        # result_DBCH = estimation_HDBCH(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDBCH, device)
 
         # result_all = np.vstack([
         #     result_BPSK,
