@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import time
 import os
+import galois
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
@@ -139,6 +140,24 @@ def SoftDecisionMLP(nr_codeword, method, bits, encoded, snr_dB, batch_size, devi
 
     return SDML_final, bits_info, practical_snr
 
+def HardDecisionBCH(nr_codeword, method, bits, encoded, snr_dB, device):
+    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
+
+    encoder = PCC_encoders(encoder_matrix)
+    decoder = PCC_decoder(decoder_matrix)
+
+    # ML:
+    bits_info = generator(nr_codeword, bits, device)
+    encoded_codeword = encoder(bits_info)
+    modulated_signal = bpsk_modulator(encoded_codeword)
+    noised_signal = AWGN(modulated_signal, snr_dB, device)
+    HD_noised = hard_decision(noised_signal, device)
+    HDBCH_final = decoder(HD_noised)
+
+    practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
+
+    return HDBCH_final, bits_info, practical_snr
+
 
 def estimation_HDML(num, method, bits, encoded, SNR_opt_ML, metric, result, batch_size, device):
     N = num
@@ -273,6 +292,39 @@ def estimation_SDML(num, method, bits, encoded, SNR_opt_ML, metric, result, batc
 
     return result
 
+def estimation_HDBCH(num, method, bits, encoded, SNR_opt_ML, metric, result, device):
+    N = num
+
+    # Hard-Decision BCH
+    for i in range(len(SNR_opt_ML)):
+        snr_dB = SNR_opt_ML[i]
+        condition_met = False
+        iteration_count = 0  # Initialize iteration counter
+        max_iterations = 50
+
+        while not condition_met and iteration_count < max_iterations:
+            iteration_count += 1
+
+            HDBCH_final, bits_info, snr_measure = HardDecisionBCH(N, method, bits, encoded, snr_dB, device)
+
+            if metric == "BER":
+                error_rate_HDBCH, error_num_HDBCH = calculate_ber(HDBCH_final, bits_info)
+            elif metric == "BLER":
+                error_rate_HDBCH, error_num_HDBCH = calculate_bler(HDBCH_final, bits_info)
+            else:
+                print(f"{metric} is not either BER or BLER")
+
+            if error_num_HDBCH < 100:
+                N += int(1e7)
+                print(f"the code number is {N}")
+
+            else:
+                print(
+                    f"HD-BCH: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_HDBCH} and {metric} is {error_rate_HDBCH}")
+                result[0, i] = error_rate_HDBCH
+                condition_met = True
+
+    return result
 
 def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
@@ -294,20 +346,22 @@ def main():
 
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = torch.arange(0, 8.5, 0.5)
-    # SNR_opt_BP = SNR_opt_BP + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
+    SNR_opt_BP = SNR_opt_BP + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
-    # SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
+    SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
 
     result_save_BPSK = np.zeros((1, len(SNR_opt_BPSK)))
     result_save_SDML = np.zeros((1, len(SNR_opt_ML)))
     result_save_HDML = np.zeros((1, len(SNR_opt_ML)))
     result_save_BP = np.zeros((1, len(SNR_opt_BP)))
+    result_save_HDBCH = np.zeros((1, len(SNR_opt_ML)))
 
     for metric in metrics:
-        result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
+        # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
         # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
         # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, batch_size, device)
         # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
+        result_DBCH = estimation_HDBCH(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDBCH, device)
 
         # result_all = np.vstack([
         #     result_BPSK,
