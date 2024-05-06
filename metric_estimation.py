@@ -309,20 +309,20 @@ def estimation_HD(num, method, bits, encoded, SNR_opt_ML, metric, result, device
             HD_final, bits_info, snr_measure = HardDecision(N, method, bits, encoded, snr_dB, device)
 
             if metric == "BER":
-                error_rate_HDBCH, error_num_HDBCH = calculate_ber(HD_final, bits_info)
+                error_rate_HD, error_num_HD = calculate_ber(HD_final, bits_info)
             elif metric == "BLER":
-                error_rate_HDBCH, error_num_HDBCH = calculate_bler(HD_final, bits_info)
+                error_rate_HD, error_num_HD = calculate_bler(HD_final, bits_info)
             else:
                 print(f"{metric} is not either BER or BLER")
 
-            if error_num_HDBCH < 100:
+            if error_num_HD < 100:
                 N += int(1e7)
                 print(f"the code number is {N}")
 
             else:
                 print(
-                    f"HD-{method}: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_HDBCH} and {metric} is {error_rate_HDBCH}")
-                result[0, i] = error_rate_HDBCH
+                    f"HD-{method}: When SNR is {snr_measure} and signal number is {N}, error number is {error_num_HD} and {metric} is {error_rate_HD}")
+                result[0, i] = error_rate_HD
                 condition_met = True
 
     return result
@@ -348,8 +348,12 @@ def main():
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = torch.arange(0, 8.5, 0.5)
     # SNR_opt_BP = SNR_opt_BP + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
+    SNR_opt_BP = torch.sqrt(1. / (10. ** (SNR_opt_BP + 10. * torch.log10(torch.tensor(2 * bits / encoded, dtype=torch.float)) / 10.))) # from ECCT Article
+
     SNR_opt_ML = torch.arange(0, 8.5, 0.5)
     # SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
+    SNR_opt_ML = torch.sqrt(1. / (10. ** (SNR_opt_ML + 10. * torch.log10(torch.tensor(2 * bits / encoded, dtype=torch.float)) / 10.))) # from ECCT Article
+
 
     result_save_BPSK = np.zeros((1, len(SNR_opt_BPSK)))
     result_save_SDML = np.zeros((1, len(SNR_opt_ML)))
@@ -358,11 +362,11 @@ def main():
     result_save_HDBCH = np.zeros((1, len(SNR_opt_ML)))
 
     for metric in metrics:
-        result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
+        # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
         # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
         # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, batch_size, device)
         # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
-        # result_HD = estimation_HD(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDBCH, device)
+        result_HD = estimation_HD(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDBCH, device)
 
         # result_all = np.vstack([
         #     result_BPSK,
