@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import time
 import os
+import galois
 
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
@@ -143,17 +144,26 @@ def SoftDecisionMLP(nr_codeword, method, bits, encoded, snr_dB, batch_size, devi
 
 def HardDecision(nr_codeword, method, bits, encoded, snr_dB, device):
     encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
+    Degree = np.log2(encoded+1)
+    GF = galois.GF(2 ** int(Degree))
+    bch = galois.BCH(encoded, bits)
 
     encoder = PCC_encoders(encoder_matrix)
-    decoder = PCC_decoder(decoder_matrix)
+    # decoder = PCC_decoder(decoder_matrix)
 
     # HD:
     bits_info = generator(nr_codeword, bits, device)
     encoded_codeword = encoder(bits_info)
     modulated_signal = bpsk_modulator(encoded_codeword)
     noised_signal = AWGN(modulated_signal, snr_dB, device)
-    HD_noised = hard_decision(noised_signal, device)
-    HD_final = decoder(HD_noised)
+    HD_noised = hard_decision(noised_signal, device).squeeze(1)
+    HD_noised = HD_noised.numpy().astype(int)
+
+    gf_HD_noised = GF(HD_noised)
+
+    HD_final = bch.decode(gf_HD_noised)
+    HD_final = torch.tensor(HD_final).clone().t().to(dtype=torch.float, device=device).transpose(0, 1)
+    HD_final = HD_final.unsqueeze(1)
 
     practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
 
@@ -335,9 +345,9 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e4)
-    bits = 51
-    encoded = 63
+    num = int(1e6)
+    bits = 64
+    encoded = 127
     encoding_method = "BCH" # "Hamming", "Parity", "BCH", "Golay", "LDPC", "Polar"
     metrics = ["BER"] # BER or BLER
     batch_size = int(1e4)
@@ -360,17 +370,17 @@ def main():
     result_save_HD = np.zeros((1, len(SNR_opt_ML)))
 
     for metric in metrics:
-        result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
-        result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
-        result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, batch_size, device)
-        result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
+        # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
+        # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
+        # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, batch_size, device)
+        # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
         result_HD = estimation_HD(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HD, device)
 
         result_all = np.vstack([
-            result_BPSK,
-            result_SDML,
-            result_HDML,
-            result_BP,
+            # result_BPSK,
+            # result_SDML,
+            # result_HDML,
+            # result_BP,
             result_HD
         ])
 
