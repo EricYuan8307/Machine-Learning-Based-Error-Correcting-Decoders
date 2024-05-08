@@ -162,8 +162,7 @@ def HardDecision(nr_codeword, method, bits, encoded, snr_dB, device):
     gf_HD_noised = GF(HD_noised)
 
     HD_final = bch.decode(gf_HD_noised)
-    HD_final = torch.tensor(HD_final).clone().t().to(dtype=torch.float, device=device).transpose(0, 1)
-    HD_final = HD_final.unsqueeze(1)
+    HD_final = torch.tensor(HD_final).clone().t().to(dtype=torch.float, device=device).transpose(0, 1).unsqueeze(1)
 
     practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
 
@@ -345,12 +344,12 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e6)
-    bits = 64
-    encoded = 127
+    num = int(1e4)
+    bits = 51
+    encoded = 63
     encoding_method = "BCH" # "Hamming", "Parity", "BCH", "Golay", "LDPC", "Polar"
     metrics = ["BER"] # BER or BLER
-    batch_size = int(1e4)
+    batch_size = int(1e2)
 
     iter = 50 # BP
     H = ParitycheckMatrix(encoded, bits, encoding_method, device)
