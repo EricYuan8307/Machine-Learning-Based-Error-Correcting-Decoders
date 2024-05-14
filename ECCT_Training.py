@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import random
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
@@ -107,8 +108,15 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
         else:
             print(f"{NN_type}: Continue Training")
 
+def set_seed(seed=42):
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+
 
 def main():
+    set_seed(42)
+
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
@@ -131,7 +139,6 @@ def main():
     batch_size = 128
     patience = 10
     delta = 0.001
-    num_workers = 4
 
     model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/"
     model_name = f"{NN_type}_h{n_head}_d{d_model}"
