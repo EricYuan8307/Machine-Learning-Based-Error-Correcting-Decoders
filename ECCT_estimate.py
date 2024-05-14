@@ -9,7 +9,7 @@ from Metric.ErrorRate import calculate_ber, calculate_bler
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
-from Decode.Converter import MLNN_decision
+from Decode.HardDecision import hard_decision
 from Transformer.Model import ECC_Transformer
 from Codebook.CodebookMatrix import ParitycheckMatrix
 
@@ -26,7 +26,7 @@ def ECCTDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, ba
 
     practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
 
-    # use MLNN model:
+    # use ECCT model:
     model.eval()
     model.load_state_dict(torch.load(model_pth))
 
@@ -46,13 +46,13 @@ def ECCTDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, ba
 
     # Concatenate the processed batches
     ECCT_final = torch.cat(ECCT_final_batches, dim=0)
-    ECCT_final = MLNN_decision(torch.sign(ECCT_final*torch.sign(noised_signal)), device)
+    ECCT_final = hard_decision(torch.sign(ECCT_final*torch.sign(noised_signal)), device)
 
-    return ECCT_final, bits_info, practical_snr
+    return ECCT_final, encoded_codeword, practical_snr
 
 def estimation_ECCT(num, method, bits, encoded, n_head, d_model, n_dec, NN_type, metric, SNR_opt_NN, model_pth, result, batch_size, dropout, device):
     N = num
-    H = ParitycheckMatrix(encoded, bits, method, device).squeeze(0)
+    H = ParitycheckMatrix(encoded, bits, method, device).squeeze(0).T
 
     # Single-label Neural Network:
     for i in range(len(SNR_opt_NN)):
@@ -63,12 +63,12 @@ def estimation_ECCT(num, method, bits, encoded, n_head, d_model, n_dec, NN_type,
         while not condition_met and iteration_count < max_iterations:
             iteration_count += 1
             model = ECC_Transformer(n_head, d_model, encoded, H, n_dec, dropout, device).to(device)
-            ECCT_final, bits_info, snr_measure = ECCTDecoder(N, method, bits, encoded, SNR_opt_NN[i], model, model_pth, batch_size, device)
+            ECCT_final, encoded_codeword, snr_measure = ECCTDecoder(N, method, bits, encoded, SNR_opt_NN[i], model, model_pth, batch_size, device)
 
             if metric == "BLER":
-                error_rate, error_num = calculate_bler(ECCT_final, bits_info)
+                error_rate, error_num = calculate_bler(ECCT_final, encoded_codeword)
             elif metric == "BER":
-                error_rate, error_num = calculate_ber(ECCT_final, bits_info) # BER calculation
+                error_rate, error_num = calculate_ber(ECCT_final, encoded_codeword) # BER calculation
 
             if error_num < 100:
                 N += int(1e7)
@@ -86,21 +86,22 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
-    # device = torch.device("cuda")
+    # device = torch.device("cpu")
+    device = torch.device("cuda")
 
     # Hyperparameters
     metrics = ["BER"] # ["BER", "BLER"]
-    nr_codeword = int(1e7)
-    bits = 4
-    encoded = 7
-    encoding_method = "Hamming"  # "Hamming", "Parity", "BCH"
+    nr_codeword = int(1e2)
+    bits = 51
+    encoded = 63
+    encoding_method = "BCH"  # "Hamming", "Parity", "BCH"
     NN_type = "ECCT"
-    batch_size = int(1e4)
-    d_model = 16
-    n_head = 8
-    n_dec = 6
-    dropout = 0
+    batch_size = 16
+
+    n_decoder = 6  # decoder iteration times
+    n_head = 8  # head number
+    dropout = 0  # dropout rate
+    d_model = 128  # input embedding dimension
 
     SNR_opt_NN = torch.arange(0, 8.5, 0.5).to(device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
@@ -109,7 +110,7 @@ def main():
     # trained and deleted model
     for metric in metrics:
         model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_h{n_head}_d{d_model}.pth"
-        result_NN = estimation_ECCT(nr_codeword, encoding_method, bits, encoded, n_head, d_model, n_dec, NN_type, metric,
+        result_NN = estimation_ECCT(nr_codeword, encoding_method, bits, encoded, n_head, d_model, n_decoder, NN_type, metric,
                                 SNR_opt_NN, model_pth, result_save, batch_size, dropout, device)
         directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
 

@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import random
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
@@ -28,12 +29,12 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
 
     # Transformer:
     noised_signal = noised_signal.squeeze(1)
-    bits_info = bits_info.squeeze(1)
+    # bits_info = bits_info.squeeze(1)
     encoded_codeword = encoded_codeword.squeeze(1)
-    compare = noised_signal * bpsk_modulator(encoded_codeword)
+    compare = noised_signal * modulated_signal
     compare = hard_decision(torch.sign(compare), device)
 
-    H = ParitycheckMatrix(encoded, bits, method, device).squeeze(0)
+    H = ParitycheckMatrix(encoded, bits, method, device).squeeze(0).T
     ECCT_trainset = TensorDataset(noised_signal, compare)
     ECCT_trainloader = torch.utils.data.DataLoader(ECCT_trainset, batch_size, shuffle=True)
     ECCT_testloader = torch.utils.data.DataLoader(ECCT_trainset, batch_size, shuffle=False)
@@ -44,7 +45,7 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
     # Define the loss function and optimizer
     criterion = F.binary_cross_entropy_with_logits
     optimizer = optim.Adam(model.parameters(), learning_rate)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-6)
 
     # Define lists to store loss values
     ECCT_train_losses = []
@@ -107,33 +108,43 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
         else:
             print(f"{NN_type}: Continue Training")
 
+def set_seed(seed=42):
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+
 
 def main():
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.cuda.is_available()
-                    else torch.device("cpu")))
-    device = torch.device("cpu")
+    set_seed(42)
+
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.cuda.is_available()
+    #                 else torch.device("cpu")))
+    # device = torch.device("cpu")
+    device = torch.device("cuda")
 
     NN_type = "ECCT"
     nr_codeword = int(1e6)
-    bits = 4
-    encoded = 7
-    encoding_method = "Hamming" # "Hamming", "Parity", "BCH",
-    n_decoder = 6
-    n_head = 8
-    dropout = 0
-    d_model = 16 # model embedding dimension
+    bits = 51
+    encoded = 63
+    encoding_method = "BCH" # "Hamming", "Parity", "BCH",
+
+    n_decoder = 6 # decoder iteration times
+    dropout = 0 # dropout rate
+
+    n_head = 8  # head number
+    d_model = 128 # input embedding dimension
     epochs = 1000
     learning_rate = 0.001
-    batch_size = 16
+    batch_size = 128
     patience = 10
     delta = 0.001
 
     model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/"
     model_name = f"{NN_type}_h{n_head}_d{d_model}"
 
-    snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
+    snr = torch.tensor(0.0, dtype=torch.float, device=device) # for EsN0 (dB)
+    snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for EbN0 (dB)
 
     ECCT_Training(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, model_save_path,
                   model_name, NN_type, patience, delta, n_decoder, n_head, d_model, dropout, device)
