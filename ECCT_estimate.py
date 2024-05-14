@@ -9,7 +9,7 @@ from Metric.ErrorRate import calculate_ber, calculate_bler
 from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
 from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
-from Decode.Converter import MLNN_decision
+from Decode.HardDecision import hard_decision
 from Transformer.Model import ECC_Transformer
 from Codebook.CodebookMatrix import ParitycheckMatrix
 
@@ -46,7 +46,7 @@ def ECCTDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, ba
 
     # Concatenate the processed batches
     ECCT_final = torch.cat(ECCT_final_batches, dim=0)
-    ECCT_final = MLNN_decision(torch.sign(ECCT_final*torch.sign(noised_signal)), device)
+    ECCT_final = hard_decision(torch.sign(ECCT_final*torch.sign(noised_signal)), device)
 
     return ECCT_final, bits_info, practical_snr
 

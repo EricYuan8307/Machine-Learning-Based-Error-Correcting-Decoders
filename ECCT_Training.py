@@ -30,7 +30,7 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
     noised_signal = noised_signal.squeeze(1)
     # bits_info = bits_info.squeeze(1)
     encoded_codeword = encoded_codeword.squeeze(1)
-    compare = noised_signal * bpsk_modulator(encoded_codeword)
+    compare = noised_signal * modulated_signal
     compare = hard_decision(torch.sign(compare), device)
 
     H = ParitycheckMatrix(encoded, bits, method, device).squeeze(0).T
