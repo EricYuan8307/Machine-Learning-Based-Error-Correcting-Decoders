@@ -44,7 +44,7 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
     # Define the loss function and optimizer
     criterion = F.binary_cross_entropy_with_logits
     optimizer = optim.Adam(model.parameters(), learning_rate)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.1, verbose=True)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-6)
 
     # Define lists to store loss values
     ECCT_train_losses = []
