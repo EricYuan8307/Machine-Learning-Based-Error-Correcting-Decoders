@@ -48,7 +48,7 @@ def ECCTDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, ba
     ECCT_final = torch.cat(ECCT_final_batches, dim=0)
     ECCT_final = hard_decision(torch.sign(ECCT_final*torch.sign(noised_signal)), device)
 
-    return ECCT_final, bits_info, practical_snr
+    return ECCT_final, encoded_codeword, practical_snr
 
 def estimation_ECCT(num, method, bits, encoded, n_head, d_model, n_dec, NN_type, metric, SNR_opt_NN, model_pth, result, batch_size, dropout, device):
     N = num
@@ -63,12 +63,12 @@ def estimation_ECCT(num, method, bits, encoded, n_head, d_model, n_dec, NN_type,
         while not condition_met and iteration_count < max_iterations:
             iteration_count += 1
             model = ECC_Transformer(n_head, d_model, encoded, H, n_dec, dropout, device).to(device)
-            ECCT_final, bits_info, snr_measure = ECCTDecoder(N, method, bits, encoded, SNR_opt_NN[i], model, model_pth, batch_size, device)
+            ECCT_final, encoded_codeword, snr_measure = ECCTDecoder(N, method, bits, encoded, SNR_opt_NN[i], model, model_pth, batch_size, device)
 
             if metric == "BLER":
-                error_rate, error_num = calculate_bler(ECCT_final, bits_info)
+                error_rate, error_num = calculate_bler(ECCT_final, encoded_codeword)
             elif metric == "BER":
-                error_rate, error_num = calculate_ber(ECCT_final, bits_info) # BER calculation
+                error_rate, error_num = calculate_ber(ECCT_final, encoded_codeword) # BER calculation
 
             if error_num < 100:
                 N += int(1e7)
@@ -86,12 +86,12 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    # device = torch.device("cpu")
-    device = torch.device("cuda")
+    device = torch.device("cpu")
+    # device = torch.device("cuda")
 
     # Hyperparameters
     metrics = ["BER"] # ["BER", "BLER"]
-    nr_codeword = int(1e4)
+    nr_codeword = int(1e2)
     bits = 51
     encoded = 63
     encoding_method = "BCH"  # "Hamming", "Parity", "BCH"
