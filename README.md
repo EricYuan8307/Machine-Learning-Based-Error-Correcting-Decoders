@@ -1,4 +1,4 @@
-# Master Thesis: Improve Error Correction Code by Machine Learning
+# Master Thesis: Improve Error Correction Code by Machine Learning and Deep Learning
 Implemented in PyTorch.
 
 ### Implement the Soft-Decision Maximum Likelihood, Hard-Decsion Maximum Likelihood, and Belief propagation
