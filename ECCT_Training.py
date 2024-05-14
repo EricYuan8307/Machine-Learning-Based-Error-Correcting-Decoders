@@ -113,6 +113,7 @@ def main():
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
     device = torch.device("cpu")
+    device = torch.device("cuda")
 
     NN_type = "ECCT"
     nr_codeword = int(1e6)
