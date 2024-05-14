@@ -130,10 +130,10 @@ def main():
     encoding_method = "BCH" # "Hamming", "Parity", "BCH",
 
     n_decoder = 6 # decoder iteration times
-    n_head = 8 # head number
     dropout = 0 # dropout rate
-    d_model = 128 # input embedding dimension
 
+    n_head = 8  # head number
+    d_model = 128 # input embedding dimension
     epochs = 1000
     learning_rate = 0.001
     batch_size = 128
