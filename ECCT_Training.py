@@ -30,7 +30,7 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
     noised_signal = noised_signal.squeeze(1)
     # bits_info = bits_info.squeeze(1)
     encoded_codeword = encoded_codeword.squeeze(1)
-    compare = noised_signal * bpsk_modulator(encoded_codeword)
+    compare = noised_signal * modulated_signal
     compare = hard_decision(torch.sign(compare), device)
 
     H = ParitycheckMatrix(encoded, bits, method, device).squeeze(0).T
@@ -112,8 +112,8 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
-    # device = torch.device("cuda")
+    # device = torch.device("cpu")
+    device = torch.device("cuda")
 
     NN_type = "ECCT"
     nr_codeword = int(1e6)
@@ -124,7 +124,7 @@ def main():
     n_decoder = 6 # decoder iteration times
     n_head = 8 # head number
     dropout = 0 # dropout rate
-    d_model = 16 # model embedding dimension
+    d_model = 128 # input embedding dimension
 
     epochs = 1000
     learning_rate = 0.001
@@ -135,8 +135,8 @@ def main():
     model_save_path = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/"
     model_name = f"{NN_type}_h{n_head}_d{d_model}"
 
-    snr = torch.tensor(0.0, dtype=torch.float, device=device)
-    snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
+    snr = torch.tensor(0.0, dtype=torch.float, device=device) # for EsN0 (dB)
+    snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for EbN0 (dB)
 
     ECCT_Training(snr, encoding_method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, model_save_path,
                   model_name, NN_type, patience, delta, n_decoder, n_head, d_model, dropout, device)
