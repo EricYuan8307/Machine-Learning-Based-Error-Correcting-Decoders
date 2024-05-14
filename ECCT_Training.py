@@ -33,7 +33,7 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
     compare = noised_signal * bpsk_modulator(encoded_codeword)
     compare = hard_decision(torch.sign(compare), device)
 
-    H = ParitycheckMatrix(encoded, bits, method, device).squeeze(0)
+    H = ParitycheckMatrix(encoded, bits, method, device).squeeze(0).T
     ECCT_trainset = TensorDataset(noised_signal, compare)
     ECCT_trainloader = torch.utils.data.DataLoader(ECCT_trainset, batch_size, shuffle=True)
     ECCT_testloader = torch.utils.data.DataLoader(ECCT_trainset, batch_size, shuffle=False)
@@ -113,7 +113,7 @@ def main():
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
     device = torch.device("cpu")
-    device = torch.device("cuda")
+    # device = torch.device("cuda")
 
     NN_type = "ECCT"
     nr_codeword = int(1e6)
