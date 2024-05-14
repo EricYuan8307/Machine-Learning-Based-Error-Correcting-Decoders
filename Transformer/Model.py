@@ -154,7 +154,7 @@ class ECC_Transformer(nn.Module):
                 idx = torch.where(pc_matrix[ii] > 0)[0]
                 for jj in idx:
                     for kk in idx:
-                        if jj != kk:
+                        if jj != kk: # < could decrease a little complexity
                             mask[jj, kk] += 1
                             mask[kk, jj] += 1
                             mask[n + ii, jj] += 1

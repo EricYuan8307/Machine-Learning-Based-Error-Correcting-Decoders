@@ -28,7 +28,7 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
 
     # Transformer:
     noised_signal = noised_signal.squeeze(1)
-    bits_info = bits_info.squeeze(1)
+    # bits_info = bits_info.squeeze(1)
     encoded_codeword = encoded_codeword.squeeze(1)
     compare = noised_signal * bpsk_modulator(encoded_codeword)
     compare = hard_decision(torch.sign(compare), device)
@@ -109,20 +109,22 @@ def ECCT_Training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
 
 
 def main():
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.cuda.is_available()
-                    else torch.device("cpu")))
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.cuda.is_available()
+    #                 else torch.device("cpu")))
     device = torch.device("cpu")
 
     NN_type = "ECCT"
     nr_codeword = int(1e6)
-    bits = 4
-    encoded = 7
-    encoding_method = "Hamming" # "Hamming", "Parity", "BCH",
-    n_decoder = 6
-    n_head = 8
-    dropout = 0
+    bits = 51
+    encoded = 63
+    encoding_method = "BCH" # "Hamming", "Parity", "BCH",
+
+    n_decoder = 6 # decoder iteration times
+    n_head = 8 # head number
+    dropout = 0 # dropout rate
     d_model = 16 # model embedding dimension
+
     epochs = 1000
     learning_rate = 0.001
     batch_size = 16
