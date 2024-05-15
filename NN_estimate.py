@@ -202,10 +202,10 @@ def estimation_NN(num, method, bits, encoded, NN_type, metric, SNR_opt_NN, NN_hi
 
 
 def main():
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #           else (torch.device("cuda") if torch.cuda.is_available()
-    #                 else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+              else (torch.device("cuda") if torch.cuda.is_available()
+                    else torch.device("cpu")))
+    # device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters
@@ -216,8 +216,8 @@ def main():
     encoding_method = "Hamming"  # "Hamming", "Parity", "BCH"
     NeuralNetwork_type = ["MLNN"] # ["SLNN", "MLNN"]
     batch_size = int(1e4)
-    # SLNN_hidden_size1 = [24] # [20, 21, 22, 23, 24, 25, 26, 27, 28]
-    # SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
+    SLNN_hidden_size1 = [24] # [20, 21, 22, 23, 24, 25, 26, 27, 28]
+    SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     MLNN_hidden_size1 = [16]
     MLNN_hidden_size2 = [[50,50], [100, 100]]
 
@@ -228,21 +228,21 @@ def main():
     # For trained and deleted model
     for NN_type in NeuralNetwork_type:
         for metric in metrics:
-            # if NN_type == "SLNN":
-                # for i in range(len(SLNN_hidden_size1)):
-                #     model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}.pth" # Normal
-                #     result_NN = estimation_SLNN1(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size1[i], model_pth, result_save, batch_size, device)
-                #
-                #     # directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}" # Normal NN
-                #     directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}_retrained"
-                #
-                #     # Create the directory if it doesn't exist
-                #     if not os.path.exists(directory_path):
-                #         os.makedirs(directory_path)
-                #
-                #     csv_filename = f"{metric}_{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}.csv"
-                #     full_csv_path = os.path.join(directory_path, csv_filename)
-                #     np.savetxt(full_csv_path, result_NN, delimiter=', ')
+            if NN_type == "SLNN":
+                for i in range(len(SLNN_hidden_size1)):
+                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}.pth" # Normal
+                    result_NN = estimation_SLNN1(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size1[i], model_pth, result_save, batch_size, device)
+
+                    # directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}" # Normal NN
+                    directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}_retrained"
+
+                    # Create the directory if it doesn't exist
+                    if not os.path.exists(directory_path):
+                        os.makedirs(directory_path)
+
+                    csv_filename = f"{metric}_{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}.csv"
+                    full_csv_path = os.path.join(directory_path, csv_filename)
+                    np.savetxt(full_csv_path, result_NN, delimiter=', ')
 
             if NN_type == "MLNN":
                 for MLNN_hidden_size in MLNN_hidden_size1:
@@ -259,53 +259,53 @@ def main():
                     full_csv_path = os.path.join(directory_path, csv_filename)
                     np.savetxt(full_csv_path, result_NN, delimiter=', ')
 
-    # for NN_type in NeuralNetwork_type:
-    #     for metric in metrics:
-    #         if NN_type == "SLNN":
-    #             for i in range(len(SLNN_hidden_size1)):
-    #                 # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}.pth" # Normal
-    #                 model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/Parity_26_ft_{device}/{NN_type}_edgedeleted{edge_deleted}_trained.pth"  # Normal NN
-    #                 result_NN = estimation_SLNN1(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size1[i], model_pth, result_save, batch_size, device)
-    #
-    #                 # directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}" # Normal NN
-    #                 directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}_retrained"
-    #
-    #                 # Create the directory if it doesn't exist
-    #                 if not os.path.exists(directory_path):
-    #                     os.makedirs(directory_path)
-    #
-    #                 csv_filename = f"{metric}_{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}.csv"
-    #                 full_csv_path = os.path.join(directory_path, csv_filename)
-    #                 np.savetxt(full_csv_path, result_NN, delimiter=', ')
-    #
-    #             for j in range(len(SLNN_hidden_size2)):
-    #                 model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size2[j]}.pth"
-    #                 result_NN = estimation_NN(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size2[j], model_pth, result_save, batch_size, device)
-    #
-    #                 directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
-    #
-    #                 # Create the directory if it doesn't exist
-    #                 if not os.path.exists(directory_path):
-    #                     os.makedirs(directory_path)
-    #
-    #                 csv_filename = f"{metric}_{NN_type}_hiddenlayer{SLNN_hidden_size2[j]}.csv"
-    #                 full_csv_path = os.path.join(directory_path, csv_filename)
-    #                 np.savetxt(full_csv_path, result_NN, delimiter=', ')
-    #
-    #         elif NN_type == "MLNN":
-    #             for k in range(len(MLNN_hidden_size2)):
-    #                 model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{MLNN_hidden_size2[k]}.pth"
-    #                 result_NN = estimation_NN(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, MLNN_hidden_size2[k], model_pth, result_save, batch_size, device)
-    #
-    #                 directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
-    #
-    #                 # Create the directory if it doesn't exist
-    #                 if not os.path.exists(directory_path):
-    #                     os.makedirs(directory_path)
-    #
-    #                 csv_filename = f"{metric}_{NN_type}_hiddenlayer{MLNN_hidden_size2[k]}.csv"
-    #                 full_csv_path = os.path.join(directory_path, csv_filename)
-    #                 np.savetxt(full_csv_path, result_NN, delimiter=', ')
+    for NN_type in NeuralNetwork_type:
+        for metric in metrics:
+            if NN_type == "SLNN":
+                for i in range(len(SLNN_hidden_size1)):
+                    # model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}.pth" # Normal
+                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/Parity_26_ft_{device}/{NN_type}_edgedeleted{edge_deleted}_trained.pth"  # Normal NN
+                    result_NN = estimation_SLNN1(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size1[i], model_pth, result_save, batch_size, device)
+
+                    # directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}" # Normal NN
+                    directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}_retrained"
+
+                    # Create the directory if it doesn't exist
+                    if not os.path.exists(directory_path):
+                        os.makedirs(directory_path)
+
+                    csv_filename = f"{metric}_{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}.csv"
+                    full_csv_path = os.path.join(directory_path, csv_filename)
+                    np.savetxt(full_csv_path, result_NN, delimiter=', ')
+
+                for j in range(len(SLNN_hidden_size2)):
+                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size2[j]}.pth"
+                    result_NN = estimation_NN(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, SLNN_hidden_size2[j], model_pth, result_save, batch_size, device)
+
+                    directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
+
+                    # Create the directory if it doesn't exist
+                    if not os.path.exists(directory_path):
+                        os.makedirs(directory_path)
+
+                    csv_filename = f"{metric}_{NN_type}_hiddenlayer{SLNN_hidden_size2[j]}.csv"
+                    full_csv_path = os.path.join(directory_path, csv_filename)
+                    np.savetxt(full_csv_path, result_NN, delimiter=', ')
+
+            elif NN_type == "MLNN":
+                for k in range(len(MLNN_hidden_size2)):
+                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{MLNN_hidden_size2[k]}.pth"
+                    result_NN = estimation_NN(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, MLNN_hidden_size2[k], model_pth, result_save, batch_size, device)
+
+                    directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
+
+                    # Create the directory if it doesn't exist
+                    if not os.path.exists(directory_path):
+                        os.makedirs(directory_path)
+
+                    csv_filename = f"{metric}_{NN_type}_hiddenlayer{MLNN_hidden_size2[k]}.csv"
+                    full_csv_path = os.path.join(directory_path, csv_filename)
+                    np.savetxt(full_csv_path, result_NN, delimiter=', ')
 
 
 if __name__ == "__main__":

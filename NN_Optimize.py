@@ -16,7 +16,7 @@ from Encode.Encoder import PCC_encoders
 
 def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size,
                   edge_delete, model_load_pth, model_save_path, model_name, patience, delta, mask, order, device):
-    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
+    encoder_matrix, _ = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
@@ -105,7 +105,7 @@ def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
             print("SLNN: Continue Training")
 
 def MLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, mask, device):
-    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
+    encoder_matrix, _ = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 

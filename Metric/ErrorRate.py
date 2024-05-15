@@ -41,7 +41,7 @@ def calculate_bler(predicted, target):
     error = 0.0
 
     # Calculate number of erroneous blocks
-    block_errors = torch.sum(predicted != target, dim=2)  # Count bit differences for each block
+    block_errors = torch.sum(predicted != target, dim=-1)  # Count bit differences for each block
     block_errors = (block_errors > 0).sum().item()  # Count blocks with at least one bit difference
 
     # Calculate total number of blocks, which is the size of the first dimension
