@@ -172,7 +172,7 @@ def main():
     # device = torch.device("cuda")
 
     NN_type = "ECCT"
-    nr_codeword = int(1e6)
+    nr_codeword = int(1e5)
     bits = 51
     encoded = 63
     encoding_method = "BCH" # "Hamming", "Parity", "BCH",

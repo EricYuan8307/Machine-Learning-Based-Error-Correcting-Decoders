@@ -18,7 +18,6 @@ def set_seed(seed=42):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
 
-
 class ECC_Dataset(data.Dataset):
     def __init__(self, code, sigma, len, device):
         self.code = code
@@ -114,16 +113,12 @@ def test(model, device, test_loader_list, EbNo_range_test, min_FER=100):
             ['{}: {:.2e}'.format(ebno, elem) for (elem, ebno)
              in
              (zip(test_loss_ber_list, EbNo_range_test))]))
-        print('Test -ln(BER) ' + ' '.join(
-            ['{}: {:.2e}'.format(ebno, -np.log(elem)) for (elem, ebno)
-             in
-             (zip(test_loss_ber_list, EbNo_range_test))]))
     return test_loss_list, test_loss_ber_list, test_loss_fer_list
 
 
 def main(args):
     code = args.code
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     #################################
     model = ECC_Transformer(args, dropout=0).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
@@ -176,8 +171,8 @@ if __name__ == '__main__':
 
     # model args
     parser.add_argument('--N_dec', type=int, default=6) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
-    parser.add_argument('--d_model', type=int, default=32) # Embedding dimension
-    parser.add_argument('--h', type=int, default=4) # multihead attention heads
+    parser.add_argument('--d_model', type=int, default=128) # Embedding dimension
+    parser.add_argument('--h', type=int, default=8) # multihead attention heads
 
     args = parser.parse_args()
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -188,10 +183,9 @@ if __name__ == '__main__':
     class Code():
         pass
     code = Code()
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #           else (torch.device("cuda") if torch.cuda.is_available()
-    #                 else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+              else (torch.device("cuda") if torch.cuda.is_available()
+                    else torch.device("cpu")))
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type
