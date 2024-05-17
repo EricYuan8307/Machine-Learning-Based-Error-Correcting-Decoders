@@ -15,7 +15,7 @@ from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 
 def SLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
-    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
+    encoder_matrix, _ = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
@@ -103,7 +103,7 @@ def SLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
             print(f"{NN_type}: Continue Training")
 
 def SLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
-    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
+    encoder_matrix, _ = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
@@ -365,7 +365,7 @@ def MLNN_training2(snr, method, nr_codeword, bits, encoded, epochs, learning_rat
             print(f"{NN_type}: Continue Training")
 
 def MLNN_training3(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, momentum, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
-    encoder_matrix, _, _ = all_codebook_NonML(method, bits, encoded, device)
+    encoder_matrix, _ = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
@@ -480,8 +480,8 @@ def main():
 
     # Early Stopping # Guess same number of your output
     patience = bits*2
-    # SLNN_patience = torch.pow(torch.tensor(2), bits)
-    # MLNN_patience = bits
+    SLNN_patience = torch.pow(torch.tensor(2), bits)
+    MLNN_patience = bits
     delta = 0.001
 
     for NN_type in NeuralNetwork_type:

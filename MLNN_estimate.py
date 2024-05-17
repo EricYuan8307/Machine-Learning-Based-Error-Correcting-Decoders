@@ -14,7 +14,7 @@ from Decode.Converter import MLNN_decision
 
 
 def MLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, batch_size, device):
-    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
+    encoder_matrix, _ = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 

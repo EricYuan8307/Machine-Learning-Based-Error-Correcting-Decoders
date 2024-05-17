@@ -14,7 +14,7 @@ from generating import all_codebook_NonML, SLNN_D2B_matrix
 from Encode.Encoder import PCC_encoders
 
 def SLNNDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, batch_size, device):
-    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
+    encoder_matrix, _ = all_codebook_NonML(method, bits, encoded, device)
     SLNN_Matrix = SLNN_D2B_matrix(bits, device)
 
     encoder = PCC_encoders(encoder_matrix)

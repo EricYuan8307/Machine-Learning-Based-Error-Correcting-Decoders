@@ -13,7 +13,7 @@ from generating import all_codebook_NonML
 from Encode.Encoder import PCC_encoders
 
 def MLNN_training1(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, model_save_path, model_name, NN_type, patience, delta, device):
-    encoder_matrix, decoder_matrix = all_codebook_NonML(method, bits, encoded, device)
+    encoder_matrix, _ = all_codebook_NonML(method, bits, encoded, device)
 
     encoder = PCC_encoders(encoder_matrix)
 
