@@ -16,7 +16,7 @@ from earlystopping import EarlyStopping
 from Metric.ErrorRate import calculate_ber, calculate_bler
 
 
-def ECCT_Training(model, std, method, nr_codeword, bits, encoded, learning_rate, batch_size, device):
+def ECCT_Training(model, std, method, nr_codeword, bits, encoded, learning_rate, batch_size, epoch, device):
     encoder_matrix, _ = all_codebook_NonML(method, bits, encoded, device)
     H = ParitycheckMatrix(encoded, bits, method, device).squeeze(0).T
 
@@ -49,7 +49,7 @@ def ECCT_Training(model, std, method, nr_codeword, bits, encoded, learning_rate,
         cum_samples += x.shape[0]
         if (batch_idx + 1) % 100 == 0 or batch_idx == len(ECCT_trainloader) - 1:
             print(
-                f'Batch {batch_idx + 1}/{len(ECCT_trainloader)}: learning rate={learning_rate:.2e}, '
+                f'Epoch:{epoch} Batch {batch_idx + 1}/{len(ECCT_trainloader)}: learning rate={learning_rate:.2e}, '
                 f'Loss={cum_loss / cum_samples:.2e} BER={cum_ber / cum_samples:.2e} BLER={cum_bler / cum_samples:.2e}')
     return cum_loss / cum_samples, cum_ber / cum_samples, cum_bler / cum_samples
 
@@ -144,7 +144,7 @@ def main():
     # device = torch.device("cuda")
 
     NN_type = "ECCT"
-    nr_codeword = int(1e2)
+    nr_codeword = int(1e6)
     bits = 51
     encoded = 63
     encoding_method = "BCH" # "Hamming", "Parity", "BCH",
@@ -178,16 +178,17 @@ def main():
 
 
     for epoch in range(1, epochs + 1):
-        loss, ber, bler = ECCT_Training(model, snr, encoding_method, nr_codeword, bits, encoded, learning_rate,batch_size, device)
+        loss, ber, bler = ECCT_Training(model, snr, encoding_method, nr_codeword, bits, encoded, learning_rate, batch_size, epoch, device)
         scheduler.step()
         if early_stopping(loss, model, model_save_path, model_name):
             print(f'{NN_type}: Early stopping')
-            print(f'{NN_type}: Stop at loss is {loss} and epoch is {epoch}')
+            print(f'{NN_type}: Stop at loss is {loss} and epoch is {epoch}, ber:{ber}, ber:{bler}')
             break
         else:
             print(f"{NN_type}: Continue Training")
-        test_loss_list, test_ber_list, test_bler_list = ECCT_testing(model, test_std_range, encoding_method,nr_codeword,
-                                                                     bits, encoded, test_batch_size, device, min_bler=100)
+        if epoch % 300 == 0 or epoch in [1, epochs]:
+            test_loss_list, test_ber_list, test_bler_list = ECCT_testing(model, test_std_range, encoding_method,
+                                                                         nr_codeword, bits, encoded, test_batch_size, device, min_bler=100)
 
 
 if __name__ == "__main__":
