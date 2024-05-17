@@ -7,23 +7,25 @@ from Decode.HardDecision import hard_decision # sign to binary
 from Encode.Modulator import bpsk_modulator
 import math
 
+def sign_to_bin(x):
+    return 0.5 * (1 - x) # 0.5*(x+1)
 
-class Embedding(nn.Module):
-    def __init__(self, encoded, d_model, parity_matrix, device):
-        super(Embedding, self).__init__()
-        self.device = device
-        self.parity = parity_matrix.squeeze(0)
-        self.src_embed = nn.Parameter(torch.empty((encoded + self.parity.size(0), d_model))).to(self.device)
-        nn.init.xavier_uniform_(self.src_embed)
-
-    def forward(self, noised_signal):
-        magnitude = torch.abs(noised_signal)
-        binary = hard_decision(torch.sign(noised_signal), self.device)
-        syndrome = torch.matmul(binary, self.parity.T) % 2
-        syndrome = bpsk_modulator(syndrome)
-        emb = torch.cat([magnitude, syndrome], -1).unsqueeze(-1)
-        emb = self.src_embed.unsqueeze(0) * emb
-        return emb
+# class Embedding(nn.Module):
+#     def __init__(self, encoded, d_model, parity_matrix, device):
+#         super(Embedding, self).__init__()
+#         self.device = device
+#         self.parity = parity_matrix.squeeze(0)
+#         self.src_embed = nn.Parameter(torch.empty((encoded + self.parity.size(0), d_model))).to(self.device)
+#         nn.init.xavier_uniform_(self.src_embed)
+#
+#     def forward(self, x):
+#         magnitude = torch.abs(x)
+#         binary = hard_decision(torch.sign(x), self.device)
+#         syndrome = torch.matmul(binary, self.parity.T) % 2
+#         syndrome = bpsk_modulator(syndrome)
+#         x = torch.cat([magnitude, syndrome], -1).unsqueeze(-1)
+#         x = self.src_embed.unsqueeze(0) * x
+#         return x
 
 def clones(module, N):
     return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
@@ -123,7 +125,8 @@ class ECC_Transformer(nn.Module):
         attn = MultiHeadedAttention(n_head, d_model, dropout, self.device)
         ff = PositionwiseFeedForward(d_model, d_model*4, dropout)
 
-        self.input_embed = Embedding(self.encoded, self.d_model, self.parity_matrix, self.device)
+        # self.input_embed = Embedding(self.encoded, self.d_model, self.parity_matrix, self.device)
+        self.src_embed = torch.nn.Parameter(torch.empty((encoded + pc_matrix.size(0), d_model)))
         self.encoderlayer = EncoderLayer(self.d_model, c(attn), c(ff), dropout)
         self.decoder = Decoder(self.encoderlayer, N_dec) # N_dec: encoder layers 复制次数
         self.oned_final_embed = torch.nn.Sequential(*[nn.Linear(self.d_model, 1)]) # make 32 channel to 1 channel. Convert to original channel
@@ -134,13 +137,18 @@ class ECC_Transformer(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
-    def forward(self, x):
-        x = self.input_embed(x)
-        x = self.encoderlayer(x, self.src_mask)
-        x = self.decoder(x, self.src_mask)
-        x = self.oned_final_embed(x).squeeze(-1)
-        x = self.out_fc(x)
-        return x
+    def forward(self, magnitude, syndrome):
+        emb = torch.cat([magnitude, syndrome], -1).unsqueeze(-1)
+        emb = self.src_embed.unsqueeze(0) * emb
+        emb = self.decoder(emb, self.src_mask)
+        emb = self.oned_final_embed(emb).squeeze(-1)
+        emb = self.out_fc(emb)
+        return emb
+
+    def loss(self, z_pred, z2, y):
+        loss = F.binary_cross_entropy_with_logits(z_pred, sign_to_bin(torch.sign(z2)))
+        x_pred = sign_to_bin(torch.sign(-z_pred * torch.sign(y)))
+        return loss, x_pred
 
     def get_mask(self, n, pc_matrix, no_mask=False):
         if no_mask:
@@ -154,7 +162,7 @@ class ECC_Transformer(nn.Module):
                 idx = torch.where(pc_matrix[ii] > 0)[0]
                 for jj in idx:
                     for kk in idx:
-                        if jj != kk: # < could decrease a little complexity
+                        if jj < kk: # < could decrease a little complexity
                             mask[jj, kk] += 1
                             mask[kk, jj] += 1
                             mask[n + ii, jj] += 1

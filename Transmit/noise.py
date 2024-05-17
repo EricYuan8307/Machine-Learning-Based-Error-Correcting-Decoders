@@ -7,3 +7,10 @@ def AWGN(signal, snr_dB, device):
     noised_signal = signal + noise
 
     return noised_signal
+
+def AWGN_ECCT(modulated_signal, std, device):
+    # Add Gaussian noise to the signal
+    noise = std * torch.randn(modulated_signal.shape, device=device)
+    noised_signal = modulated_signal + noise
+
+    return noised_signal
