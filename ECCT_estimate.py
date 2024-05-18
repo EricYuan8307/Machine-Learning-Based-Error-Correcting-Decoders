@@ -1,126 +1,154 @@
 import torch
-import numpy as np
+import argparse
+import random
 import os
-
-from Encode.Generator import generator_ECCT
-from Encode.Modulator import bpsk_modulator
-from Transmit.noise import AWGN
-from Metric.ErrorRate import calculate_ber, calculate_bler
-from Transmit.NoiseMeasure import NoiseMeasure, NoiseMeasure_BPSK
+from torch.utils.data import DataLoader
+from torch.utils import data
+from Transformer.Codes_article import *
 from generating import all_codebook_NonML
-from Encode.Encoder import PCC_encoders
-from Decode.HardDecision import hard_decision
-from Transformer.Model import ECC_Transformer
+
+from torch.optim.lr_scheduler import CosineAnnealingLR
+from Transformer.Model_article import ECC_Transformer
 from Codebook.CodebookMatrix import ParitycheckMatrix
+from earlystopping import EarlyStopping
 
-# Calculate the Error number and BLER
-def ECCTDecoder(nr_codeword, method, bits, encoded, snr_dB, model, model_pth, batch_size, device):
-    encoder_matrix, _ = all_codebook_NonML(method, bits, encoded, device)
 
-    encoder = PCC_encoders(encoder_matrix)
+def set_seed(seed=42):
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
 
-    bits_info = generator_ECCT(nr_codeword, bits, device)  # Code Generator
-    encoded_codeword = encoder(bits_info)  # Encoder
-    modulated_signal = bpsk_modulator(encoded_codeword)  # Modulate signal
-    noised_signal = AWGN(modulated_signal, snr_dB, device)  # Add Noise
 
-    practical_snr = NoiseMeasure(noised_signal, modulated_signal, bits, encoded)
+class ECC_Dataset(data.Dataset):
+    def __init__(self, code, sigma, len, device):
+        self.code = code
+        self.sigma = sigma
+        self.len = len
+        self.generator_matrix = code.generator_matrix.transpose(0, 1).to(device)
+        self.pc_matrix = code.pc_matrix.transpose(0, 1).to(device)
+        self.device = device
 
-    # use ECCT model:
+    def __len__(self):
+        return self.len
+
+    def __getitem__(self, index):
+        m = torch.randint(0, 2, (1, self.code.k), dtype=torch.float, device=self.device).squeeze()
+        x = torch.matmul(m, self.generator_matrix) % 2
+        ss = random.choice(self.sigma)
+        z = torch.randn(self.code.n, device=self.device) * ss
+        y = bin_to_sign(x) + z
+        magnitude = torch.abs(y)
+        syndrome = torch.matmul(sign_to_bin(torch.sign(y)), self.pc_matrix) % 2
+        syndrome = bin_to_sign(syndrome)
+        return m.float(), x.float(), z.float(), y.float(), magnitude.float(), syndrome.float()
+
+def test(model, device, test_loader_list, EbNo_range_test, model_pth, min_FER=100):
     model.eval()
     model.load_state_dict(torch.load(model_pth))
 
-    # Splitting the noised_signal into batches and processing each batch
-    num_batches = int(np.ceil(noised_signal.shape[0] / batch_size))
-    ECCT_final_batches = []
-    for i in range(num_batches):
-        batch_start = i * batch_size
-        batch_end = min((i + 1) * batch_size, noised_signal.shape[0])
-        noised_signal_batch = noised_signal[batch_start:batch_end]
+    test_loss_list, test_loss_ber_list, test_loss_fer_list, cum_samples_all = [], [], [], []
+    with torch.no_grad():
+        for ii, test_loader in enumerate(test_loader_list):
+            test_loss = test_ber = test_fer = cum_count = 0.
+            while True:
+                (m, x, z, y, magnitude, syndrome) = next(iter(test_loader))
+                z_mul = (y * bin_to_sign(x))
+                z_pred = model(magnitude.to(device), syndrome.to(device))
+                loss, x_pred = model.loss(-z_pred, z_mul.to(device), y.to(device))
 
-        ECCT_result_batch = model(noised_signal_batch)
-        ECCT_final_batches.append(ECCT_result_batch)
+                test_loss += loss.item() * x.shape[0]
 
-        if i % batch_size == 0 and i > 0:
-            print(f"ECCT Batch: Processed {i} batches out of {num_batches}")
-
-    # Concatenate the processed batches
-    ECCT_final = torch.cat(ECCT_final_batches, dim=0)
-    ECCT_final = hard_decision(torch.sign(ECCT_final*torch.sign(noised_signal)), device)
-
-    return ECCT_final, encoded_codeword, practical_snr
-
-def estimation_ECCT(num, method, bits, encoded, n_head, d_model, n_dec, NN_type, metric, SNR_opt_NN, model_pth, result, batch_size, dropout, device):
-    N = num
-    H = ParitycheckMatrix(encoded, bits, method, device).squeeze(0).T
-
-    # Single-label Neural Network:
-    for i in range(len(SNR_opt_NN)):
-        condition_met = False
-        iteration_count = 0  # Initialize iteration counter
-        max_iterations = 50
-
-        while not condition_met and iteration_count < max_iterations:
-            iteration_count += 1
-            model = ECC_Transformer(n_head, d_model, encoded, H, n_dec, dropout, device).to(device)
-            ECCT_final, encoded_codeword, snr_measure = ECCTDecoder(N, method, bits, encoded, SNR_opt_NN[i], model, model_pth, batch_size, device)
-
-            if metric == "BLER":
-                error_rate, error_num = calculate_bler(ECCT_final, encoded_codeword)
-            elif metric == "BER":
-                error_rate, error_num = calculate_ber(ECCT_final, encoded_codeword) # BER calculation
-
-            if error_num < 100:
-                N += int(1e7)
-                print(f"the code number is {N}")
-
-            else:
-                print(f"{NN_type}, Head Num:{n_head}, Encoding Dim:{d_model}: When SNR is {snr_measure} and signal number is {N}, error number is {error_num} and {metric} is {error_rate}")
-                result[0, i] = error_rate
-                condition_met = True
-
-    return result
+                test_ber += BER(x_pred, x.to(device)) * x.shape[0]
+                test_fer += FER(x_pred, x.to(device)) * x.shape[0]
+                cum_count += x.shape[0]
+                if (min_FER > 0 and test_fer > min_FER and cum_count > 1e5) or cum_count >= 1e9:
+                    if cum_count >= 1e9:
+                        print(f'Number of samples threshold reached for EbN0:{EbNo_range_test[ii]}')
+                    else:
+                        print(f'FER count threshold reached for EbN0:{EbNo_range_test[ii]}')
+                    break
+            cum_samples_all.append(cum_count)
+            test_loss_list.append(test_loss / cum_count)
+            test_loss_ber_list.append(test_ber / cum_count)
+            test_loss_fer_list.append(test_fer / cum_count)
+            print(f'Test EbN0={EbNo_range_test[ii]}, BER={test_loss_ber_list[-1]:.2e}')
+        ###
+        print('\nTest Loss ' + ' '.join(
+            ['{}: {:.2e}'.format(ebno, elem) for (elem, ebno)
+             in
+             (zip(test_loss_list, EbNo_range_test))]))
+        print('Test FER ' + ' '.join(
+            ['{}: {:.2e}'.format(ebno, elem) for (elem, ebno)
+             in
+             (zip(test_loss_fer_list, EbNo_range_test))]))
+        print('Test BER ' + ' '.join(
+            ['{}: {:.2e}'.format(ebno, elem) for (elem, ebno)
+             in
+             (zip(test_loss_ber_list, EbNo_range_test))]))
+        print('Test -ln(BER) ' + ' '.join(
+            ['{}: {:.2e}'.format(ebno, -np.log(elem)) for (elem, ebno)
+             in
+             (zip(test_loss_ber_list, EbNo_range_test))]))
+    return test_loss_list, test_loss_ber_list, test_loss_fer_list
 
 
-def main():
+def main(args):
+    code = args.code
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    #################################
+    model = ECC_Transformer(args, dropout=0).to(device)
+
+    EbNo_range_test = range(4, 7)
+    std_test = [EbN0_to_std(ii, code.k / code.n) for ii in EbNo_range_test]
+    test_dataloader_list = [DataLoader(ECC_Dataset(code, [std_test[ii]], int(args.test_batch_size), device),
+                                       batch_size=int(args.test_batch_size), shuffle=False) for ii in range(len(std_test))]
+
+    test_loss_list, test_loss_ber_list, test_loss_fer_list = test(model, device, test_dataloader_list, EbNo_range_test, args.model_pth)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='ECCT')
+    parser.add_argument('--model_type', type=str, default='ECCT')
+    parser.add_argument('--epochs', type=int, default=1000)
+    parser.add_argument('--lr', type=float, default=1e-4)
+    parser.add_argument('--gpus', type=str, default='-1', help='gpus ids')
+    parser.add_argument('--batch_size', type=int, default=128)
+    parser.add_argument('--test_batch_size', type=int, default=2048)
+    parser.add_argument('--seed', type=int, default=42)
+    parser.add_argument('--patience', type=int, default=10)
+    parser.add_argument('--delta', type=float, default=0.001)
+
+    # Code args
+    parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
+    parser.add_argument('--code_k', type=int, default=51)
+    parser.add_argument('--code_n', type=int, default=63)
+    parser.add_argument('--standardize', action='store_true')
+
+    # model args
+    parser.add_argument('--N_dec', type=int, default=6) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
+    parser.add_argument('--d_model', type=int, default=128) # Embedding dimension
+    parser.add_argument('--h', type=int, default=8) # multihead attention heads
+
+    args = parser.parse_args()
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
+    set_seed(args.seed)
+    ####################################################################
+
+    class Code():
+        pass
+    code = Code()
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    # device = torch.device("cpu")
-    device = torch.device("cuda")
+    device = torch.device("cpu")
+    code.k = args.code_k
+    code.n = args.code_n
+    code.code_type = args.code_type
+    code.generator_matrix, _ = all_codebook_NonML(args.code_type, args.code_k, args.code_n, device)
+    code.pc_matrix = ParitycheckMatrix(args.code_n, args.code_k, args.code_type, device).squeeze(0).T
+    args.code = code
 
-    # Hyperparameters
-    metrics = ["BER"] # ["BER", "BLER"]
-    nr_codeword = int(1e2)
-    bits = 51
-    encoded = 63
-    encoding_method = "BCH"  # "Hamming", "Parity", "BCH"
-    NN_type = "ECCT"
-    batch_size = 16
+    args.model_pth = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_{device}/{args.model_type}_h{args.h}_d{args.d_model}.pth"
 
-    n_decoder = 6  # decoder iteration times
-    n_head = 8  # head number
-    dropout = 0  # dropout rate
-    d_model = 128  # input embedding dimension
-
-    SNR_opt_NN = torch.arange(0, 8.5, 0.5).to(device)
-    SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
-    result_save = np.zeros((1, len(SNR_opt_NN)))
-
-    # trained and deleted model
-    for metric in metrics:
-        model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_h{n_head}_d{d_model}.pth"
-        result_NN = estimation_ECCT(nr_codeword, encoding_method, bits, encoded, n_head, d_model, n_decoder, NN_type, metric,
-                                SNR_opt_NN, model_pth, result_save, batch_size, dropout, device)
-        directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
-
-        # Create the directory if it doesn't exist
-        if not os.path.exists(directory_path):
-            os.makedirs(directory_path)
-
-        csv_filename = f"{metric}_{NN_type}_h{n_head}_d{d_model}.csv"
-        full_csv_path = os.path.join(directory_path, csv_filename)
-        np.savetxt(full_csv_path, result_NN, delimiter=', ')
-
-if __name__ == "__main__":
-    main()
+    main(args)
