@@ -94,8 +94,6 @@ def test(model, device, test_loader_list, EbNo_range_test, model_pth, min_FER=10
 
 def main(args):
     code = args.code
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    #################################
     model = ECC_Transformer(args, dropout=0).to(device)
 
     EbNo_range_test = range(4, 7)
