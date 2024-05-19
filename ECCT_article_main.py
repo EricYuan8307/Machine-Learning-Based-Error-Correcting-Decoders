@@ -147,7 +147,7 @@ def main(args):
         else:
             print(f"{args.model_type}_h{args.h}_d{args.d_model}: Continue Training")
 
-        if epoch % 300 == 0 or epoch in [1, args.epochs]:
+        if epoch % 30 == 0 or epoch in [1, args.epochs]:
             test(model, device, test_dataloader_list, EbNo_range_test)
 
 
@@ -160,8 +160,8 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--test_batch_size', type=int, default=2048)
     parser.add_argument('--seed', type=int, default=42)
-    parser.add_argument('--patience', type=int, default=100)
-    parser.add_argument('--delta', type=float, default=0.001)
+    parser.add_argument('--patience', type=int, default=450)
+    parser.add_argument('--delta', type=float, default=0.0001)
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
@@ -183,9 +183,10 @@ if __name__ == '__main__':
     class Code():
         pass
     code = Code()
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.cuda.is_available()
-                    else torch.device("cpu")))
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.cuda.is_available()
+    #                 else torch.device("cpu")))
+    device = torch.device("cpu")
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type

@@ -7,10 +7,8 @@ from torch.utils import data
 from Transformer.Codes_article import *
 from generating import all_codebook_NonML
 
-from torch.optim.lr_scheduler import CosineAnnealingLR
 from Transformer.Model_article import ECC_Transformer
 from Codebook.CodebookMatrix import ParitycheckMatrix
-from earlystopping import EarlyStopping
 
 
 def set_seed(seed=42):
@@ -85,10 +83,6 @@ def test(model, device, test_loader_list, EbNo_range_test, model_pth, min_FER=10
             ['{}: {:.2e}'.format(ebno, elem) for (elem, ebno)
              in
              (zip(test_loss_ber_list, EbNo_range_test))]))
-        print('Test -ln(BER) ' + ' '.join(
-            ['{}: {:.2e}'.format(ebno, -np.log(elem)) for (elem, ebno)
-             in
-             (zip(test_loss_ber_list, EbNo_range_test))]))
     return test_loss_list, test_loss_ber_list, test_loss_fer_list
 
 
@@ -96,7 +90,7 @@ def main(args):
     code = args.code
     model = ECC_Transformer(args, dropout=0).to(device)
 
-    EbNo_range_test = range(4, 7)
+    EbNo_range_test = range(1, 7)
     std_test = [EbN0_to_std(ii, code.k / code.n) for ii in EbNo_range_test]
     test_dataloader_list = [DataLoader(ECC_Dataset(code, [std_test[ii]], int(args.test_batch_size), device),
                                        batch_size=int(args.test_batch_size), shuffle=False) for ii in range(len(std_test))]
