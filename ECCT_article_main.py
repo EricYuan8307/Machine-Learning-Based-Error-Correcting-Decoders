@@ -121,7 +121,7 @@ def main(args):
     # logging.info(model)
     # logging.info(f'# of Parameters: {np.sum([np.prod(p.shape) for p in model.parameters()])}')
 
-    EbNo_range_test = range(4, 7)
+    EbNo_range_test = range(1, 8)
     EbNo_range_train = range(2, 8)
     std_train = [EbN0_to_std(ii, code.k / code.n) for ii in EbNo_range_train]
     std_test = [EbN0_to_std(ii, code.k / code.n) for ii in EbNo_range_test]
