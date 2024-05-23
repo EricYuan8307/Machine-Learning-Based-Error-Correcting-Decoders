@@ -139,14 +139,15 @@ def main(args):
         loss, ber, fer = train(model, device, train_dataloader, optimizer,
                                epoch, LR=scheduler.get_last_lr()[0])
         scheduler.step()
-        # Early Stopping
-        if early_stopping(loss, model, args.model_path, args.model_name):
-            print(f'{args.model_type}: Early stopping')
-            print(f'{args.model_type}_h{args.h}_d{args.d_model}: Stop at loss is {loss} and epoch is {epoch}')
-            break
+        if loss < best_loss:
+            best_loss = loss
+            torch.save(model.state_dict(), os.path.join(args.model_path, f"{args.model_name}.pth"))
+            print(f"best model save: Loss={loss:.2e} BER={ber:.2e} FER={fer:.2e}")
         else:
-            print(f"{args.model_type}_h{args.h}_d{args.d_model}: Continue Training")
+            print("continue training")
 
+            # os.makedirs(args.model_path, exist_ok=True)
+            # torch.save(model.state_dict(), f"{args.model_path}{args.model_name}.pth")
         if epoch % 30 == 0 or epoch in [1, args.epochs]:
             test(model, device, test_dataloader_list, EbNo_range_test)
 
