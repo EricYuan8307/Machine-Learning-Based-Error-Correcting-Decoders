@@ -15,6 +15,34 @@ from Encode.Encoder import PCC_encoders
 from earlystopping import EarlyStopping
 from Metric.ErrorRate import calculate_ber, calculate_bler
 
+def BER(x_pred, x_gt):
+    return torch.mean((x_pred != x_gt).float()).item()
+
+def BLER(x_pred, x_gt):
+    return torch.mean(torch.any(x_pred != x_gt, dim=1).float()).item()
+
+def train(model, train_loader, optimizer, epoch, LR, device):
+    model.train()
+    cum_loss = cum_ber = cum_fer = cum_samples = 0
+    for batch_idx, (m, x, y, magnitude, syndrome) in enumerate(train_loader):
+        z_mul = (y * bpsk_modulator(x))
+        z_pred = model(magnitude.to(device), syndrome.to(device))
+        loss, x_pred = model.loss(-z_pred, z_mul.to(device), y.to(device))
+        model.zero_grad()
+        loss.backward()
+        optimizer.step()
+        ###
+        ber = BER(x_pred, x.to(device))
+        BLER = calculate_bler(x_pred, x.to(device))
+
+        cum_loss += loss.item() * x.shape[0]
+        cum_ber += ber * x.shape[0]
+        cum_fer += BLER * x.shape[0]
+        cum_samples += x.shape[0]
+        if (batch_idx+1) % 100 == 0 or batch_idx == len(train_loader) - 1:
+            print(
+                f'Training epoch {epoch}, Batch {batch_idx + 1}/{len(train_loader)}: learning rate={LR:.2e}, Loss={cum_loss / cum_samples:.2e} BER={cum_ber / cum_samples:.2e} FER={cum_fer / cum_samples:.2e}')
+    return cum_loss / cum_samples, cum_ber / cum_samples, cum_fer / cum_samples
 
 def ECCT_Training(model, std, method, nr_codeword, bits, encoded, learning_rate, batch_size, epoch, device):
     encoder_matrix, _ = all_codebook_NonML(method, bits, encoded, device)
@@ -137,14 +165,14 @@ def set_seed(seed=42):
 def main():
     set_seed(42)
 
-    device = (torch.device("mps") if torch.backends.mps.is_available()
-              else (torch.device("cuda") if torch.cuda.is_available()
-                    else torch.device("cpu")))
-    # device = torch.device("cpu")
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.cuda.is_available()
+    #                 else torch.device("cpu")))
+    device = torch.device("cpu")
     # device = torch.device("cuda")
 
     NN_type = "ECCT"
-    nr_codeword = int(1e6)
+    nr_codeword = int(1e5)
     bits = 51
     encoded = 63
     encoding_method = "BCH" # "Hamming", "Parity", "BCH",
