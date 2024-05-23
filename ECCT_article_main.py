@@ -2,6 +2,7 @@ import torch
 import argparse
 import random
 import os
+import logging
 from torch.utils.data import DataLoader
 from torch.utils import data
 from Transformer.Codes_article import *
@@ -10,7 +11,6 @@ from generating import all_codebook_NonML
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from Transformer.Model_article import ECC_Transformer
 from Codebook.CodebookMatrix import ParitycheckMatrix
-from earlystopping import EarlyStopping
 
 
 def set_seed(seed=42):
@@ -42,9 +42,6 @@ class ECC_Dataset(data.Dataset):
         return m.float(), x.float(), z.float(), y.float(), magnitude.float(), syndrome.float()
 
 
-##################################################################
-##################################################################
-
 def train(model, device, train_loader, optimizer, epoch, LR):
     model.train()
     cum_loss = cum_ber = cum_fer = cum_samples = 0
@@ -55,7 +52,7 @@ def train(model, device, train_loader, optimizer, epoch, LR):
         model.zero_grad()
         loss.backward()
         optimizer.step()
-        ###
+
         ber = BER(x_pred, x.to(device))
         fer = FER(x_pred, x.to(device))
 
@@ -66,11 +63,8 @@ def train(model, device, train_loader, optimizer, epoch, LR):
         if (batch_idx + 1) % 100 == 0 or batch_idx == len(train_loader) - 1:
             print(
                 f'Training epoch {epoch}, Batch {batch_idx + 1}/{len(train_loader)}: LR={LR:.2e}, Loss={cum_loss / cum_samples:.2e} BER={cum_ber / cum_samples:.2e} FER={cum_fer / cum_samples:.2e}')
-    # logging.info(f'Epoch {epoch} Train Time {time.time() - t}s\n')
     return cum_loss / cum_samples, cum_ber / cum_samples, cum_fer / cum_samples
 
-
-##################################################################
 
 def test(model, device, test_loader_list, EbNo_range_test, min_FER=100):
     model.eval()
@@ -123,7 +117,9 @@ def main(args):
     model = ECC_Transformer(args, dropout=0).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
-    early_stopping = EarlyStopping(args.patience, args.delta)
+
+    # logging.info(model)
+    # logging.info(f'# of Parameters: {np.sum([np.prod(p.shape) for p in model.parameters()])}')
 
     EbNo_range_test = range(4, 7)
     EbNo_range_train = range(2, 8)
@@ -146,8 +142,6 @@ def main(args):
         else:
             print("continue training")
 
-            # os.makedirs(args.model_path, exist_ok=True)
-            # torch.save(model.state_dict(), f"{args.model_path}{args.model_name}.pth")
         if epoch % 30 == 0 or epoch in [1, args.epochs]:
             test(model, device, test_dataloader_list, EbNo_range_test)
 
