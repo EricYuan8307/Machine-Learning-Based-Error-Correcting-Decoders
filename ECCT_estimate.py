@@ -90,7 +90,7 @@ def main(args):
     code = args.code
     model = ECC_Transformer(args, dropout=0).to(device)
 
-    EbNo_range_test = range(1, 7)
+    EbNo_range_test = range(1, 8)
     std_test = [EbN0_to_std(ii, code.k / code.n) for ii in EbNo_range_test]
     test_dataloader_list = [DataLoader(ECC_Dataset(code, [std_test[ii]], int(args.test_batch_size), device),
                                        batch_size=int(args.test_batch_size), shuffle=False) for ii in range(len(std_test))]
