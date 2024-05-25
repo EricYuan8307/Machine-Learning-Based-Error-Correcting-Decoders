@@ -121,8 +121,8 @@ def main(args):
     # logging.info(model)
     # logging.info(f'# of Parameters: {np.sum([np.prod(p.shape) for p in model.parameters()])}')
 
-    EbNo_range_test = range(1, 8)
-    EbNo_range_train = range(2, 8)
+    EbNo_range_test = range(0, 7)
+    EbNo_range_train = range(0, 1)
     std_train = [EbN0_to_std(ii, code.k / code.n) for ii in EbNo_range_train]
     std_test = [EbN0_to_std(ii, code.k / code.n) for ii in EbNo_range_test]
     ECC_dataset = ECC_Dataset(code, std_train, args.batch_size * 1000, device)
@@ -190,7 +190,7 @@ if __name__ == '__main__':
     args.code = code
 
     args.model_path = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_{device}/"
-    args.model_name = f"{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}"
+    args.model_name = f"{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}_snr0"
 
     os.makedirs(args.model_path, exist_ok=True)
 
