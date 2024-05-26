@@ -4,11 +4,11 @@ import random
 import os
 from torch.utils.data import DataLoader
 from torch.utils import data
-from Transformer.Codes_article import *
+from Transformer.Functions import *
 from generating import all_codebook_NonML
 
 from torch.optim.lr_scheduler import CosineAnnealingLR
-from Transformer.Model_article import ECC_Transformer
+from Transformer.Model import ECC_Transformer
 from Codebook.CodebookMatrix import ParitycheckMatrix
 
 
@@ -114,6 +114,7 @@ def main(args):
 
     #################################
     model = ECC_Transformer(args, dropout=0).to(device)
+    model.load_state_dict(torch.load(args.model_load_pth))
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
 
@@ -188,6 +189,7 @@ if __name__ == '__main__':
     code.pc_matrix = ParitycheckMatrix(args.code_n, args.code_k, args.code_type, device).squeeze(0).T
     args.code = code
 
+    args.model_load_pth = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_{device}/{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}.pth"
     args.model_path = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_{device}/"
     args.model_name = f"{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}"
 

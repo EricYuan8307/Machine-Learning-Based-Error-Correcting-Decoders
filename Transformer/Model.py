@@ -2,37 +2,19 @@ from torch.nn import LayerNorm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import copy
-from Decode.HardDecision import hard_decision # sign to binary
-from Encode.Modulator import bpsk_modulator
 import math
+import copy
+import logging
 
 def sign_to_bin(x):
-    return 0.5 * (1 - x) # 0.5*(x+1)
-
-# class Embedding(nn.Module):
-#     def __init__(self, encoded, d_model, parity_matrix, device):
-#         super(Embedding, self).__init__()
-#         self.device = device
-#         self.parity = parity_matrix.squeeze(0)
-#         self.src_embed = nn.Parameter(torch.empty((encoded + self.parity.size(0), d_model))).to(self.device)
-#         nn.init.xavier_uniform_(self.src_embed)
-#
-#     def forward(self, x):
-#         magnitude = torch.abs(x)
-#         binary = hard_decision(torch.sign(x), self.device)
-#         syndrome = torch.matmul(binary, self.parity.T) % 2
-#         syndrome = bpsk_modulator(syndrome)
-#         x = torch.cat([magnitude, syndrome], -1).unsqueeze(-1)
-#         x = self.src_embed.unsqueeze(0) * x
-#         return x
+    return 0.5 * (1 - x)
 
 def clones(module, N):
     return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
 
-class Decoder(nn.Module):
+class Encoder(nn.Module):
     def __init__(self, layer, N):
-        super(Decoder, self).__init__()
+        super(Encoder, self).__init__()
         self.layers = clones(layer, N)
         self.norm = LayerNorm(layer.size)
         if N > 1:
@@ -45,18 +27,14 @@ class Decoder(nn.Module):
                 x = self.norm2(x)
         return self.norm(x)
 
-class SublayerConnection(nn.Module): # Residual NN for MH-Sa and Feed Fwd output place and Norm Function
+class SublayerConnection(nn.Module):
     def __init__(self, size, dropout):
         super(SublayerConnection, self).__init__()
         self.norm = LayerNorm(size)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, sublayer):
-        x0 = self.norm(x)
-        x0 = sublayer(x0)
-        x0 = self.dropout(x0)
-        x0 = x0 + x
-        return x0
+        return x + self.dropout(sublayer(self.norm(x))) # Residual NN for MH-Sa and Feed Fwd output place
 
 class EncoderLayer(nn.Module):
     def __init__(self, size, self_attn, feed_forward, dropout):
@@ -71,7 +49,7 @@ class EncoderLayer(nn.Module):
         return self.sublayer[1](x, self.feed_forward)
 
 class MultiHeadedAttention(nn.Module):
-    def __init__(self, h, d_model, dropout, device):
+    def __init__(self, h, d_model, dropout=0.1):
         super(MultiHeadedAttention, self).__init__()
         assert d_model % h == 0 # embedding dimension must be divisible by number of heads
         self.d_k = d_model // h
@@ -79,22 +57,22 @@ class MultiHeadedAttention(nn.Module):
         self.linears = clones(nn.Linear(d_model, d_model), 4)
         self.attn = None
         self.dropout = nn.Dropout(p=dropout)
-        self.device = device
 
-    def forward(self, query, key, value, mask):
+    def forward(self, query, key, value, mask=None):
         nbatches = query.size(0)
         query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
              for l, x in zip(self.linears, (query, key, value))]
 
-        x, self.attn = self.attention(query, key, value, mask)
+        x, self.attn = self.attention(query, key, value, mask=mask)
+
         x = x.transpose(1, 2).contiguous().view(nbatches, -1, self.h * self.d_k)
         return self.linears[-1](x)
 
-    def attention(self, query, key, value, mask):
+    def attention(self, query, key, value, mask=None):
         d_k = query.size(-1)
         scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
         if mask is not None:
-            scores = scores.masked_fill(mask, torch.tensor(-1e9, dtype=torch.float, device=self.device))
+            scores = scores.masked_fill(mask, -1e9)
         p_attn = F.softmax(scores, dim=-1)
         if self.dropout is not None:
             p_attn = self.dropout(p_attn)
@@ -108,31 +86,26 @@ class PositionwiseFeedForward(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
-        x = F.gelu(self.w_1(x))
-        x = self.dropout(x)
-        x = self.w_2(x)
-        return x
+        return self.w_2(self.dropout(F.gelu(self.w_1(x))))
+
 
 class ECC_Transformer(nn.Module):
-    def __init__(self, n_head, d_model, encoded, pc_matrix, N_dec, dropout, device):
+    def __init__(self, args, dropout=0):
         super(ECC_Transformer, self).__init__()
-        self.d_model = d_model
-        self.parity_matrix = pc_matrix
-        self.encoded = encoded
-        self.device = device
-
+        ####
+        code = args.code
         c = copy.deepcopy
-        attn = MultiHeadedAttention(n_head, d_model, dropout, self.device)
-        ff = PositionwiseFeedForward(d_model, d_model*4, dropout)
+        attn = MultiHeadedAttention(args.h, args.d_model)
+        ff = PositionwiseFeedForward(args.d_model, args.d_model*4, dropout)
 
-        # self.input_embed = Embedding(self.encoded, self.d_model, self.parity_matrix, self.device)
-        self.src_embed = torch.nn.Parameter(torch.empty((encoded + pc_matrix.size(0), d_model)))
-        self.encoderlayer = EncoderLayer(self.d_model, c(attn), c(ff), dropout)
-        self.decoder = Decoder(self.encoderlayer, N_dec) # N_dec: encoder layers 复制次数
-        self.oned_final_embed = torch.nn.Sequential(*[nn.Linear(self.d_model, 1)]) # make 32 channel to 1 channel. Convert to original channel
-        self.out_fc = nn.Linear(self.encoded + self.parity_matrix.size(0), self.encoded) # Convert 10(7+3) to 7(encoded codeword)
+        self.src_embed = torch.nn.Parameter(torch.empty((code.n + code.pc_matrix.size(0), args.d_model)))
+        self.decoder = Encoder(EncoderLayer(args.d_model, c(attn), c(ff), dropout), args.N_dec) # N_dec: encoder layers 复制次数
+        self.oned_final_embed = torch.nn.Sequential(*[nn.Linear(args.d_model, 1)]) # make 32 channel to 1 channel. Convert to original channel
+        self.out_fc = nn.Linear(code.n + code.pc_matrix.size(0), code.n) # Convert 10(7+3) to 7(encoded codeword)
 
-        self.src_mask = self.get_mask(self.encoded, self.parity_matrix)
+        self.get_mask(code)
+        print(f'Mask:\n {self.src_mask}')
+
         for p in self.parameters():
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
@@ -141,33 +114,35 @@ class ECC_Transformer(nn.Module):
         emb = torch.cat([magnitude, syndrome], -1).unsqueeze(-1)
         emb = self.src_embed.unsqueeze(0) * emb
         emb = self.decoder(emb, self.src_mask)
-        emb = self.oned_final_embed(emb).squeeze(-1)
-        emb = self.out_fc(emb)
-        return emb
+        return self.out_fc(self.oned_final_embed(emb).squeeze(-1))
 
     def loss(self, z_pred, z2, y):
         loss = F.binary_cross_entropy_with_logits(z_pred, sign_to_bin(torch.sign(z2)))
         x_pred = sign_to_bin(torch.sign(-z_pred * torch.sign(y)))
         return loss, x_pred
 
-    def get_mask(self, n, pc_matrix, no_mask=False):
+    def get_mask(self, code, no_mask=False):
         if no_mask:
             self.src_mask = None
             return
 
-        def build_mask(n, pc_matrix):
-            mask_size = n + pc_matrix.size(0)
+        def build_mask(code):
+            mask_size = code.n + code.pc_matrix.size(0)
             mask = torch.eye(mask_size, mask_size)
-            for ii in range(pc_matrix.size(0)):
-                idx = torch.where(pc_matrix[ii] > 0)[0]
+            for ii in range(code.pc_matrix.size(0)):
+                idx = torch.where(code.pc_matrix[ii] > 0)[0]
                 for jj in idx:
                     for kk in idx:
                         if jj < kk: # < could decrease a little complexity
                             mask[jj, kk] += 1
                             mask[kk, jj] += 1
-                            mask[n + ii, jj] += 1
-                            mask[jj, n + ii] += 1
+                            mask[code.n + ii, jj] += 1
+                            mask[jj, code.n + ii] += 1
             src_mask = ~ (mask > 0).unsqueeze(0).unsqueeze(0)
             return src_mask
-        src_mask = build_mask(n, pc_matrix).to(self.device)
-        return src_mask
+        src_mask = build_mask(code)
+        self.register_buffer('src_mask', src_mask)
+
+
+if __name__ == '__main__':
+    pass
