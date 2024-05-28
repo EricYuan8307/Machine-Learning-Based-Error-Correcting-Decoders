@@ -154,8 +154,6 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--test_batch_size', type=int, default=2048)
     parser.add_argument('--seed', type=int, default=42)
-    parser.add_argument('--patience', type=int, default=450)
-    parser.add_argument('--delta', type=float, default=0.0001)
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
@@ -166,7 +164,7 @@ if __name__ == '__main__':
     # model args
     parser.add_argument('--N_dec', type=int, default=6) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
     parser.add_argument('--d_model', type=int, default=128) # Embedding dimension
-    parser.add_argument('--h', type=int, default=8) # multihead attention heads
+    parser.add_argument('--h', type=int, default=16) # multihead attention heads
 
     args = parser.parse_args()
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"

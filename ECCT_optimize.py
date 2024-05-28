@@ -118,9 +118,6 @@ def main(args):
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
 
-    # logging.info(model)
-    # logging.info(f'# of Parameters: {np.sum([np.prod(p.shape) for p in model.parameters()])}')
-
     EbNo_range_test = range(4, 7)
     EbNo_range_train = range(2, 8)
     std_train = [EbN0_to_std(ii, code.k / code.n) for ii in EbNo_range_train]
@@ -150,7 +147,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ECCT')
     parser.add_argument('--model_type', type=str, default='ECCT')
     parser.add_argument('--epochs', type=int, default=1000)
-    parser.add_argument('--lr', type=float, default=1e-4)
+    parser.add_argument('--lr', type=float, default=5e-7)
     parser.add_argument('--gpus', type=str, default='-1', help='gpus ids')
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--test_batch_size', type=int, default=2048)

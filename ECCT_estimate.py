@@ -11,12 +11,6 @@ from Transformer.Model_article import ECC_Transformer
 from Codebook.CodebookMatrix import ParitycheckMatrix
 
 
-def set_seed(seed=42):
-    random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-
-
 class ECC_Dataset(data.Dataset):
     def __init__(self, code, sigma, len, device):
         self.code = code
@@ -90,7 +84,7 @@ def main(args):
     code = args.code
     model = ECC_Transformer(args, dropout=0).to(device)
 
-    EbNo_range_test = range(0, 8)
+    EbNo_range_test = range(4, 8)
     std_test = [EbN0_to_std(ii, code.k / code.n) for ii in EbNo_range_test]
     test_dataloader_list = [DataLoader(ECC_Dataset(code, [std_test[ii]], int(args.test_batch_size), device),
                                        batch_size=int(args.test_batch_size), shuffle=False) for ii in range(len(std_test))]
@@ -104,9 +98,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=1000)
     parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--gpus', type=str, default='-1', help='gpus ids')
-    parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--test_batch_size', type=int, default=2048)
-    parser.add_argument('--seed', type=int, default=42)
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
@@ -122,8 +114,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
-    set_seed(args.seed)
-    ####################################################################
 
     class Code():
         pass
