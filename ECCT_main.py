@@ -164,7 +164,7 @@ if __name__ == '__main__':
     # model args
     parser.add_argument('--N_dec', type=int, default=6) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
     parser.add_argument('--d_model', type=int, default=128) # Embedding dimension
-    parser.add_argument('--h', type=int, default=16) # multihead attention heads
+    parser.add_argument('--h', type=int, default=4) # multihead attention heads
 
     args = parser.parse_args()
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
