@@ -7,7 +7,7 @@ import copy
 import logging
 
 def sign_to_bin(x):
-    return 0.5 * (1 - x) # 0.5*(x+1)
+    return 0.5 * (1 - x)
 
 def clones(module, N):
     return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
@@ -93,8 +93,6 @@ class PositionwiseFeedForward(nn.Module):
     def forward(self, x):
         return self.w_2(self.dropout(F.gelu(self.w_1(x))))
 
-############################################################
-
 
 class ECC_Transformer(nn.Module):
     def __init__(self, args, dropout=0):
@@ -110,9 +108,9 @@ class ECC_Transformer(nn.Module):
         self.oned_final_embed = torch.nn.Sequential(*[nn.Linear(args.d_model, 1)]) # make 32 channel to 1 channel. Convert to original channel
         self.out_fc = nn.Linear(code.n + code.pc_matrix.size(0), code.n) # Convert 10(7+3) to 7(encoded codeword)
 
-        self.src_mask = self.get_mask(code)
-        logging.info(f'Mask:\n {self.src_mask}')
-        ###
+        self.get_mask(code)
+        print(f'Mask:\n {self.src_mask}')
+
         for p in self.parameters():
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
@@ -124,7 +122,8 @@ class ECC_Transformer(nn.Module):
         return self.out_fc(self.oned_final_embed(emb).squeeze(-1))
 
     def loss(self, z_pred, z2, y):
-        loss = F.binary_cross_entropy_with_logits(z_pred, sign_to_bin(torch.sign(z2)))
+        loss = F.binary_cross_entropy_with_logits(
+            z_pred, sign_to_bin(torch.sign(z2)))
         x_pred = sign_to_bin(torch.sign(-z_pred * torch.sign(y)))
         return loss, x_pred
 
@@ -147,6 +146,13 @@ class ECC_Transformer(nn.Module):
                             mask[jj, code.n + ii] += 1
             src_mask = ~ (mask > 0).unsqueeze(0).unsqueeze(0)
             return src_mask
+        src_mask = build_mask(code)
+        mask_size = code.n + code.pc_matrix.size(0)
+        a = mask_size ** 2
+        logging.info(
+            f'Self-Attention Sparsity Ratio={100 * torch.sum((src_mask).int()) / a:0.2f}%, Self-Attention Complexity Ratio={100 * torch.sum((~src_mask).int())//2 / a:0.2f}%')
+        self.register_buffer('src_mask', src_mask)
+
 
 if __name__ == '__main__':
     pass
