@@ -97,7 +97,6 @@ if __name__ == '__main__':
     parser.add_argument('--model_type', type=str, default='ECCT')
     parser.add_argument('--epochs', type=int, default=1000)
     parser.add_argument('--lr', type=float, default=1e-4)
-    parser.add_argument('--gpus', type=str, default='-1', help='gpus ids')
     parser.add_argument('--test_batch_size', type=int, default=2048)
 
     # Code args
@@ -112,8 +111,6 @@ if __name__ == '__main__':
     parser.add_argument('--h', type=int, default=4) # multihead attention heads
 
     args = parser.parse_args()
-    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
 
     class Code():
         pass
