@@ -112,13 +112,9 @@ def test(model, device, test_loader_list, EbNo_range_test, min_FER=100):
 def main(args):
     code = args.code
 
-    #################################
     model = ECC_Transformer(args, dropout=0).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
-
-    # logging.info(model)
-    # logging.info(f'# of Parameters: {np.sum([np.prod(p.shape) for p in model.parameters()])}')
 
     EbNo_range_test = range(4, 7)
     EbNo_range_train = range(2, 8)
@@ -167,7 +163,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     set_seed(args.seed)
-    ####################################################################
 
     class Code():
         pass
