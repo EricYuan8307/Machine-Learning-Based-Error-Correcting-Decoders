@@ -12,7 +12,7 @@ from Transformer.Model import ECC_Transformer
 from Codebook.CodebookMatrix import ParitycheckMatrix
 
 
-def set_seed(seed=42):
+def set_seed(seed):
     random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
