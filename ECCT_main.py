@@ -22,8 +22,9 @@ class ECC_Dataset(data.Dataset):
         self.code = code
         self.sigma = sigma
         self.len = len
-        self.generator_matrix = code.generator_matrix.transpose(0, 1).to(device)
-        self.pc_matrix = code.pc_matrix.transpose(0, 1).to(device)
+        self.generator_matrix = code.generator_matrix.transpose(0, 1)
+        self.pc_matrix = code.pc_matrix
+        self.decode_matrix = code.decode_matrix.transpose(0, 1)
         self.device = device
 
     def __len__(self):
@@ -35,10 +36,11 @@ class ECC_Dataset(data.Dataset):
         ss = random.choice(self.sigma)
         z = torch.randn(self.code.n, device=self.device) * ss
         y = bin_to_sign(x) + z
-        magnitude = torch.abs(y)
+        y_d = torch.matmul(y, self.decode_matrix)
+        magnitude = torch.abs(y_d)
         syndrome = torch.matmul(sign_to_bin(torch.sign(y)), self.pc_matrix) % 2
         syndrome = bin_to_sign(syndrome)
-        return m.float(), x.float(), z.float(), y.float(), magnitude.float(), syndrome.float()
+        return m.float(), x.float(), z.float(), y_d.float(), magnitude.float(), syndrome.float()
 
 
 def train(model, device, train_loader, optimizer, epoch, LR):
@@ -148,16 +150,16 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--test_batch_size', type=int, default=2048)
-    parser.add_argument('--seed', type=int, default=41)
+    parser.add_argument('--seed', type=int, default=42)
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
-    parser.add_argument('--code_k', type=int, default=64)
-    parser.add_argument('--code_n', type=int, default=127)
+    parser.add_argument('--code_k', type=int, default=51)
+    parser.add_argument('--code_n', type=int, default=63)
     parser.add_argument('--standardize', action='store_true')
 
     # model args
-    parser.add_argument('--N_dec', type=int, default=10) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
+    parser.add_argument('--N_dec', type=int, default=6) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
     parser.add_argument('--d_model', type=int, default=128) # Embedding dimension
     parser.add_argument('--h', type=int, default=8) # multihead attention heads
 
@@ -170,16 +172,17 @@ if __name__ == '__main__':
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
+    # device = torch.device("cpu")
     device = torch.device("cuda")
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type
-    code.generator_matrix, _ = all_codebook_NonML(args.code_type, args.code_k, args.code_n, device)
-    code.pc_matrix = ParitycheckMatrix(args.code_n, args.code_k, args.code_type, device).squeeze(0).T
+    code.generator_matrix, code.decode_matrix = all_codebook_NonML(args.code_type, args.code_k, args.code_n, device)
+    code.pc_matrix = ParitycheckMatrix(args.code_n, args.code_k, args.code_type, device).squeeze(0)
     args.code = code
 
     args.model_path = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_{device}/"
-    args.model_name = f"{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}_seed{args.seed}"
+    args.model_name = f"{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}_reduced"
 
     os.makedirs(args.model_path, exist_ok=True)
 

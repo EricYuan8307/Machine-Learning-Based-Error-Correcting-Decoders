@@ -127,8 +127,13 @@ class ECC_Transformer(nn.Module):
             return
 
         def build_mask(code):
-            mask_size = code.n + code.pc_matrix.size(0)
+            mask_size = code.k + code.pc_matrix.size(0)
             mask = torch.eye(mask_size, mask_size)
+            for p_c in range(code.pc_matrix.size(0)):
+                for p_r in range(code.pc_matrix.size(0)):
+                    if p_c != p_r:
+                        mask[code.k + p_c, code.k + p_r] += 1
+
             for ii in range(code.pc_matrix.size(0)):
                 idx = torch.where(code.pc_matrix[ii] > 0)[0]
                 for jj in idx:
@@ -136,8 +141,8 @@ class ECC_Transformer(nn.Module):
                         if jj != kk: # < could decrease a little complexity
                             mask[jj, kk] += 1
                             mask[kk, jj] += 1
-                            mask[code.n + ii, jj] += 1
-                            mask[jj, code.n + ii] += 1
+                            mask[code.k + ii, jj] += 1
+                            mask[jj, code.k + ii] += 1
             src_mask = ~ (mask > 0).unsqueeze(0).unsqueeze(0)
             return src_mask
         src_mask = build_mask(code)
