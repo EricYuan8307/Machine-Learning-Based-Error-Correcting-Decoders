@@ -154,8 +154,8 @@ if __name__ == '__main__':
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
-    parser.add_argument('--code_k', type=int, default=4)
-    parser.add_argument('--code_n', type=int, default=7)
+    parser.add_argument('--code_k', type=int, default=51)
+    parser.add_argument('--code_n', type=int, default=63)
     parser.add_argument('--standardize', action='store_true')
 
     # model args
