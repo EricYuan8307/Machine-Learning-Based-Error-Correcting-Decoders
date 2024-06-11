@@ -98,10 +98,10 @@ class ECC_Transformer(nn.Module):
         attn = MultiHeadedAttention(args.h, args.d_model)
         ff = PositionwiseFeedForward(args.d_model, args.d_model*4, dropout)
 
-        self.src_embed = torch.nn.Parameter(torch.empty((code.n + code.pc_matrix.size(0), args.d_model)))
+        self.src_embed = torch.nn.Parameter(torch.empty((code.k + code.pc_matrix.size(0), args.d_model)))
         self.decoder = Encoder(EncoderLayer(args.d_model, c(attn), c(ff), dropout), args.N_dec) # N_dec: encoder layers 复制次数
         self.oned_final_embed = torch.nn.Sequential(*[nn.Linear(args.d_model, 1)]) # make 32 channel to 1 channel. Convert to original channel
-        self.out_fc = nn.Linear(code.n + code.pc_matrix.size(0), code.n) # Convert 10(7+3) to 7(encoded codeword)
+        self.out_fc = nn.Linear(code.k +code.pc_matrix.size(0), code.k) # Convert 10(7+3) to 7(encoded codeword)
 
         self.get_mask(code)
         print(f'Mask:\n {self.src_mask}')

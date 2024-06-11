@@ -23,7 +23,7 @@ class ECC_Dataset(data.Dataset):
         self.sigma = sigma
         self.len = len
         self.generator_matrix = code.generator_matrix.transpose(0, 1)
-        self.pc_matrix = code.pc_matrix
+        self.pc_matrix = code.pc_matrix.transpose(0, 1)
         self.decode_matrix = code.decode_matrix.transpose(0, 1)
         self.device = device
 
@@ -47,20 +47,20 @@ def train(model, device, train_loader, optimizer, epoch, LR):
     model.train()
     cum_loss = cum_ber = cum_fer = cum_samples = 0
     for batch_idx, (m, x, z, y, magnitude, syndrome) in enumerate(train_loader):
-        z_mul = (y * bin_to_sign(x))
+        z_mul = (y * bin_to_sign(m))
         z_pred = model(magnitude.to(device), syndrome.to(device))
         loss, x_pred = model.loss(-z_pred, z_mul.to(device), y.to(device))
         model.zero_grad()
         loss.backward()
         optimizer.step()
 
-        ber = BER(x_pred, x.to(device))
-        fer = FER(x_pred, x.to(device))
+        ber = BER(x_pred, m.to(device))
+        fer = FER(x_pred, m.to(device))
 
-        cum_loss += loss.item() * x.shape[0]
-        cum_ber += ber * x.shape[0]
-        cum_fer += fer * x.shape[0]
-        cum_samples += x.shape[0]
+        cum_loss += loss.item() * m.shape[0]
+        cum_ber += ber * m.shape[0]
+        cum_fer += fer * m.shape[0]
+        cum_samples += m.shape[0]
         if (batch_idx + 1) % 100 == 0 or batch_idx == len(train_loader) - 1:
             print(
                 f'Training epoch {epoch}, Batch {batch_idx + 1}/{len(train_loader)}: LR={LR:.2e}, Loss={cum_loss / cum_samples:.2e} BER={cum_ber / cum_samples:.2e} FER={cum_fer / cum_samples:.2e}')
@@ -154,8 +154,8 @@ if __name__ == '__main__':
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
-    parser.add_argument('--code_k', type=int, default=51)
-    parser.add_argument('--code_n', type=int, default=63)
+    parser.add_argument('--code_k', type=int, default=4)
+    parser.add_argument('--code_n', type=int, default=7)
     parser.add_argument('--standardize', action='store_true')
 
     # model args
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     code.n = args.code_n
     code.code_type = args.code_type
     code.generator_matrix, code.decode_matrix = all_codebook_NonML(args.code_type, args.code_k, args.code_n, device)
-    code.pc_matrix = ParitycheckMatrix(args.code_n, args.code_k, args.code_type, device).squeeze(0)
+    code.pc_matrix = ParitycheckMatrix(args.code_n, args.code_k, args.code_type, device).squeeze(0).T
     args.code = code
 
     args.model_path = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_{device}/"
