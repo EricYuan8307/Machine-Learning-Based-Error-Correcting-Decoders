@@ -11,6 +11,9 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from Transformer.Model_article import ECC_Transformer
 from Codebook.CodebookMatrix import ParitycheckMatrix
 
+def count_trainable_parameters(model):
+    total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    return total_params
 
 def set_seed(seed=42):
     random.seed(seed)
@@ -129,6 +132,9 @@ def main(args):
     test_dataloader_list = [DataLoader(ECC_Dataset(code, [std_test[ii]], int(args.test_batch_size), device),
                                        batch_size=int(args.test_batch_size), shuffle=False) for ii in range(len(std_test))]
 
+    total_trainable_params = count_trainable_parameters(model)
+    print(f"Total trainable parameters: {total_trainable_params}")
+
     best_loss = float('inf')
     for epoch in range(1, args.epochs + 1):
         loss, ber, fer = train(model, device, train_dataloader, optimizer,
@@ -176,7 +182,8 @@ if __name__ == '__main__':
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cuda")
+    # device = torch.device("cuda")
+    device = torch.device("cpu")
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type
