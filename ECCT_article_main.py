@@ -38,7 +38,7 @@ class ECC_Dataset(data.Dataset):
         ss = random.choice(self.sigma)
         z = torch.randn(self.code.n, device=self.device) * ss
         y = bin_to_sign(x) + z
-        magnitude = torch.abs(y)
+        magnitude = torch.sign(y)
         syndrome = torch.matmul(sign_to_bin(torch.sign(y)), self.pc_matrix) % 2
         syndrome = bin_to_sign(syndrome)
         return m.float(), x.float(), z.float(), y.float(), magnitude.float(), syndrome.float()
@@ -159,8 +159,6 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--test_batch_size', type=int, default=2048)
     parser.add_argument('--seed', type=int, default=42)
-    parser.add_argument('--patience', type=int, default=450)
-    parser.add_argument('--delta', type=float, default=0.0001)
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
@@ -182,8 +180,8 @@ if __name__ == '__main__':
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    # device = torch.device("cuda")
-    device = torch.device("cpu")
+    device = torch.device("cuda")
+    # device = torch.device("cpu")
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type
@@ -192,7 +190,7 @@ if __name__ == '__main__':
     args.code = code
 
     args.model_path = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_{device}/"
-    args.model_name = f"{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}"
+    args.model_name = f"{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}_HD"
 
     os.makedirs(args.model_path, exist_ok=True)
 
