@@ -21,12 +21,12 @@ class Encoder(nn.Module):
         if N > 1:
             self.norm2 = LayerNorm(layer.size)
 
-    def forward(self, x, mask):
+    def forward(self, x, x_e, mask):
         for idx, layer in enumerate(self.layers, start=1):
-            x = layer(x, mask)
+            x = layer(x, x_e, mask)
             if idx == len(self.layers)//2 and len(self.layers) > 1:
                 x = self.norm2(x)
-        return self.norm(x)
+        return self.norm(x), x_e
 
 
 class SublayerConnection(nn.Module):
@@ -46,10 +46,15 @@ class EncoderLayer(nn.Module): # attention iteration
         self.feed_forward = feed_forward
         self.sublayer = clones(SublayerConnection(size, dropout), 2)
         self.size = size
+        self.norm = LayerNorm(size)
 
-    def forward(self, x, k, v, mask): # cross attention
-        x = self.sublayer[0](x, lambda x: self.self_attn(x, k, v, mask))
-        return self.sublayer[1](x, self.feed_forward)
+    def forward(self, x, e_x, mask): # x: left side, e_x: right side
+        x = self.sublayer[0](x, lambda x: self.self_attn(self.norm(x), e_x, e_x, mask.transpose(-2, -1)))
+        x = self.sublayer[1](x, self.feed_forward)
+
+        e_x = self.sublayer[0](e_x, lambda e_x: self.self_attn(self.norm(e_x), x, x, mask))
+        e_x = self.sublayer[1](e_x, self.feed_forward)
+        return x, e_x
 
 
 class MultiHeadedAttention(nn.Module):
@@ -103,7 +108,8 @@ class ECC_Transformer(nn.Module):
         attn = MultiHeadedAttention(args.h, args.d_model)
         ff = PositionwiseFeedForward(args.d_model, args.d_model*4, dropout)
 
-        self.src_embed = torch.nn.Parameter(torch.empty((code.n + code.pc_matrix.size(0), args.d_model)))
+        self.src_embed_m = torch.nn.Parameter(torch.empty((code.n, args.d_model)))
+        self.src_embed_s = torch.nn.Parameter(torch.empty((code.pc_matrix.size(0), args.d_model)))
         self.decoder = Encoder(EncoderLayer(args.d_model, c(attn), c(ff), dropout), args.N_dec) # N_dec: encoder layers 复制次数
         self.oned_final_embed = torch.nn.Sequential(*[nn.Linear(args.d_model, 1)]) # make 32 channel to 1 channel. Convert to original channel
         self.out_fc = nn.Linear(code.n + code.pc_matrix.size(0), code.n) # Convert 10(7+3) to 7(encoded codeword)
@@ -116,9 +122,10 @@ class ECC_Transformer(nn.Module):
                 nn.init.xavier_uniform_(p)
 
     def forward(self, magnitude, syndrome):
-        emb = torch.cat([magnitude, syndrome], -1).unsqueeze(-1)
-        emb = self.src_embed.unsqueeze(0) * emb
-        emb = self.decoder(emb, self.src_mask)
+        magnitude = self.src_embed_m.unsqueeze(0) * magnitude.unsqueeze(-1)
+        syndrome = self.src_embed_s.unsqueeze(0) * syndrome.unsqueeze(-1)
+        magnitude, syndrome = self.decoder(magnitude, syndrome, self.src_mask)
+        emb = torch.cat([magnitude, syndrome], -1)
         return self.out_fc(self.oned_final_embed(emb).squeeze(-1))
 
     def loss(self, z_pred, z2, y):
@@ -133,24 +140,10 @@ class ECC_Transformer(nn.Module):
             return
 
         def build_mask(code):
-            mask_size = code.n + code.pc_matrix.size(0)
-            mask = torch.eye(mask_size, mask_size)
-            for ii in range(code.pc_matrix.size(0)):
-                idx = torch.where(code.pc_matrix[ii] > 0)[0]
-                for jj in idx:
-                    for kk in idx:
-                        if jj != kk:
-                            mask[jj, kk] += 1
-                            mask[kk, jj] += 1
-                            mask[code.n + ii, jj] += 1
-                            mask[jj, code.n + ii] += 1
+            mask = torch.tensor(code.pc_matrix)
             src_mask = ~ (mask > 0).unsqueeze(0).unsqueeze(0)
             return src_mask
         src_mask = build_mask(code)
-        mask_size = code.n + code.pc_matrix.size(0)
-        a = mask_size ** 2
-        logging.info(
-            f'Self-Attention Sparsity Ratio={100 * torch.sum((src_mask).int()) / a:0.2f}%, Self-Attention Complexity Ratio={100 * torch.sum((~src_mask).int())//2 / a:0.2f}%')
         self.register_buffer('src_mask', src_mask)
 
 
