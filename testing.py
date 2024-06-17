@@ -1,83 +1,190 @@
 import torch
+import argparse
+import random
+import os
+from torch.utils.data import DataLoader
+from torch.utils import data
+from Transformer.Functions import *
+from generating import all_codebook_NonML
 
-def generator(nr_codewords, bits, device):
-    codewords = torch.randint(0, 2, size=(nr_codewords, 1, bits), dtype=torch.float, device=device)
+from torch.optim.lr_scheduler import CosineAnnealingLR
+from Transformer.Model_article import ECC_Transformer
+from Codebook.CodebookMatrix import ParitycheckMatrix
 
-    return codewords
 
-def generator_ECCT(nr_codewords, bits, device):
-    codewords = torch.randint(0, 2, size=(nr_codewords, bits), dtype=torch.float, device=device)
+def set_seed(seed=42):
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
 
-    return codewords
+class ECC_Dataset(data.Dataset):
+    def __init__(self, code, sigma, len, device):
+        self.code = code
+        self.sigma = sigma
+        self.len = len
+        self.generator_matrix = code.generator_matrix.transpose(0, 1).to(device)
+        self.pc_matrix = code.pc_matrix.transpose(0, 1).to(device)
+        self.device = device
 
-def calculate_ber(transmitted_bits, origin_bits):
-    """
-       Calculate the Block Error Rate (BLER).
+    def __len__(self):
+        return self.len
 
-       Args:
-       predicted (torch.Tensor): The predicted tensor.
-       target (torch.Tensor): The target tensor.
+    def __getitem__(self, index):
+        m = torch.randint(0, 2, (1, self.code.k), dtype=torch.float, device=self.device).squeeze()
+        x = torch.matmul(m, self.generator_matrix) % 2
+        ss = random.choice(self.sigma)
+        z = torch.randn(self.code.n, device=self.device) * ss
+        y = bin_to_sign(x) + z
+        magnitude = torch.abs(y)
+        syndrome = torch.matmul(sign_to_bin(torch.sign(y)), self.pc_matrix) % 2
+        syndrome = bin_to_sign(syndrome)
+        return m.float(), x.float(), z.float(), y.float(), magnitude.float(), syndrome.float()
 
-       Returns:
-       float: The BER.
-       int: errors
-       """
-    # Ensure that both tensors have the same shape
-    assert transmitted_bits.shape == origin_bits.shape, "Shapes of transmitted and received bits must be the same."
 
-    # Calculate the bit errors
-    errors = (transmitted_bits != origin_bits).sum().item()
+def train(model, device, train_loader, optimizer, epoch, LR):
+    model.train()
+    cum_loss = cum_ber = cum_fer = cum_samples = 0
+    for batch_idx, (m, x, z, y, magnitude, syndrome) in enumerate(train_loader):
+        z_mul = (y * bin_to_sign(x)) # y: noised signal, x: encoded signal after BPSK
+        z_pred = model(magnitude.to(device), syndrome.to(device))
+        loss, x_pred = model.loss(-z_pred, z_mul.to(device), y.to(device))
+        model.zero_grad()
+        loss.backward()
+        optimizer.step()
 
-    # Calculate the Bit Error Rate (BER)
-    ber = errors / transmitted_bits.numel()
+        ber = BER(x_pred, x.to(device))
+        fer = FER(x_pred, x.to(device))
 
-    return ber, errors
+        cum_loss += loss.item() * x.shape[0]
+        cum_ber += ber * x.shape[0]
+        cum_fer += fer * x.shape[0]
+        cum_samples += x.shape[0]
+        if (batch_idx + 1) % 100 == 0 or batch_idx == len(train_loader) - 1:
+            print(
+                f'Training epoch {epoch}, Batch {batch_idx + 1}/{len(train_loader)}: LR={LR:.2e}, Loss={cum_loss / cum_samples:.2e} BER={cum_ber / cum_samples:.2e} FER={cum_fer / cum_samples:.2e}')
+    return cum_loss / cum_samples, cum_ber / cum_samples, cum_fer / cum_samples
 
-def calculate_bler(predicted, target):
-    """
-    Calculate the Block Error Rate (BLER).
 
-    Args:
-    predicted (torch.Tensor): The predicted tensor.
-    target (torch.Tensor): The target tensor.
+def test(model, device, test_loader_list, EbNo_range_test, min_FER=100):
+    model.eval()
+    test_loss_list, test_loss_ber_list, test_loss_fer_list, cum_samples_all = [], [], [], []
+    with torch.no_grad():
+        for ii, test_loader in enumerate(test_loader_list):
+            test_loss = test_ber = test_fer = cum_count = 0.
+            while True:
+                (m, x, z, y, magnitude, syndrome) = next(iter(test_loader))
+                z_mul = (y * bin_to_sign(x))
+                z_pred = model(magnitude.to(device), syndrome.to(device))
+                loss, x_pred = model.loss(-z_pred, z_mul.to(device), y.to(device))
 
-    Returns:
-    float: The BLER.
-    """
-    # Check if predicted and target tensors have the same shape
-    if predicted.shape != target.shape:
-        raise ValueError("Predicted and target tensors must have the same shape")
+                test_loss += loss.item() * x.shape[0]
 
-    error = 0.0
+                test_ber += BER(x_pred, x.to(device)) * x.shape[0]
+                test_fer += FER(x_pred, x.to(device)) * x.shape[0]
+                cum_count += x.shape[0]
+                if (min_FER > 0 and test_fer > min_FER and cum_count > 1e5) or cum_count >= 1e9:
+                    if cum_count >= 1e9:
+                        print(f'Number of samples threshold reached for EbN0:{EbNo_range_test[ii]}')
+                    else:
+                        print(f'FER count threshold reached for EbN0:{EbNo_range_test[ii]}')
+                    break
+            cum_samples_all.append(cum_count)
+            test_loss_list.append(test_loss / cum_count)
+            test_loss_ber_list.append(test_ber / cum_count)
+            test_loss_fer_list.append(test_fer / cum_count)
+            print(f'Test EbN0={EbNo_range_test[ii]}, BER={test_loss_ber_list[-1]:.2e}')
+        ###
+        print('\nTest Loss ' + ' '.join(
+            ['{}: {:.2e}'.format(ebno, elem) for (elem, ebno)
+             in
+             (zip(test_loss_list, EbNo_range_test))]))
+        print('Test FER ' + ' '.join(
+            ['{}: {:.2e}'.format(ebno, elem) for (elem, ebno)
+             in
+             (zip(test_loss_fer_list, EbNo_range_test))]))
+        print('Test BER ' + ' '.join(
+            ['{}: {:.2e}'.format(ebno, elem) for (elem, ebno)
+             in
+             (zip(test_loss_ber_list, EbNo_range_test))]))
+    return test_loss_list, test_loss_ber_list, test_loss_fer_list
 
-    # Calculate number of erroneous blocks
-    block_errors = torch.sum(predicted != target, dim=-2)  # Count bit differences for each block
-    block_errors = (block_errors > 0).sum().item()  # Count blocks with at least one bit difference
 
-    # Calculate total number of blocks, which is the size of the first dimension
-    total_blocks = predicted.size(0)
+def main(args):
+    code = args.code
 
-    # Calculate BLER
-    bler = block_errors / total_blocks
+    model = ECC_Transformer(args, dropout=0).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
 
-    return bler, block_errors
+    # logging.info(model)
+    # logging.info(f'# of Parameters: {np.sum([np.prod(p.shape) for p in model.parameters()])}')
 
-device = "cpu"
-nr_codewords = 10
-bits = 16
-codewords2 = generator_ECCT(nr_codewords, bits, device)
-codewords2_2 = generator_ECCT(nr_codewords, bits, device)
-ber, errors = calculate_ber(codewords2, codewords2_2)
-# print("codewords2 ber",ber, errors)
-# bler, errors = calculate_bler(codewords2, codewords2_2)
-# print("codewords2 bler",bler, errors)
-print(codewords2_2.shape)
-print(codewords2_2.shape[-1])
-codewords1 = generator(nr_codewords, bits, device)
-codewords2 = generator(nr_codewords, bits, device)
-print(codewords2.shape)
-print(codewords2.shape[-1])
-# ber, errors = calculate_ber(codewords1, codewords2)
-# print("codewords1 ber",ber, errors)
-# bler, errors = calculate_bler(codewords1, codewords2)
-# print("codewords1 bler",bler, errors)
+    EbNo_range_test = range(4, 7)
+    EbNo_range_train = range(2, 8)
+    std_train = [EbN0_to_std(ii, code.k / code.n) for ii in EbNo_range_train]
+    std_test = [EbN0_to_std(ii, code.k / code.n) for ii in EbNo_range_test]
+    ECC_dataset = ECC_Dataset(code, std_train, args.batch_size, device)
+    train_dataloader = DataLoader(ECC_dataset, batch_size=int(args.batch_size), shuffle=True)
+    test_dataloader_list = [DataLoader(ECC_Dataset(code, [std_test[ii]], int(args.test_batch_size), device),
+                                       batch_size=int(args.test_batch_size), shuffle=False) for ii in range(len(std_test))]
+
+    best_loss = float('inf')
+    for epoch in range(1, args.epochs + 1):
+        loss, ber, fer = train(model, device, train_dataloader, optimizer,
+                               epoch, LR=scheduler.get_last_lr()[0])
+        scheduler.step()
+        if loss < best_loss:
+            best_loss = loss
+            torch.save(model.state_dict(), os.path.join(args.model_path, f"{args.model_name}.pth"))
+            print(f"best model save: Loss={loss:.2e} BER={ber:.2e} FER={fer:.2e}")
+        else:
+            print("continue training")
+
+        if epoch % 30 == 0 or epoch in [1, args.epochs]:
+            test(model, device, test_dataloader_list, EbNo_range_test)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='ECCT')
+    parser.add_argument('--model_type', type=str, default='ECCT')
+    parser.add_argument('--epochs', type=int, default=1500)
+    parser.add_argument('--lr', type=float, default=1e-4)
+    parser.add_argument('--batch_size', type=int, default=1)
+    parser.add_argument('--test_batch_size', type=int, default=2048)
+    parser.add_argument('--seed', type=int, default=42)
+
+    # Code args
+    parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
+    parser.add_argument('--code_k', type=int, default=4)
+    parser.add_argument('--code_n', type=int, default=7)
+    parser.add_argument('--standardize', action='store_true')
+
+    # model args
+    parser.add_argument('--N_dec', type=int, default=10) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
+    parser.add_argument('--d_model', type=int, default=1) # Embedding dimension
+    parser.add_argument('--h', type=int, default=1) # multihead attention heads
+
+    args = parser.parse_args()
+    set_seed(args.seed)
+
+
+    class Code():
+        pass
+    code = Code()
+    # device = (torch.device("mps") if torch.backends.mps.is_available()
+    #           else (torch.device("cuda") if torch.cuda.is_available()
+    #                 else torch.device("cpu")))
+    device = torch.device("cpu")
+    code.k = args.code_k
+    code.n = args.code_n
+    code.code_type = args.code_type
+    code.generator_matrix, _ = all_codebook_NonML(args.code_type, args.code_k, args.code_n, device)
+    code.pc_matrix = ParitycheckMatrix(args.code_n, args.code_k, args.code_type, device).squeeze(0).T
+    args.code = code
+
+    args.model_path = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_{device}/"
+    args.model_name = f"{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}"
+
+    os.makedirs(args.model_path, exist_ok=True)
+
+    main(args)

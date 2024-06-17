@@ -89,26 +89,24 @@ def main(args):
     test_dataloader_list = [DataLoader(ECC_Dataset(code, [std_test[ii]], int(args.test_batch_size), device),
                                        batch_size=int(args.test_batch_size), shuffle=False) for ii in range(len(std_test))]
 
-    test_loss_list, test_loss_ber_list, test_loss_fer_list = test(model, device, test_dataloader_list, EbNo_range_test, args.model_pth)
+    test(model, device, test_dataloader_list, EbNo_range_test, args.model_pth)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ECCT')
     parser.add_argument('--model_type', type=str, default='ECCT')
-    parser.add_argument('--epochs', type=int, default=1000)
-    parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--test_batch_size', type=int, default=2048)
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
-    parser.add_argument('--code_k', type=int, default=51)
-    parser.add_argument('--code_n', type=int, default=63)
+    parser.add_argument('--code_k', type=int, default=64)
+    parser.add_argument('--code_n', type=int, default=127)
     parser.add_argument('--standardize', action='store_true')
 
     # model args
-    parser.add_argument('--N_dec', type=int, default=6) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
+    parser.add_argument('--N_dec', type=int, default=10) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
     parser.add_argument('--d_model', type=int, default=128) # Embedding dimension
-    parser.add_argument('--h', type=int, default=4) # multihead attention heads
+    parser.add_argument('--h', type=int, default=8) # multihead attention heads
 
     args = parser.parse_args()
 
@@ -118,7 +116,7 @@ if __name__ == '__main__':
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = torch.device("cuda:2")
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type
@@ -126,6 +124,6 @@ if __name__ == '__main__':
     code.pc_matrix = ParitycheckMatrix(args.code_n, args.code_k, args.code_type, device).squeeze(0).T
     args.code = code
 
-    args.model_pth = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_{device}/{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}.pth"
+    args.model_pth = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_cuda/{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}.pth"
 
     main(args)

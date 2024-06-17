@@ -12,7 +12,11 @@ from Transformer.Model import ECC_Transformer
 from Codebook.CodebookMatrix import ParitycheckMatrix
 
 
-def set_seed(seed=42):
+def count_trainable_parameters(model):
+    total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    return total_params
+
+def set_seed(seed):
     random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
@@ -22,8 +26,9 @@ class ECC_Dataset(data.Dataset):
         self.code = code
         self.sigma = sigma
         self.len = len
-        self.generator_matrix = code.generator_matrix.transpose(0, 1).to(device)
-        self.pc_matrix = code.pc_matrix.transpose(0, 1).to(device)
+        self.generator_matrix = code.generator_matrix.transpose(0, 1)
+        self.pc_matrix = code.pc_matrix.transpose(0, 1)
+        self.decode_matrix = code.decode_matrix.transpose(0, 1)
         self.device = device
 
     def __len__(self):
@@ -35,30 +40,31 @@ class ECC_Dataset(data.Dataset):
         ss = random.choice(self.sigma)
         z = torch.randn(self.code.n, device=self.device) * ss
         y = bin_to_sign(x) + z
-        magnitude = torch.abs(y)
+        y_d = torch.matmul(y, self.decode_matrix)
+        magnitude = torch.abs(y_d)
         syndrome = torch.matmul(sign_to_bin(torch.sign(y)), self.pc_matrix) % 2
         syndrome = bin_to_sign(syndrome)
-        return m.float(), x.float(), z.float(), y.float(), magnitude.float(), syndrome.float()
+        return m.float(), x.float(), z.float(), y_d.float(), magnitude.float(), syndrome.float()
 
 
 def train(model, device, train_loader, optimizer, epoch, LR):
     model.train()
     cum_loss = cum_ber = cum_fer = cum_samples = 0
     for batch_idx, (m, x, z, y, magnitude, syndrome) in enumerate(train_loader):
-        z_mul = (y * bin_to_sign(x))
+        z_mul = (y * bin_to_sign(m))
         z_pred = model(magnitude.to(device), syndrome.to(device))
         loss, x_pred = model.loss(-z_pred, z_mul.to(device), y.to(device))
         model.zero_grad()
         loss.backward()
         optimizer.step()
 
-        ber = BER(x_pred, x.to(device))
-        fer = FER(x_pred, x.to(device))
+        ber = BER(x_pred, m.to(device))
+        fer = FER(x_pred, m.to(device))
 
-        cum_loss += loss.item() * x.shape[0]
-        cum_ber += ber * x.shape[0]
-        cum_fer += fer * x.shape[0]
-        cum_samples += x.shape[0]
+        cum_loss += loss.item() * m.shape[0]
+        cum_ber += ber * m.shape[0]
+        cum_fer += fer * m.shape[0]
+        cum_samples += m.shape[0]
         if (batch_idx + 1) % 100 == 0 or batch_idx == len(train_loader) - 1:
             print(
                 f'Training epoch {epoch}, Batch {batch_idx + 1}/{len(train_loader)}: LR={LR:.2e}, Loss={cum_loss / cum_samples:.2e} BER={cum_ber / cum_samples:.2e} FER={cum_fer / cum_samples:.2e}')
@@ -73,15 +79,15 @@ def test(model, device, test_loader_list, EbNo_range_test, min_FER=100):
             test_loss = test_ber = test_fer = cum_count = 0.
             while True:
                 (m, x, z, y, magnitude, syndrome) = next(iter(test_loader))
-                z_mul = (y * bin_to_sign(x))
+                z_mul = (y * bin_to_sign(m))
                 z_pred = model(magnitude.to(device), syndrome.to(device))
                 loss, x_pred = model.loss(-z_pred, z_mul.to(device), y.to(device))
 
-                test_loss += loss.item() * x.shape[0]
+                test_loss += loss.item() * m.shape[0]
 
-                test_ber += BER(x_pred, x.to(device)) * x.shape[0]
-                test_fer += FER(x_pred, x.to(device)) * x.shape[0]
-                cum_count += x.shape[0]
+                test_ber += BER(x_pred, m.to(device)) * m.shape[0]
+                test_fer += FER(x_pred, m.to(device)) * m.shape[0]
+                cum_count += m.shape[0]
                 if (min_FER > 0 and test_fer > min_FER and cum_count > 1e5) or cum_count >= 1e9:
                     if cum_count >= 1e9:
                         print(f'Number of samples threshold reached for EbN0:{EbNo_range_test[ii]}')
@@ -112,13 +118,9 @@ def test(model, device, test_loader_list, EbNo_range_test, min_FER=100):
 def main(args):
     code = args.code
 
-    #################################
     model = ECC_Transformer(args, dropout=0).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
-
-    # logging.info(model)
-    # logging.info(f'# of Parameters: {np.sum([np.prod(p.shape) for p in model.parameters()])}')
 
     EbNo_range_test = range(4, 7)
     EbNo_range_train = range(2, 8)
@@ -128,6 +130,9 @@ def main(args):
     train_dataloader = DataLoader(ECC_dataset, batch_size=int(args.batch_size), shuffle=True)
     test_dataloader_list = [DataLoader(ECC_Dataset(code, [std_test[ii]], int(args.test_batch_size), device),
                                        batch_size=int(args.test_batch_size), shuffle=False) for ii in range(len(std_test))]
+
+    total_trainable_params = count_trainable_parameters(model)
+    print(f"Total trainable parameters: {total_trainable_params}")
 
     best_loss = float('inf')
     for epoch in range(1, args.epochs + 1):
@@ -156,18 +161,17 @@ if __name__ == '__main__':
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
-    parser.add_argument('--code_k', type=int, default=64)
-    parser.add_argument('--code_n', type=int, default=127)
+    parser.add_argument('--code_k', type=int, default=51)
+    parser.add_argument('--code_n', type=int, default=63)
     parser.add_argument('--standardize', action='store_true')
 
     # model args
-    parser.add_argument('--N_dec', type=int, default=10) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
+    parser.add_argument('--N_dec', type=int, default=6) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
     parser.add_argument('--d_model', type=int, default=128) # Embedding dimension
     parser.add_argument('--h', type=int, default=8) # multihead attention heads
 
     args = parser.parse_args()
     set_seed(args.seed)
-    ####################################################################
 
     class Code():
         pass
@@ -175,16 +179,17 @@ if __name__ == '__main__':
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
+    # device = torch.device("cpu")
     device = torch.device("cuda")
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type
-    code.generator_matrix, _ = all_codebook_NonML(args.code_type, args.code_k, args.code_n, device)
+    code.generator_matrix, code.decode_matrix = all_codebook_NonML(args.code_type, args.code_k, args.code_n, device)
     code.pc_matrix = ParitycheckMatrix(args.code_n, args.code_k, args.code_type, device).squeeze(0).T
     args.code = code
 
     args.model_path = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_{device}/"
-    args.model_name = f"{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}"
+    args.model_name = f"{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}_reduced"
 
     os.makedirs(args.model_path, exist_ok=True)
 

@@ -112,7 +112,6 @@ def test(model, device, test_loader_list, EbNo_range_test, min_FER=100):
 def main(args):
     code = args.code
 
-    #################################
     model = ECC_Transformer(args, dropout=0).to(device)
     model.load_state_dict(torch.load(args.model_load_pth))
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
@@ -148,12 +147,9 @@ if __name__ == '__main__':
     parser.add_argument('--model_type', type=str, default='ECCT')
     parser.add_argument('--epochs', type=int, default=1000)
     parser.add_argument('--lr', type=float, default=5e-7)
-    parser.add_argument('--gpus', type=str, default='-1', help='gpus ids')
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--test_batch_size', type=int, default=2048)
     parser.add_argument('--seed', type=int, default=42)
-    parser.add_argument('--patience', type=int, default=450)
-    parser.add_argument('--delta', type=float, default=0.0001)
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
@@ -167,10 +163,7 @@ if __name__ == '__main__':
     parser.add_argument('--h', type=int, default=8) # multihead attention heads
 
     args = parser.parse_args()
-    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
     set_seed(args.seed)
-    ####################################################################
 
     class Code():
         pass
@@ -178,7 +171,7 @@ if __name__ == '__main__':
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = torch.device("cuda")
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type
