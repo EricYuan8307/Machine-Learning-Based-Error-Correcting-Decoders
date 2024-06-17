@@ -79,15 +79,15 @@ def test(model, device, test_loader_list, EbNo_range_test, min_FER=100):
             test_loss = test_ber = test_fer = cum_count = 0.
             while True:
                 (m, x, z, y, magnitude, syndrome) = next(iter(test_loader))
-                z_mul = (y * bin_to_sign(x))
+                z_mul = (y * bin_to_sign(m))
                 z_pred = model(magnitude.to(device), syndrome.to(device))
                 loss, x_pred = model.loss(-z_pred, z_mul.to(device), y.to(device))
 
-                test_loss += loss.item() * x.shape[0]
+                test_loss += loss.item() * m.shape[0]
 
-                test_ber += BER(x_pred, x.to(device)) * x.shape[0]
-                test_fer += FER(x_pred, x.to(device)) * x.shape[0]
-                cum_count += x.shape[0]
+                test_ber += BER(x_pred, m.to(device)) * m.shape[0]
+                test_fer += FER(x_pred, m.to(device)) * m.shape[0]
+                cum_count += m.shape[0]
                 if (min_FER > 0 and test_fer > min_FER and cum_count > 1e5) or cum_count >= 1e9:
                     if cum_count >= 1e9:
                         print(f'Number of samples threshold reached for EbN0:{EbNo_range_test[ii]}')
@@ -153,7 +153,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ECCT')
     parser.add_argument('--model_type', type=str, default='ECCT')
-    parser.add_argument('--epochs', type=int, default=1000)
+    parser.add_argument('--epochs', type=int, default=1500)
     parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--test_batch_size', type=int, default=2048)
@@ -179,8 +179,8 @@ if __name__ == '__main__':
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
-    # device = torch.device("cuda")
+    # device = torch.device("cpu")
+    device = torch.device("cuda")
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type
