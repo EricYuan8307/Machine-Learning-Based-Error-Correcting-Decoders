@@ -13,6 +13,10 @@ C. T. Leung, R. V. Bhat and M. Motani, "Low Latency Energy-Efficient Neural Deco
 Transformer Reference: <br>
 Yoni Choukroun and Lior Wolf. Error correction code transformer. arXiv preprint arXiv:2203.14966, 2022.
 
+### Cross-attention Transformer for Error Correcting Codes:
+Cross-attention Transformer Reference: <br>
+Seong-Joon Park and Hee-Youl Kwak and Sang-Hyo Kim and Yongjune Kim and Jong-Seon No. CrossMPT: Cross-attention Message-Passing Transformer for Error Correcting Codes. arXiv preprint arXiv:2405.01033, 2024
+
 To train the model faster, I used early stopping.
 
 ### Addition: In Good First Issue, I mentioned some common bugs and solutions in Belief Pragation, BER and BLER.
