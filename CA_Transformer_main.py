@@ -4,13 +4,16 @@ import random
 import os
 from torch.utils.data import DataLoader
 from torch.utils import data
-from Transformer.Functions import *
+from Transformer.Codes_article import *
 from generating import all_codebook_NonML
 
 from torch.optim.lr_scheduler import CosineAnnealingLR
-from Transformer.Model_article import ECC_Transformer
+from Transformer.Model_ca import ECC_Transformer
 from Codebook.CodebookMatrix import ParitycheckMatrix
 
+def count_trainable_parameters(model):
+    total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    return total_params
 
 def set_seed(seed=42):
     random.seed(seed)
@@ -35,7 +38,7 @@ class ECC_Dataset(data.Dataset):
         ss = random.choice(self.sigma)
         z = torch.randn(self.code.n, device=self.device) * ss
         y = bin_to_sign(x) + z
-        magnitude = torch.abs(y)
+        magnitude = torch.sign(y)
         syndrome = torch.matmul(sign_to_bin(torch.sign(y)), self.pc_matrix) % 2
         syndrome = bin_to_sign(syndrome)
         return m.float(), x.float(), z.float(), y.float(), magnitude.float(), syndrome.float()
@@ -45,7 +48,7 @@ def train(model, device, train_loader, optimizer, epoch, LR):
     model.train()
     cum_loss = cum_ber = cum_fer = cum_samples = 0
     for batch_idx, (m, x, z, y, magnitude, syndrome) in enumerate(train_loader):
-        z_mul = (y * bin_to_sign(x)) # y: noised signal, x: encoded signal after BPSK
+        z_mul = (y * bin_to_sign(x))
         z_pred = model(magnitude.to(device), syndrome.to(device))
         loss, x_pred = model.loss(-z_pred, z_mul.to(device), y.to(device))
         model.zero_grad()
@@ -112,6 +115,7 @@ def test(model, device, test_loader_list, EbNo_range_test, min_FER=100):
 def main(args):
     code = args.code
 
+    #################################
     model = ECC_Transformer(args, dropout=0).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
@@ -123,10 +127,13 @@ def main(args):
     EbNo_range_train = range(2, 8)
     std_train = [EbN0_to_std(ii, code.k / code.n) for ii in EbNo_range_train]
     std_test = [EbN0_to_std(ii, code.k / code.n) for ii in EbNo_range_test]
-    ECC_dataset = ECC_Dataset(code, std_train, args.batch_size, device)
+    ECC_dataset = ECC_Dataset(code, std_train, args.batch_size * 1000, device)
     train_dataloader = DataLoader(ECC_dataset, batch_size=int(args.batch_size), shuffle=True)
     test_dataloader_list = [DataLoader(ECC_Dataset(code, [std_test[ii]], int(args.test_batch_size), device),
                                        batch_size=int(args.test_batch_size), shuffle=False) for ii in range(len(std_test))]
+
+    total_trainable_params = count_trainable_parameters(model)
+    print(f"Total trainable parameters: {total_trainable_params}")
 
     best_loss = float('inf')
     for epoch in range(1, args.epochs + 1):
@@ -145,28 +152,27 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='ECCT')
-    parser.add_argument('--model_type', type=str, default='ECCT')
-    parser.add_argument('--epochs', type=int, default=1500)
+    parser = argparse.ArgumentParser(description='CrossMPT')
+    parser.add_argument('--model_type', type=str, default='CrossMPT')
+    parser.add_argument('--epochs', type=int, default=1000)
     parser.add_argument('--lr', type=float, default=1e-4)
-    parser.add_argument('--batch_size', type=int, default=1)
+    parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--test_batch_size', type=int, default=2048)
     parser.add_argument('--seed', type=int, default=42)
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
-    parser.add_argument('--code_k', type=int, default=4)
-    parser.add_argument('--code_n', type=int, default=7)
+    parser.add_argument('--code_k', type=int, default=51)
+    parser.add_argument('--code_n', type=int, default=63)
     parser.add_argument('--standardize', action='store_true')
 
     # model args
-    parser.add_argument('--N_dec', type=int, default=10) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
-    parser.add_argument('--d_model', type=int, default=1) # Embedding dimension
-    parser.add_argument('--h', type=int, default=1) # multihead attention heads
+    parser.add_argument('--N_dec', type=int, default=6) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
+    parser.add_argument('--d_model', type=int, default=128) # Embedding dimension
+    parser.add_argument('--h', type=int, default=8) # multihead attention heads
 
     args = parser.parse_args()
     set_seed(args.seed)
-
 
     class Code():
         pass
@@ -174,6 +180,7 @@ if __name__ == '__main__':
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
+    # device = torch.device("cuda")
     device = torch.device("cpu")
     code.k = args.code_k
     code.n = args.code_n
