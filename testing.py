@@ -8,7 +8,7 @@ from Transformer.Functions import *
 from generating import all_codebook_NonML
 
 from torch.optim.lr_scheduler import CosineAnnealingLR
-from Transformer.Model import ECC_Transformer
+from Transformer.Model_article import ECC_Transformer
 from Codebook.CodebookMatrix import ParitycheckMatrix
 
 
