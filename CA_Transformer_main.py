@@ -152,8 +152,8 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='ECCT')
-    parser.add_argument('--model_type', type=str, default='ECCT')
+    parser = argparse.ArgumentParser(description='CrossMPT')
+    parser.add_argument('--model_type', type=str, default='CrossMPT')
     parser.add_argument('--epochs', type=int, default=1000)
     parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--batch_size', type=int, default=128)
@@ -190,7 +190,7 @@ if __name__ == '__main__':
     args.code = code
 
     args.model_path = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_{device}/"
-    args.model_name = f"{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}_HD"
+    args.model_name = f"{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}"
 
     os.makedirs(args.model_path, exist_ok=True)
 
