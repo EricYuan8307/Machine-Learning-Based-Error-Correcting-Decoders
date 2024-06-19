@@ -38,7 +38,7 @@ class ECC_Dataset(data.Dataset):
         ss = random.choice(self.sigma)
         z = torch.randn(self.code.n, device=self.device) * ss
         y = bin_to_sign(x) + z
-        magnitude = torch.sign(y)
+        magnitude = torch.abs(y)
         syndrome = torch.matmul(sign_to_bin(torch.sign(y)), self.pc_matrix) % 2
         syndrome = bin_to_sign(syndrome)
         return m.float(), x.float(), z.float(), y.float(), magnitude.float(), syndrome.float()
@@ -50,6 +50,7 @@ def train(model, device, train_loader, optimizer, epoch, LR):
     for batch_idx, (m, x, z, y, magnitude, syndrome) in enumerate(train_loader):
         z_mul = (y * bin_to_sign(x))
         z_pred = model(magnitude.to(device), syndrome.to(device))
+        z_pred = z_pred * y
         loss, x_pred = model.loss(-z_pred, z_mul.to(device), y.to(device))
         model.zero_grad()
         loss.backward()
@@ -162,8 +163,8 @@ if __name__ == '__main__':
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
-    parser.add_argument('--code_k', type=int, default=51)
-    parser.add_argument('--code_n', type=int, default=63)
+    parser.add_argument('--code_k', type=int, default=15)
+    parser.add_argument('--code_n', type=int, default=31)
     parser.add_argument('--standardize', action='store_true')
 
     # model args
@@ -177,11 +178,11 @@ if __name__ == '__main__':
     class Code():
         pass
     code = Code()
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #           else (torch.device("cuda") if torch.cuda.is_available()
-    #                 else torch.device("cpu")))
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+              else (torch.device("cuda") if torch.cuda.is_available()
+                    else torch.device("cpu")))
     # device = torch.device("cuda")
-    device = torch.device("cpu")
+    # device = torch.device("cpu")
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type
