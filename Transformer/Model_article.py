@@ -147,10 +147,6 @@ class ECC_Transformer(nn.Module):
             src_mask = ~ (mask > 0).unsqueeze(0).unsqueeze(0)
             return src_mask
         src_mask = build_mask(code)
-        mask_size = code.n + code.pc_matrix.size(0)
-        a = mask_size ** 2
-        logging.info(
-            f'Self-Attention Sparsity Ratio={100 * torch.sum((src_mask).int()) / a:0.2f}%, Self-Attention Complexity Ratio={100 * torch.sum((~src_mask).int())//2 / a:0.2f}%')
         self.register_buffer('src_mask', src_mask)
 
 
