@@ -79,6 +79,7 @@ def test(model, device, test_loader_list, EbNo_range_test, min_FER=100):
                 (m, x, z, y, magnitude, syndrome) = next(iter(test_loader))
                 z_mul = (y * bin_to_sign(x))
                 z_pred = model(magnitude.to(device), syndrome.to(device))
+                z_pred = z_pred * y
                 loss, x_pred = model.loss(-z_pred, z_mul.to(device), y.to(device))
 
                 test_loss += loss.item() * x.shape[0]
