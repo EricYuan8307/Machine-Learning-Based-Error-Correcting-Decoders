@@ -345,11 +345,11 @@ def main():
 
     # Hyperparameters
     num = int(1e4)
-    bits = 16
-    encoded = 31
-    encoding_method = "BCH" # "Hamming", "Parity", "BCH", "Golay", "LDPC", "Polar"
+    bits = 440
+    encoded = 529
+    encoding_method = "LDPC" # "Hamming", "Parity", "BCH", "Golay", "LDPC", "Polar"
     metrics = ["BER"] # BER or BLER
-    batch_size = int(1e3)
+    batch_size = int(1e2)
 
     iter = 50 # BP
     H = ParitycheckMatrix(encoded, bits, encoding_method, device)
@@ -369,7 +369,7 @@ def main():
     result_save_HD = np.zeros((1, len(SNR_opt_ML)))
 
     for metric in metrics:
-        # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
+        result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
         # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
         # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, batch_size, device)
         # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)

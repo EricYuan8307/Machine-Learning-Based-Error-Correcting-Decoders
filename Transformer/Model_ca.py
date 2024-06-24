@@ -115,7 +115,7 @@ class ECC_Transformer(nn.Module):
         self.out_fc = nn.Linear(code.n + code.pc_matrix.size(0), code.n)  # Convert 10(7+3) to 7(encoded codeword)
 
         self.get_mask(code)
-        print(f'Mask:\n {self.src_mask}')
+        # print(f'Mask:\n {self.src_mask}')
 
         for p in self.parameters():
             if p.dim() > 1:
