@@ -292,7 +292,7 @@ def estimation_SDML(num, method, bits, encoded, SNR_opt_ML, metric, result, batc
                 print(f"{metric} is not either BER or BLER")
 
             if error_num_SDML < 100:
-                N += int(1e5)
+                N += int(1e8)
                 print(f"the code number is {N}")
 
             else:
@@ -344,7 +344,7 @@ def main():
     # device = torch.device("cuda")
 
     # Hyperparameters
-    num = int(1e4)
+    num = int(1e8)
     bits = 440
     encoded = 529
     encoding_method = "LDPC" # "Hamming", "Parity", "BCH", "Golay", "LDPC", "Polar"
@@ -358,7 +358,7 @@ def main():
     SNR_opt_BP = torch.arange(0, 8.5, 0.5)
     # SNR_opt_BP = SNR_opt_BP + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
 
-    SNR_opt_ML = torch.arange(0, 8.5, 0.5)
+    SNR_opt_ML = torch.arange(6.5, 8.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
 
 
@@ -370,29 +370,29 @@ def main():
 
     for metric in metrics:
         result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
-        # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
+        result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
         # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, batch_size, device)
         # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
-        result_HD = estimation_HD(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HD, device)
+        # result_HD = estimation_HD(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HD, device)
 
-        # result_all = np.vstack([
-        #     result_BPSK,
-        #     result_SDML,
-        #     result_HDML,
-        #     result_BP,
-        #     result_HD
-        # ])
-        #
-        #
-        # directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
-        #
-        # # Create the directory if it doesn't exist
-        # if not os.path.exists(directory_path):
-        #     os.makedirs(directory_path)
-        #
-        # csv_filename = f"{metric}_{encoding_method}{encoded}_{bits}.csv"
-        # full_csv_path = os.path.join(directory_path, csv_filename)
-        # np.savetxt(full_csv_path, result_all, delimiter=', ')
+        result_all = np.vstack([
+            # result_BPSK,
+            result_SDML,
+            # result_HDML,
+            # result_BP,
+            # result_HD
+        ])
+
+
+        directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
+
+        # Create the directory if it doesn't exist
+        if not os.path.exists(directory_path):
+            os.makedirs(directory_path)
+
+        csv_filename = f"{metric}_{encoding_method}{encoded}_{bits}.csv"
+        full_csv_path = os.path.join(directory_path, csv_filename)
+        np.savetxt(full_csv_path, result_all, delimiter=', ')
 
 
 if __name__ == "__main__":
