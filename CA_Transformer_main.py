@@ -162,8 +162,8 @@ if __name__ == '__main__':
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
-    parser.add_argument('--code_k', type=int, default=16)
-    parser.add_argument('--code_n', type=int, default=31)
+    parser.add_argument('--code_k', type=int, default=4)
+    parser.add_argument('--code_n', type=int, default=7)
     parser.add_argument('--standardize', action='store_true')
 
     # model args
@@ -180,8 +180,8 @@ if __name__ == '__main__':
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cuda")
-    # device = torch.device("cpu")
+    # device = torch.device("cuda")
+    device = torch.device("cpu")
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type

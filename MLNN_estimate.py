@@ -98,6 +98,7 @@ def main():
     MLNN_hidden_size = 16
 
     SNR_opt_NN = torch.arange(0, 7.5, 0.5).to(device)
+    SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
     result_save = np.zeros((1, len(SNR_opt_NN)))
 
     # For trained and deleted model
