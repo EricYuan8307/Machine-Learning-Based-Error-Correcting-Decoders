@@ -130,7 +130,7 @@ class ECC_Transformer(nn.Module):
     def loss(self, z_pred, z2, y):
         loss = F.binary_cross_entropy_with_logits(
             z_pred, sign_to_bin(torch.sign(z2)))
-        x_pred = sign_to_bin(torch.sign(-z_pred * torch.sign(y)))
+        x_pred = sign_to_bin(torch.sign(-z_pred * y))
         return loss, x_pred
 
     def get_mask(self, code, no_mask=False):
