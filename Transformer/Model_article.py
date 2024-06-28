@@ -124,7 +124,8 @@ class ECC_Transformer(nn.Module):
     def loss(self, z_pred, z2, y):
         loss = F.binary_cross_entropy_with_logits(
             z_pred, sign_to_bin(torch.sign(z2)))
-        x_pred = sign_to_bin(torch.sign(-z_pred * torch.sign(y)))
+        m = -z_pred * torch.sign(y)
+        x_pred = sign_to_bin(torch.sign(m))
         return loss, x_pred
 
     def get_mask(self, code, no_mask=False):
@@ -147,10 +148,6 @@ class ECC_Transformer(nn.Module):
             src_mask = ~ (mask > 0).unsqueeze(0).unsqueeze(0)
             return src_mask
         src_mask = build_mask(code)
-        mask_size = code.n + code.pc_matrix.size(0)
-        a = mask_size ** 2
-        logging.info(
-            f'Self-Attention Sparsity Ratio={100 * torch.sum((src_mask).int()) / a:0.2f}%, Self-Attention Complexity Ratio={100 * torch.sum((~src_mask).int())//2 / a:0.2f}%')
         self.register_buffer('src_mask', src_mask)
 
 

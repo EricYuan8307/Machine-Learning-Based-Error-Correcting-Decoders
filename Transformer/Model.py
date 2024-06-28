@@ -98,10 +98,10 @@ class ECC_Transformer(nn.Module):
         attn = MultiHeadedAttention(args.h, args.d_model)
         ff = PositionwiseFeedForward(args.d_model, args.d_model*4, dropout)
 
-        self.src_embed = torch.nn.Parameter(torch.empty((code.k + code.pc_matrix.size(0), args.d_model)))
+        self.src_embed = torch.nn.Parameter(torch.empty((code.n + code.pc_matrix.size(0), args.d_model)))
         self.decoder = Encoder(EncoderLayer(args.d_model, c(attn), c(ff), dropout), args.N_dec) # N_dec: encoder layers 复制次数
         self.oned_final_embed = torch.nn.Sequential(*[nn.Linear(args.d_model, 1)]) # make 32 channel to 1 channel. Convert to original channel
-        self.out_fc = nn.Linear(code.k +code.pc_matrix.size(0), code.k) # Convert 10(7+3) to 7(encoded codeword)
+        self.out_fc = nn.Linear(code.n + code.pc_matrix.size(0), code.n) # Convert 10(7+3) to 7(encoded codeword)
 
         self.get_mask(code)
         print(f'Mask:\n {self.src_mask}')
@@ -117,8 +117,10 @@ class ECC_Transformer(nn.Module):
         return self.out_fc(self.oned_final_embed(emb).squeeze(-1))
 
     def loss(self, z_pred, z2, y):
-        loss = F.binary_cross_entropy_with_logits(z_pred, sign_to_bin(torch.sign(z2)))
-        x_pred = sign_to_bin(torch.sign(-z_pred * torch.sign(y)))
+        loss = F.binary_cross_entropy_with_logits(
+            z_pred, sign_to_bin(torch.sign(z2)))
+        m = -z_pred * torch.sign(y)
+        x_pred = sign_to_bin(torch.sign(m))
         return loss, x_pred
 
     def get_mask(self, code, no_mask=False):
@@ -127,22 +129,17 @@ class ECC_Transformer(nn.Module):
             return
 
         def build_mask(code):
-            mask_size = code.k + code.pc_matrix.size(0)
+            mask_size = code.n + code.pc_matrix.size(0)
             mask = torch.eye(mask_size, mask_size)
-            for p_c in range(code.pc_matrix.size(0)):
-                for p_r in range(code.pc_matrix.size(0)):
-                    if p_c != p_r:
-                        mask[code.k + p_c, code.k + p_r] += 1
-
             for ii in range(code.pc_matrix.size(0)):
                 idx = torch.where(code.pc_matrix[ii] > 0)[0]
                 for jj in idx:
                     for kk in idx:
-                        if jj != kk: # < could decrease a little complexity
+                        if jj != kk:
                             mask[jj, kk] += 1
                             mask[kk, jj] += 1
-                            mask[code.k + ii, jj] += 1
-                            mask[jj, code.k + ii] += 1
+                            mask[code.n + ii, jj] += 1
+                            mask[jj, code.n + ii] += 1
             src_mask = ~ (mask > 0).unsqueeze(0).unsqueeze(0)
             return src_mask
         src_mask = build_mask(code)

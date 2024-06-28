@@ -99,12 +99,12 @@ if __name__ == '__main__':
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
-    parser.add_argument('--code_k', type=int, default=64)
-    parser.add_argument('--code_n', type=int, default=127)
+    parser.add_argument('--code_k', type=int, default=16)
+    parser.add_argument('--code_n', type=int, default=31)
     parser.add_argument('--standardize', action='store_true')
 
     # model args
-    parser.add_argument('--N_dec', type=int, default=10) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
+    parser.add_argument('--N_dec', type=int, default=6) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
     parser.add_argument('--d_model', type=int, default=128) # Embedding dimension
     parser.add_argument('--h', type=int, default=8) # multihead attention heads
 
@@ -116,7 +116,7 @@ if __name__ == '__main__':
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cuda:2")
+    device = torch.device("cuda")
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type
