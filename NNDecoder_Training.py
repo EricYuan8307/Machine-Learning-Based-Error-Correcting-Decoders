@@ -544,8 +544,8 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    # device = torch.device("cpu")
-    device = torch.device("cuda")
+    device = torch.device("cpu")
+    # device = torch.device("cuda")
 
     # Hyperparameters
     NeuralNetwork_type = ["MLNN"] # ["SLNN", "MLNN"]
@@ -563,7 +563,7 @@ def main():
     encoded = 31
     encoding_method = "BCH" # "Hamming", "Parity", "BCH",
 
-    snr = torch.tensor(0.0, dtype=torch.float, device=device)
+    snr = torch.tensor(4.5, dtype=torch.float, device=device)
     snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
     # Early Stopping # Guess same number of your output
