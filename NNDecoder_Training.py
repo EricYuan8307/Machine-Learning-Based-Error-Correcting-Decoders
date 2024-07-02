@@ -544,8 +544,8 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
-    # device = torch.device("cuda")
+    # device = torch.device("cpu")
+    device = torch.device("cuda")
 
     # Hyperparameters
     NeuralNetwork_type = ["MLNN"] # ["SLNN", "MLNN"]
@@ -553,7 +553,7 @@ def main():
     # SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     # MLNN_hidden_size1 = [100]
     MLNN_hidden_size2 = [[1000,500], [2000, 1000]]
-    batch_size = 64
+    batch_size =128
     learning_rate = 1e-2
     momentum = 0.9
     epochs = 1500
