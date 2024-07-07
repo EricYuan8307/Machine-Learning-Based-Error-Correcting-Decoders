@@ -559,7 +559,7 @@ def main():
     epochs = 1500
 
     nr_codeword = int(1e6)
-    bits = 16
+    bits = 21
     encoded = 31
     encoding_method = "BCH" # "Hamming", "Parity", "BCH",
 
