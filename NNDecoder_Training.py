@@ -544,26 +544,26 @@ def main():
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
-    # device = torch.device("cuda")
+    # device = torch.device("cpu")
+    device = torch.device("cuda")
 
     # Hyperparameters
-    NeuralNetwork_type = ["SLNN"] # ["SLNN", "MLNN"]
+    NeuralNetwork_type = ["MLNN"] # ["SLNN", "MLNN"]
     # SLNN_hidden_size1 = [31] # 25, 26, 27, 28
     # SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     # MLNN_hidden_size1 = [100]
     MLNN_hidden_size2 = [[1000,500], [2000, 1000]]
-    batch_size = 64
+    batch_size =128
     learning_rate = 1e-2
     momentum = 0.9
     epochs = 1500
 
     nr_codeword = int(1e6)
-    bits = 16
+    bits = 21
     encoded = 31
     encoding_method = "BCH" # "Hamming", "Parity", "BCH",
 
-    snr = torch.tensor(0.0, dtype=torch.float, device=device)
+    snr = torch.tensor(4.5, dtype=torch.float, device=device)
     snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
     # Early Stopping # Guess same number of your output

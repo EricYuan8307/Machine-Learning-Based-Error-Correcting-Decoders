@@ -25,7 +25,8 @@ class Encoder(nn.Module):
             x, x_e = layer(x, x_e, mask)
             if idx == len(self.layers) // 2 and len(self.layers) > 1:
                 x = self.norm2(x)
-        return self.norm(x), x_e
+        x = torch.cat([x, x_e], -2)
+        return self.norm(x)
 
 
 class SublayerConnection(nn.Module):
@@ -123,8 +124,9 @@ class ECC_Transformer(nn.Module):
     def forward(self, magnitude, syndrome):
         magnitude = self.src_embed_m.unsqueeze(0) * magnitude.unsqueeze(-1)
         syndrome = self.src_embed_s.unsqueeze(0) * syndrome.unsqueeze(-1)
-        magnitude, syndrome = self.decoder(magnitude, syndrome, self.src_mask)
-        emb = torch.cat([magnitude, syndrome], -2)
+        # magnitude, syndrome = self.decoder(magnitude, syndrome, self.src_mask)
+        # emb = torch.cat([magnitude, syndrome], -2)
+        emb = self.decoder(magnitude, syndrome, self.src_mask)
         return self.out_fc(self.oned_final_embed(emb).squeeze(-1))
 
     def loss(self, z_pred, z2, y):
