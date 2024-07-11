@@ -49,10 +49,12 @@ class EncoderLayer(nn.Module):  # attention iteration
         self.norm = nn.LayerNorm(size)
 
     def forward(self, x, e_x, mask):  # x: left side, e_x: right side
-        x = self.sublayer[0](x, lambda x: self.self_attn(self.norm(x), e_x, e_x, mask.transpose(-2, -1)))
+        x = self.norm(x)
+        x = self.sublayer[0](x, lambda x: self.self_attn(x, e_x, e_x, mask.transpose(-2, -1)))
         x = self.sublayer[1](x, self.feed_forward)
 
-        e_x = self.sublayer[0](e_x, lambda e_x: self.self_attn(self.norm(e_x), x, x, mask))
+        e_x = self.norm(e_x)
+        e_x = self.sublayer[0](e_x, lambda e_x: self.self_attn(e_x, x, x, mask))
         e_x = self.sublayer[1](e_x, self.feed_forward)
         return x, e_x
 
