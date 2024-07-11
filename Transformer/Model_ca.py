@@ -126,8 +126,6 @@ class ECC_Transformer(nn.Module):
     def forward(self, magnitude, syndrome):
         magnitude = self.src_embed_m.unsqueeze(0) * magnitude.unsqueeze(-1)
         syndrome = self.src_embed_s.unsqueeze(0) * syndrome.unsqueeze(-1)
-        # magnitude, syndrome = self.decoder(magnitude, syndrome, self.src_mask)
-        # emb = torch.cat([magnitude, syndrome], -2)
         emb = self.decoder(magnitude, syndrome, self.src_mask)
         return self.out_fc(self.oned_final_embed(emb).squeeze(-1))
 
