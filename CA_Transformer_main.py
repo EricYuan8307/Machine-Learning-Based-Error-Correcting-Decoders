@@ -156,7 +156,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_type', type=str, default='CrossMPT')
     parser.add_argument('--epochs', type=int, default=2000)
     parser.add_argument('--lr', type=float, default=1e-4)
-    parser.add_argument('--batch_size', type=int, default=128)
+    parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--test_batch_size', type=int, default=2048)
     parser.add_argument('--seed', type=int, default=42)
 
@@ -180,8 +180,8 @@ if __name__ == '__main__':
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cuda")
-    # device = torch.device("cpu")
+    # device = torch.device("cuda")
+    device = torch.device("cpu")
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type
