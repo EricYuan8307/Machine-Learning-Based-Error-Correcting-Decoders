@@ -156,7 +156,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_type', type=str, default='CrossMPT')
     parser.add_argument('--epochs', type=int, default=2000)
     parser.add_argument('--lr', type=float, default=1e-4)
-    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--test_batch_size', type=int, default=2048)
     parser.add_argument('--seed', type=int, default=42)
 
@@ -168,8 +168,8 @@ if __name__ == '__main__':
 
     # model args
     parser.add_argument('--N_dec', type=int, default=6) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
-    parser.add_argument('--d_model', type=int, default=128) # Embedding dimension
-    parser.add_argument('--h', type=int, default=8) # multihead attention heads
+    parser.add_argument('--d_model', type=int, default=1) # Embedding dimension
+    parser.add_argument('--h', type=int, default=1) # multihead attention heads
 
     args = parser.parse_args()
     set_seed(args.seed)
