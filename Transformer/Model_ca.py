@@ -20,13 +20,14 @@ class Encoder(nn.Module):
         if N > 1:
             self.norm2 = nn.LayerNorm(layer.size)
 
-    def forward(self, x, x_e, mask):
+    def forward(self, x, x2, mask):
         for idx, layer in enumerate(self.layers, start=1):
-            x, x_e = layer(x, x_e, mask)
+            x = layer(x, x2, mask.transpose(-2, -1))
+            x2 = layer(x2, x, mask)
             if idx == len(self.layers) // 2 and len(self.layers) > 1:
                 x = self.norm2(x)
-        x = torch.cat([x, x_e], -2)
-        return self.norm(x)
+                x2 = self.norm2(x2)
+        return torch.cat([self.norm(x), self.norm(x2)], -2)
 
 
 class SublayerConnection(nn.Module):
@@ -49,12 +50,8 @@ class EncoderLayer(nn.Module):  # attention iteration
         self.norm = nn.LayerNorm(size)
 
     def forward(self, x, e_x, mask):  # x: left side, e_x: right side
-        x = self.sublayer[0](x, lambda x: self.self_attn(x, e_x, e_x, mask.transpose(-2, -1)))
-        x = self.sublayer[1](x, self.feed_forward)
-
-        e_x = self.sublayer[0](e_x, lambda e_x: self.self_attn(e_x, x, x, mask))
-        e_x = self.sublayer[1](e_x, self.feed_forward)
-        return x, e_x
+        x = self.sublayer[0](x, lambda x: self.self_attn(x, e_x, e_x, mask))
+        return self.sublayer[1](x, self.feed_forward)
 
 
 class MultiHeadedAttention(nn.Module):
