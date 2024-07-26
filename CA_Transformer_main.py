@@ -154,11 +154,11 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='CrossMPT')
     parser.add_argument('--model_type', type=str, default='CrossMPT')
-    parser.add_argument('--epochs', type=int, default=1000)
+    parser.add_argument('--epochs', type=int, default=2000)
     parser.add_argument('--lr', type=float, default=1e-4)
-    parser.add_argument('--batch_size', type=int, default=128)
+    parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--test_batch_size', type=int, default=2048)
-    parser.add_argument('--seed', type=int, default=226)
+    parser.add_argument('--seed', type=int, default=42)
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])

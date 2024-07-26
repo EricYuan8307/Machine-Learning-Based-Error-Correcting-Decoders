@@ -12,21 +12,51 @@ def clones(module, N):
     return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
 
 
+# class Encoder(nn.Module):
+#     def __init__(self, layer, N):
+#         super(Encoder, self).__init__()
+#         self.layers = clones(layer, N)
+#         self.norm = nn.LayerNorm(layer.size)
+#         if N > 1:
+#             self.norm2 = nn.LayerNorm(layer.size)
+#
+#     def forward(self, x, x2, mask):
+#         for idx, layer in enumerate(self.layers, start=1):
+#             x = layer(x, x2, mask.transpose(-2, -1))
+#             x2 = layer(x2, x, mask)
+#             if idx == len(self.layers) // 2 and len(self.layers) > 1:
+#                 x = self.norm2(x)
+#                 x2 = self.norm2(x2)
+#         return self.norm(x), self.norm(x2)
+
 class Encoder(nn.Module):
     def __init__(self, layer, N):
         super(Encoder, self).__init__()
-        self.layers = clones(layer, N)
+        self.layers = clones(layer, 2*N)
         self.norm = nn.LayerNorm(layer.size)
+        self.N = N
         if N > 1:
             self.norm2 = nn.LayerNorm(layer.size)
 
-    def forward(self, x, x_e, mask):
-        for idx, layer in enumerate(self.layers, start=1):
-            x, x_e = layer(x, x_e, mask)
-            if idx == len(self.layers) // 2 and len(self.layers) > 1:
+    def forward(self, x, x2, mask):
+        for idx in range(self.N):
+            layer1 = self.layers[idx]
+            layer2 = self.layers[idx + self.N]
+            x = layer1(x, x2, mask.transpose(-2, -1))
+            x2 = layer2(x2, x, mask)
+            layer_num = int(len(self.layers) / 2)
+            if idx == layer_num // 2 and layer_num > 1:
                 x = self.norm2(x)
-        x = torch.cat([x, x_e], -2)
-        return self.norm(x)
+                x2 = self.norm2(x2)
+        return self.norm(x), self.norm(x2)
+        #
+        # for idx, layer in enumerate(self.layers, start=1):
+        #     x = layer(x, x2, mask.transpose(-2, -1))
+        #     x2 = layer(x2, x, mask)
+        #     if idx == len(self.layers) // 2 and len(self.layers) > 1:
+        #         x = self.norm2(x)
+        #         x2 = self.norm2(x2)
+        # return self.norm(x), self.norm(x2)
 
 
 class SublayerConnection(nn.Module):
@@ -48,13 +78,10 @@ class EncoderLayer(nn.Module):  # attention iteration
         self.size = size
         self.norm = nn.LayerNorm(size)
 
-    def forward(self, x, e_x, mask):  # x: left side, e_x: right side
-        x = self.sublayer[0](x, lambda x: self.self_attn(self.norm(x), e_x, e_x, mask.transpose(-2, -1)))
-        x = self.sublayer[1](x, self.feed_forward)
+    def forward(self, x, e_x, mask):  # x: Q, e_x: K,V
 
-        e_x = self.sublayer[0](e_x, lambda e_x: self.self_attn(self.norm(e_x), x, x, mask))
-        e_x = self.sublayer[1](e_x, self.feed_forward)
-        return x, e_x
+        x = self.sublayer[0](x, lambda x: self.self_attn(x, e_x, e_x, mask))
+        return self.sublayer[1](x, self.feed_forward)
 
 
 class MultiHeadedAttention(nn.Module):
@@ -124,9 +151,8 @@ class ECC_Transformer(nn.Module):
     def forward(self, magnitude, syndrome):
         magnitude = self.src_embed_m.unsqueeze(0) * magnitude.unsqueeze(-1)
         syndrome = self.src_embed_s.unsqueeze(0) * syndrome.unsqueeze(-1)
-        # magnitude, syndrome = self.decoder(magnitude, syndrome, self.src_mask)
-        # emb = torch.cat([magnitude, syndrome], -2)
-        emb = self.decoder(magnitude, syndrome, self.src_mask)
+        magnitude, syndrome = self.decoder(magnitude, syndrome, self.src_mask)
+        emb = torch.cat([magnitude, syndrome], -2)
         return self.out_fc(self.oned_final_embed(emb).squeeze(-1))
 
     def loss(self, z_pred, z2, y):

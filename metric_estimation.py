@@ -337,28 +337,28 @@ def estimation_HD(num, method, bits, encoded, SNR_opt_ML, metric, result, device
     return result
 
 def main():
-    # device = (torch.device("mps") if torch.backends.mps.is_available()
-    #           else (torch.device("cuda") if torch.cuda.is_available()
-    #                 else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = (torch.device("mps") if torch.backends.mps.is_available()
+              else (torch.device("cuda") if torch.cuda.is_available()
+                    else torch.device("cpu")))
+    # device = torch.device("cpu")
     # device = torch.device("cuda")
 
     # Hyperparameters
     num = int(1e5)
-    bits = 11
-    encoded = 15
+    bits = 16
+    encoded = 31
     encoding_method = "BCH" # "Hamming", "Parity", "BCH", "Golay", "LDPC", "Polar"
     metrics = ["BER"] # BER or BLER
-    batch_size = int(1e5)
+    batch_size = int(1e4)
 
     iter = 50 # BP
     H = ParitycheckMatrix(encoded, bits, encoding_method, device)
 
     SNR_opt_BPSK = torch.arange(0, 8.5, 0.5)
     SNR_opt_BP = torch.arange(0, 8.5, 0.5)
-    # SNR_opt_BP = SNR_opt_BP + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
+    SNR_opt_BP = SNR_opt_BP + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
 
-    SNR_opt_ML = torch.arange(0, 8.5, 0.5)
+    SNR_opt_ML = torch.arange(4, 6.5, 0.5)
     SNR_opt_ML = SNR_opt_ML + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
 
 
@@ -370,16 +370,16 @@ def main():
 
     for metric in metrics:
         # result_BPSK = estimation_BPSK(num, bits, SNR_opt_BPSK, metric, result_save_BPSK, device)
-        result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
+        # result_SDML = estimation_SDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_SDML, batch_size, device)
         # result_HDML = estimation_HDML(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HDML, batch_size, device)
-        # result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
+        result_BP = estimation_BP(num, encoding_method, bits, encoded, SNR_opt_BP, iter, H, metric, result_save_BP, device)
         # result_HD = estimation_HD(num, encoding_method, bits, encoded, SNR_opt_ML, metric, result_save_HD, device)
 
         result_all = np.vstack([
             # result_BPSK,
-            result_SDML,
+            # result_SDML,
             # result_HDML,
-            # result_BP,
+            result_BP,
             # result_HD
         ])
 

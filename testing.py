@@ -1,58 +1,71 @@
 import torch
-import numpy as np
 
-def read_alist(file_path):
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
+# Parameters
+n = 7  # Codeword length
+k = 4  # Message length
+snr_db = torch.tensor(7)  # Signal-to-noise ratio in dB
+max_iterations = 10  # Maximum number of iterations for ISD
+q = 1  # Quantization level
 
-    # Read the number of variable and check nodes
-    n_var_nodes, n_check_nodes = map(int, lines[0].split())
+# Generate a random message
+message = torch.randint(0, 2, (k,)).float()  # Convert to float
+print("Original Message:", message)
 
-    # Read the maximum number of edges
-    max_var_edges, max_check_edges = map(int, lines[1].split())
+# Simple parity-check matrix for (7,4) Hamming code
+H = torch.tensor([
+    [1, 1, 1, 0, 1, 0, 0],
+    [1, 1, 0, 1, 0, 1, 0],
+    [1, 0, 1, 1, 0, 0, 1]
+], dtype=torch.float32)
 
-    # Read the variable node edges
-    var_node_edges = []
-    for i in range(2, 2 + n_var_nodes):
-        edges = list(map(int, lines[i].split()))
-        var_node_edges.append(edges)
+# Generator matrix for (7,4) Hamming code
+G = torch.tensor([
+    [1, 0, 0, 0, 1, 1, 0],
+    [0, 1, 0, 0, 1, 0, 1],
+    [0, 0, 1, 0, 0, 1, 1],
+    [0, 0, 0, 1, 1, 1, 1]
+], dtype=torch.float32)
 
-    # Read the check node edges
-    check_node_edges = []
-    for i in range(2 + n_var_nodes, 2 + n_var_nodes + n_check_nodes):
-        edges = list(map(int, lines[i].split()))
-        check_node_edges.append(edges)
+# Encode the message
+codeword = message @ G % 2
+print("Encoded Codeword:", codeword)
 
-    return n_var_nodes, n_check_nodes, var_node_edges, check_node_edges
+# Add noise to the codeword
+snr = 10**(snr_db / 10)
+sigma = torch.sqrt(1 / (2 * snr))
+noise = sigma * torch.randn(n)
+received = codeword + noise
+print("Received Codeword with Noise:", received)
 
+# Quantize the received signal based on q
+def quantize(signal, q):
+    if q == 0:
+        return torch.round(signal)  # Hard decision
+    elif q == 1:
+        return torch.sign(signal) * torch.clamp(torch.abs(signal), 0, 1)  # Simple soft decision
+    elif q == 2:
+        # For q=2, quantize to 4 levels: strong 0, weak 0, weak 1, strong 1
+        levels = torch.tensor([-1.5, -0.5, 0.5, 1.5])
+        quantized = torch.zeros_like(signal)
+        for i, level in enumerate(levels):
+            quantized[torch.abs(signal - level) == torch.min(torch.abs(signal - levels))] = level
+        return quantized
+    else:
+        raise ValueError("Unsupported quantization level")
 
-def alist_to_parity_check_matrix(alist_path):
-    n_var_nodes, n_check_nodes, var_node_edges, check_node_edges = read_alist(alist_path)
+# ISD Decoding with quantization
+def isd_decode(received, H, max_iterations, q):
+    r = received.clone()
+    for _ in range(max_iterations):
+        syndrome = torch.matmul(H, torch.round(r)) % 2
+        if torch.all(syndrome == 0):
+            break
+        # Compute the reliability (soft decision)
+        reliability = 1 / (1 + torch.exp(-2 * r / sigma))
+        error_pos = torch.argmax(reliability)
+        r[error_pos] = 1 - r[error_pos]
+        r = quantize(r, q)
+    return torch.round(r)
 
-    # Initialize the parity check matrix with zeros
-    H = torch.zeros((n_check_nodes, n_var_nodes), dtype=torch.int)
-
-    # Populate the parity check matrix
-    for cn_index, edges in enumerate(check_node_edges):
-        for edge in edges:
-            if edge != 0:  # edges are 1-based in .alist, 0 means no edge
-                H[cn_index, edge - 1] = 1
-
-    return H
-
-
-# Example usage:
-alist_path = 'Matrix/wifi_648_r083.alist'
-H = alist_to_parity_check_matrix(alist_path)
-
-# Display the parity-check matrix
-print(H.shape)
-
-def save_parity_check_matrix_as_text(H, file_path):
-    np.savetxt(file_path, H.numpy(), fmt='%d')
-    print(f"Parity-check matrix saved to {file_path}")
-
-# Example usage:
-text_file_path = 'Matrix/parity_check_matrix.txt'
-save_parity_check_matrix_as_text(H, text_file_path)
-
+decoded = isd_decode(received, H, max_iterations, q)
+print("Decoded Codeword:", decoded)

@@ -96,6 +96,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ECCT')
     parser.add_argument('--model_type', type=str, default='ECCT')
     parser.add_argument('--test_batch_size', type=int, default=2048)
+    parser.add_argument('--seed', type=int, default=42)
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
@@ -124,6 +125,6 @@ if __name__ == '__main__':
     code.pc_matrix = ParitycheckMatrix(args.code_n, args.code_k, args.code_type, device).squeeze(0).T
     args.code = code
 
-    args.model_pth = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_cuda/{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}.pth"
+    args.model_pth = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_cuda/{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}_seed{args.seed}.pth"
 
     main(args)
