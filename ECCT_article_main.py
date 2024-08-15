@@ -167,9 +167,9 @@ if __name__ == '__main__':
     parser.add_argument('--standardize', action='store_true')
 
     # model args
-    parser.add_argument('--N_dec', type=int, default=6) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
+    parser.add_argument('--N_dec', type=int, default=48) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
     parser.add_argument('--d_model', type=int, default=128) # Embedding dimension
-    parser.add_argument('--h', type=int, default=8) # multihead attention heads
+    parser.add_argument('--h', type=int, default=1) # multihead attention heads
 
     args = parser.parse_args()
     set_seed(args.seed)
