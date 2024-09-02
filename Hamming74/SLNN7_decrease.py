@@ -3,18 +3,16 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
+from Decode.Converter import BinarytoDecimal
+from Decode.NNDecoder import SingleLabelNNDecoder_nonfully
+from Encode.Encoder import PCC_encoders
 from Encode.Generator import generator
 from Encode.Modulator import bpsk_modulator
-from Transmit.noise import AWGN
-from Decode.NNDecoder import SingleLabelNNDecoder_nonfully
-from Transmit.NoiseMeasure import NoiseMeasure
-from Decode.Converter import BinarytoDecimal
-from earlystopping import SLNN_EarlyStopping
-
-from generating import all_codebook_NonML
-from Encode.Encoder import PCC_encoders
 from Hamming74.reduce_mask import MaskMatrix
-
+from Transmit.NoiseMeasure import NoiseMeasure
+from Transmit.noise import AWGN
+from generating import all_codebook_NonML
+from earlystopping import EarlyStopping
 
 
 def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate, batch_size, hidden_size, edge_delete,
@@ -50,7 +48,7 @@ def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
     SLNN_test_losses = []
 
     # Early Stopping
-    early_stopping = SLNN_EarlyStopping(patience, delta, snr_measure, edge_delete)
+    early_stopping = EarlyStopping(patience, delta, snr_measure, edge_delete)
 
     # Single-Label Neural Network Training loop
     for epoch in range(epochs):
@@ -97,12 +95,12 @@ def SLNN_training(snr, method, nr_codeword, bits, encoded, epochs, learning_rate
         print(f'SLNN Testing - Edge Deleted:{edge_delete} - SNR{snr_measure} - Loss: {running_loss / len(SLNN_testloader):.9f}')
 
         # Early Stopping
-        if early_stopping(running_loss, model, model_save_path):
-            print('SLNN: Early stopping')
-            print(f'SLNN Edge Deleted:{edge_delete}, SNR={snr_measure} Stop at total val_loss is {running_loss/len(SLNN_testloader)} and epoch is {epoch}')
-            break
-        else:
-            print("SLNN: Continue Training")
+        # if early_stopping(running_loss, model, model_save_path, model_name):
+        #     print('SLNN: Early stopping')
+        #     print(f'SLNN Edge Deleted:{edge_delete}, SNR={snr_measure} Stop at total val_loss is {running_loss/len(SLNN_testloader)} and epoch is {epoch}')
+        #     break
+        # else:
+        #     print("SLNN: Continue Training")
 
 
 def main():

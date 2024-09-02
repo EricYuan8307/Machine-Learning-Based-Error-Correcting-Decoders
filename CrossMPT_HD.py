@@ -4,7 +4,7 @@ import random
 import os
 from torch.utils.data import DataLoader
 from torch.utils import data
-from Transformer.Codes_article import *
+from Transformer.Functions import *
 from generating import all_codebook_NonML
 
 from torch.optim.lr_scheduler import CosineAnnealingLR
