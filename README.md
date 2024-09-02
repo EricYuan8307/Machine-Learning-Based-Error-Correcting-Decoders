@@ -2,11 +2,9 @@
 
 ## Table of Contents
 - [Installation](#installation)
-- [Usage](#usage)
-- [Examples](#examples)
-- [Configuration](#configuration)
-- [Contributing](#contributing)
+- [Function Usage](#usage)
 - [License](#license)
+- [References](#references)
 
 ## Installation
 
@@ -123,6 +121,9 @@ For the pruned NN decoder, the edges are deleted with specific number, get the r
 - `NNdecoder_Training.py`:
 Training for all NN decoder including SLNN, new SLNN, MLNN, Optimzied MLNN.
 
+
+
+
 ## References:
 ### Implement the Belief propagation:
 Belief Propagation Reference: <br>
@@ -144,4 +145,5 @@ To train the model faster, I used early stopping.
 
 ### Addition: In Good First Issue, I mentioned some common bugs and solutions in Belief Pragation, BER and BLER.
 
-
+### License
+[MIT](https://choosealicense.com/licenses/mit/)
