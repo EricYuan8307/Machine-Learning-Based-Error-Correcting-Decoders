@@ -95,7 +95,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ECCT')
     parser.add_argument('--model_type', type=str, default='ECCT')
-    parser.add_argument('--test_batch_size', type=int, default=2048)
+    parser.add_argument('--test_batch_size', type=int, default=1024)
     parser.add_argument('--seed', type=int, default=42)
 
     # Code args
