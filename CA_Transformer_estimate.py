@@ -1,15 +1,13 @@
 import torch
 import argparse
 import random
-import os
 from torch.utils.data import DataLoader
 from torch.utils import data
 from Transformer.Codes_article import *
 from generating import all_codebook_NonML
 
-from Transformer.Model_article import ECC_Transformer
+from Transformer.Model_ca import ECC_Transformer
 from Codebook.CodebookMatrix import ParitycheckMatrix
-
 
 class ECC_Dataset(data.Dataset):
     def __init__(self, code, sigma, len, device):
@@ -93,15 +91,15 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='ECCT')
-    parser.add_argument('--model_type', type=str, default='ECCT')
-    parser.add_argument('--test_batch_size', type=int, default=1024)
+    parser = argparse.ArgumentParser(description='CrossMPT')
+    parser.add_argument('--model_type', type=str, default='CrossMPT')
+    parser.add_argument('--test_batch_size', type=int, default=2048)
     parser.add_argument('--seed', type=int, default=42)
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
-    parser.add_argument('--code_k', type=int, default=64)
-    parser.add_argument('--code_n', type=int, default=127)
+    parser.add_argument('--code_k', type=int, default=16)
+    parser.add_argument('--code_n', type=int, default=31)
     parser.add_argument('--standardize', action='store_true')
 
     # model args
@@ -117,7 +115,7 @@ if __name__ == '__main__':
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cpu")
+    device = torch.device("cuda")
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type
@@ -125,6 +123,6 @@ if __name__ == '__main__':
     code.pc_matrix = ParitycheckMatrix(args.code_n, args.code_k, args.code_type, device).squeeze(0).T
     args.code = code
 
-    args.model_pth = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_cuda/{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}_seed{args.seed}.pth"
+    args.model_pth = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_cuda/{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}_s{args.seed}.pth"
 
     main(args)
