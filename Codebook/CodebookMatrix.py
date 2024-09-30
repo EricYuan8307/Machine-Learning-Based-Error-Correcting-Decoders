@@ -46,6 +46,21 @@ class coderMatrix(torch.nn.Module):
                                           [0, 0, 0, 0, 0, 1, 0],
                                           [0, 0, 0, 0, 0, 0, 1]], device=self.device, dtype=torch.float)
 
+        if method == "Hamming" and encoded == 8 and origin == 4:
+            encode_matrix = torch.tensor([[1, 0, 0, 0],
+                                          [0, 1, 0, 0],
+                                          [0, 0, 1, 0],
+                                          [0, 0, 0, 1],
+                                          [1, 1, 0, 1],
+                                          [0, 1, 1, 1],
+                                          [1, 0, 1, 1],
+                                          [1, 1, 1, 0]], dtype=torch.float, device=self.device)
+
+            decode_matrix = torch.tensor([[1, 0, 1, 1, 1, 0, 0, 0],
+                                [1, 1, 0, 1, 0, 1, 0, 0],
+                                [0, 1, 1, 1, 0, 0, 1, 0],
+                                [1, 1, 1, 0, 0, 0, 0, 1]], dtype=torch.float, device=self.device)
+
         # Define parity 10x5 matrix
         elif method == "Parity" and encoded == 10 and origin == 5:
             encode_matrix = torch.tensor([[1, 0, 0, 0, 0],

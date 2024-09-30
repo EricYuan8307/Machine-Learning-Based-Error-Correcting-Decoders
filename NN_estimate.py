@@ -211,17 +211,17 @@ def main():
     # Hyperparameters
     metrics = ["BER"] # ["BER", "BLER"]
     nr_codeword = int(1e4)
-    bits = 21
-    encoded = 31
-    encoding_method = "BCH"  # "Hamming", "Parity", "BCH"
+    bits = 4
+    encoded = 8
+    encoding_method = "Hamming"  # "Hamming", "Parity", "BCH"
     NeuralNetwork_type = ["MLNN"] # ["SLNN", "MLNN"]
     batch_size = int(1e4)
     SLNN_hidden_size1 = [24] # [20, 21, 22, 23, 24, 25, 26, 27, 28]
     SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     # MLNN_hidden_size1 = [16]
-    MLNN_hidden_size2 = [[1000, 500], [2000, 1000]]
+    MLNN_hidden_size2 = [[50, 50]]
 
-    SNR_opt_NN = torch.arange(0, 8.5, 0.5).to(device)
+    SNR_opt_NN = torch.arange(0, 10.5, 0.5).to(device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
     result_save = np.zeros((1, len(SNR_opt_NN)))
 
