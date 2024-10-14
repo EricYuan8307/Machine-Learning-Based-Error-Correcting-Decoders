@@ -98,12 +98,12 @@ if __name__ == '__main__':
 
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
-    parser.add_argument('--code_k', type=int, default=16)
-    parser.add_argument('--code_n', type=int, default=31)
+    parser.add_argument('--code_k', type=int, default=64)
+    parser.add_argument('--code_n', type=int, default=217)
     parser.add_argument('--standardize', action='store_true')
 
     # model args
-    parser.add_argument('--N_dec', type=int, default=6) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
+    parser.add_argument('--N_dec', type=int, default=10) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
     parser.add_argument('--d_model', type=int, default=128) # Embedding dimension
     parser.add_argument('--h', type=int, default=8) # multihead attention heads
 
@@ -123,6 +123,6 @@ if __name__ == '__main__':
     code.pc_matrix = ParitycheckMatrix(args.code_n, args.code_k, args.code_type, device).squeeze(0).T
     args.code = code
 
-    args.model_pth = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_cuda/{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}_s{args.seed}.pth"
+    args.model_pth = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_cuda/{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}.pth"
 
     main(args)

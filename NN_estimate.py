@@ -210,7 +210,7 @@ def main():
 
     # Hyperparameters
     metrics = ["BER"] # ["BER", "BLER"]
-    nr_codeword = int(1e4)
+    nr_codeword = int(4e7)
     bits = 4
     encoded = 8
     encoding_method = "Hamming"  # "Hamming", "Parity", "BCH"
@@ -221,7 +221,7 @@ def main():
     # MLNN_hidden_size1 = [16]
     MLNN_hidden_size2 = [[50, 50]]
 
-    SNR_opt_NN = torch.arange(0, 10.5, 0.5).to(device)
+    SNR_opt_NN = torch.arange(9, 10.5, 0.5).to(device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
     result_save = np.zeros((1, len(SNR_opt_NN)))
 
