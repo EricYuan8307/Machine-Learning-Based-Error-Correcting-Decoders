@@ -154,7 +154,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='CrossMPT')
     parser.add_argument('--model_type', type=str, default='CrossMPT')
-    parser.add_argument('--epochs', type=int, default=2000)
+    parser.add_argument('--epochs', type=int, default=3000)
     parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--test_batch_size', type=int, default=2048)

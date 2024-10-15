@@ -99,7 +99,7 @@ if __name__ == '__main__':
     # Code args
     parser.add_argument('--code_type', type=str, default='BCH', choices=['Hamming', 'BCH', 'POLAR', 'LDPC'])
     parser.add_argument('--code_k', type=int, default=64)
-    parser.add_argument('--code_n', type=int, default=217)
+    parser.add_argument('--code_n', type=int, default=127)
     parser.add_argument('--standardize', action='store_true')
 
     # model args
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     # device = (torch.device("mps") if torch.backends.mps.is_available()
     #           else (torch.device("cuda") if torch.cuda.is_available()
     #                 else torch.device("cpu")))
-    device = torch.device("cuda")
+    device = torch.device("cuda:1")
     code.k = args.code_k
     code.n = args.code_n
     code.code_type = args.code_type
@@ -123,6 +123,6 @@ if __name__ == '__main__':
     code.pc_matrix = ParitycheckMatrix(args.code_n, args.code_k, args.code_type, device).squeeze(0).T
     args.code = code
 
-    args.model_pth = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_cuda/{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}.pth"
+    args.model_pth = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_{device}/{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}.pth"
 
     main(args)
