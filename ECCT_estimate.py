@@ -84,7 +84,7 @@ def main(args):
     code = args.code
     model = ECC_Transformer(args, dropout=0).to(device)
 
-    EbNo_range_test = torch.arange(0, 8, 0.5)
+    EbNo_range_test = torch.arange(7, 8, 0.5)
     std_test = [EbN0_to_std(ii, code.k / code.n) for ii in EbNo_range_test]
     test_dataloader_list = [DataLoader(ECC_Dataset(code, [std_test[ii]], int(args.test_batch_size), device),
                                        batch_size=int(args.test_batch_size), shuffle=False) for ii in range(len(std_test))]
@@ -105,7 +105,7 @@ if __name__ == '__main__':
     parser.add_argument('--standardize', action='store_true')
 
     # model args
-    parser.add_argument('--N_dec', type=int, default=6) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
+    parser.add_argument('--N_dec', type=int, default=10) # decoder is concatenation of N decoding layers of self-attention and feedforward layers and interleaved by normalization layers
     parser.add_argument('--d_model', type=int, default=128) # Embedding dimension
     parser.add_argument('--h', type=int, default=8) # multihead attention heads
 
@@ -125,6 +125,6 @@ if __name__ == '__main__':
     code.pc_matrix = ParitycheckMatrix(args.code_n, args.code_k, args.code_type, device).squeeze(0).T
     args.code = code
 
-    args.model_pth = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_cuda/{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}_seed{args.seed}.pth"
+    args.model_pth = f"Result/Model/{args.code_type}{args.code_n}_{args.code_k}/{args.model_type}_cuda/{args.model_type}_h{args.h}_n{args.N_dec}_d{args.d_model}.pth"
 
     main(args)
