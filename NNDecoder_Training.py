@@ -552,16 +552,16 @@ def main():
     # SLNN_hidden_size1 = [31] # 25, 26, 27, 28
     # SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     # MLNN_hidden_size1 = [100]
-    MLNN_hidden_size2 = [[50,50]]
+    MLNN_hidden_size2 = [[1000,500], [2000,1000]]
     batch_size =128
     learning_rate = 1e-2
     momentum = 0.9
     epochs = 1500
 
     nr_codeword = int(1e6)
-    bits = 4
-    encoded = 8
-    encoding_method = "Hamming" # "Hamming", "Parity", "BCH",
+    bits = 21
+    encoded = 31
+    encoding_method = "BCH" # "Hamming", "Parity", "BCH",
 
     snr = torch.tensor(0, dtype=torch.float, device=device)
     snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article

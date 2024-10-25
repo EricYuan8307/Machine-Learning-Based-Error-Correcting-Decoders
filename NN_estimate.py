@@ -211,23 +211,23 @@ def main():
     # Hyperparameters
     metrics = ["BER"] # ["BER", "BLER"]
     nr_codeword = int(4e7)
-    bits = 4
-    encoded = 8
-    encoding_method = "Hamming"  # "Hamming", "Parity", "BCH"
+    bits = 21
+    encoded = 31
+    encoding_method = "BCH"  # "Hamming", "Parity", "BCH"
     NeuralNetwork_type = ["MLNN"] # ["SLNN", "MLNN"]
     batch_size = int(1e4)
     SLNN_hidden_size1 = [24] # [20, 21, 22, 23, 24, 25, 26, 27, 28]
     SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     # MLNN_hidden_size1 = [16]
-    MLNN_hidden_size2 = [[50, 50]]
+    MLNN_hidden_size2 = [[1000, 500], [2000, 1000]]
 
-    SNR_opt_NN = torch.arange(9, 10.5, 0.5).to(device)
+    SNR_opt_NN = torch.arange(0, 10.5, 0.5).to(device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
     result_save = np.zeros((1, len(SNR_opt_NN)))
 
     # For trained and deleted model
-    for NN_type in NeuralNetwork_type:
-        for metric in metrics:
+    # for NN_type in NeuralNetwork_type:
+    #     for metric in metrics:
             # if NN_type == "SLNN":
             #     for i in range(len(SLNN_hidden_size1)):
             #         model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{SLNN_hidden_size1[i]}.pth" # Normal
@@ -244,20 +244,20 @@ def main():
             #         full_csv_path = os.path.join(directory_path, csv_filename)
             #         np.savetxt(full_csv_path, result_NN, delimiter=', ')
 
-            if NN_type == "MLNN":
-                for MLNN_hidden_size in MLNN_hidden_size2:
-                    model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{MLNN_hidden_size}.pth"
-                    result_NN = estimation_MLNN2(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, MLNN_hidden_size, model_pth, result_save, batch_size, device)
-
-                    directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
-
-                    # Create the directory if it doesn't exist
-                    if not os.path.exists(directory_path):
-                        os.makedirs(directory_path)
-
-                    csv_filename = f"{metric}_{NN_type}_hiddenlayer{MLNN_hidden_size}.csv"
-                    full_csv_path = os.path.join(directory_path, csv_filename)
-                    np.savetxt(full_csv_path, result_NN, delimiter=', ')
+            # if NN_type == "MLNN":
+            #     for MLNN_hidden_size in MLNN_hidden_size2:
+            #         model_pth = f"Result/Model/{encoding_method}{encoded}_{bits}/{NN_type}_{device}/{NN_type}_hiddenlayer{MLNN_hidden_size}.pth"
+            #         result_NN = estimation_MLNN2(nr_codeword, encoding_method, bits, encoded, NN_type, metric, SNR_opt_NN, MLNN_hidden_size, model_pth, result_save, batch_size, device)
+            #
+            #         directory_path = f"Result/{encoding_method}{encoded}_{bits}/{metric}"
+            #
+            #         # Create the directory if it doesn't exist
+            #         if not os.path.exists(directory_path):
+            #             os.makedirs(directory_path)
+            #
+            #         csv_filename = f"{metric}_{NN_type}_hiddenlayer{MLNN_hidden_size}.csv"
+            #         full_csv_path = os.path.join(directory_path, csv_filename)
+            #         np.savetxt(full_csv_path, result_NN, delimiter=', ')
 
     for NN_type in NeuralNetwork_type:
         for metric in metrics:
