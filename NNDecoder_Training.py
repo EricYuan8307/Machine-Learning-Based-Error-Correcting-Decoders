@@ -567,7 +567,7 @@ def main():
     snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
     # Early Stopping # Guess same number of your output
-    patience = bits*2
+    patience = torch.pow(torch.tensor(2), bits)
     SLNN_patience = torch.pow(torch.tensor(2), bits)
     MLNN_patience = bits
     delta = 0.001

@@ -210,7 +210,7 @@ def main():
 
     # Hyperparameters
     metrics = ["BER"] # ["BER", "BLER"]
-    nr_codeword = int(4e7)
+    nr_codeword = int(1e5)
     bits = 21
     encoded = 31
     encoding_method = "BCH"  # "Hamming", "Parity", "BCH"
