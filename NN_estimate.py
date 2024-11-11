@@ -219,7 +219,7 @@ def main():
     SLNN_hidden_size1 = [24] # [20, 21, 22, 23, 24, 25, 26, 27, 28]
     SLNN_hidden_size2 = [[25, 25], [100, 20], [20, 100], [100, 25], [25, 100]]
     # MLNN_hidden_size1 = [16]
-    MLNN_hidden_size2 = [[1000, 500], [2000, 1000]]
+    MLNN_hidden_size2 = [[2000, 1000]]
 
     SNR_opt_NN = torch.arange(0, 10.5, 0.5).to(device)
     SNR_opt_NN = SNR_opt_NN + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float))
