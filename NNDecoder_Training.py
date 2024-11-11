@@ -563,11 +563,11 @@ def main():
     encoded = 31
     encoding_method = "BCH" # "Hamming", "Parity", "BCH",
 
-    snr = torch.tensor(0, dtype=torch.float, device=device)
+    snr = torch.tensor(4.5, dtype=torch.float, device=device)
     snr = snr + 10 * torch.log10(torch.tensor(bits / encoded, dtype=torch.float)) # for SLNN article
 
     # Early Stopping # Guess same number of your output
-    patience = torch.pow(torch.tensor(2), bits)
+    patience = bits*2
     SLNN_patience = torch.pow(torch.tensor(2), bits)
     MLNN_patience = bits
     delta = 0.001
