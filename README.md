@@ -143,7 +143,5 @@ Seong-Joon Park and Hee-Youl Kwak and Sang-Hyo Kim and Yongjune Kim and Jong-Seo
 
 To train the model faster, I used early stopping.
 
-### Addition: In Good First Issue, I mentioned some common bugs and solutions in Belief Pragation, BER and BLER.
-
 ### License
 [MIT](https://choosealicense.com/licenses/mit/)
